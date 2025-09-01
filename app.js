@@ -1,0 +1,26 @@
+const express = require("express");
+const path = require("path");
+const app = express();
+const cors = require("cors");
+const { swaggerUi, swaggerSpec } = require('./swagger');
+require("dotenv").config();
+
+var corsOptions = {
+  origin: ["http://localhost:3000"],
+};
+
+// Middleware
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+const userRoutes = require("./routes/user.routes");
+const taskRoutes = require("./routes/task.routes")
+
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", taskRoutes);
+
+module.exports = app;
