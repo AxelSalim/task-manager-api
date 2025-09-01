@@ -1,15 +1,24 @@
 {
   "name": "task-manager-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Task Manager API",
+  "homepage": "https://github.com/AxelSalim/task-manager-api#readme",
+  "bugs": {
+    "url": "https://github.com/AxelSalim/task-manager-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AxelSalim/task-manager-api.git"
+  },
+  "license": "ISC",
+  "author": "ADJAKIDJE Axel",
+  "type": "commonjs",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
@@ -17,7 +26,11 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "mysql2": "^3.14.4",
+    "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
