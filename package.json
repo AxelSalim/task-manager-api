@@ -16,7 +16,10 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "setup-db": "node scripts/setup-db.js",
+    "migrate": "npx sequelize db:migrate",
+    "migrate:undo": "npx sequelize db:migrate:undo"
   },
   "keywords": [],
   "dependencies": {
@@ -29,6 +32,7 @@
     "morgan": "^1.10.1",
     "mysql2": "^3.14.4",
     "sequelize": "^6.37.7",
+    "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
