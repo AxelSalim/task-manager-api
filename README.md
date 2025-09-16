@@ -40,11 +40,18 @@ Une API REST complète de gestion des tâches et des utilisateurs, construite av
 - **Validation des données** : Vérification des entrées utilisateur
 - **Gestion des erreurs** : Messages d'erreur appropriés
 
+### 📡 WebSocket en temps réel
+- **Notifications instantanées** : Mises à jour en temps réel des tâches
+- **Authentification WebSocket** : Sécurisation des connexions WebSocket
+- **Événements personnalisés** : `task_created`, `task_updated`, `task_deleted`
+- **Rooms utilisateur** : Isolation des données par utilisateur
+
 ## 🛠️ Technologies utilisées
 
 - **Backend** : Node.js, Express.js
 - **Base de données** : MySQL avec Sequelize ORM
 - **Authentification** : JWT (JSON Web Tokens)
+- **WebSocket** : Socket.IO pour les mises à jour en temps réel
 - **Sécurité** : bcrypt pour le hashage des mots de passe
 - **Documentation** : Swagger/OpenAPI 3.0
 - **Middleware** : CORS, Morgan (logging), dotenv
@@ -195,6 +202,26 @@ L'API est entièrement documentée avec **Swagger/OpenAPI 3.0** :
 - **Format** : OpenAPI 3.0
 - **Interface** : Swagger UI interactive
 - **Tests** : Possibilité de tester les endpoints directement
+
+## 📡 WebSocket en temps réel
+
+L'API intègre **Socket.IO** pour des mises à jour en temps réel :
+
+- **URL WebSocket** : `ws://localhost:3000`
+- **Authentification** : Token JWT dans la query string
+- **Événements** : `task_created`, `task_updated`, `task_deleted`
+- **Documentation complète** : Voir `docs/websocket.md`
+
+### Exemple de connexion
+```javascript
+const socket = io('http://localhost:3000', {
+  query: { token: 'your_jwt_token' }
+});
+
+socket.on('task_created', (data) => {
+  console.log('Nouvelle tâche:', data.data);
+});
+```
 
 ## 🗄️ Base de données
 
