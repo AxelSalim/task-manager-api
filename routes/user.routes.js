@@ -13,7 +13,7 @@ const router = express.Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -23,6 +23,10 @@ const router = express.Router();
  *                 type: string
  *               password:
  *                 type: string
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: Photo de profil (optionnel)
  *     responses:
  *       200:
  *         description: Utilisateur créé avec succès
