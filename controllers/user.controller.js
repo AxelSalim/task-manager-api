@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const { User } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require("path");
@@ -9,7 +9,12 @@ const UserController = {
   // S'inscrire
   async register(req, res) {
     try {
-      const { username, email, password } = req.body;
+      const { name, email, password } = req.body;
+
+      // Validation des champs requis
+      if (!name || !email || !password) {
+        return res.status(400).json({ message: "Tous les champs sont obligatoires" });
+      }
 
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
@@ -24,16 +29,25 @@ const UserController = {
 
       // Création user
       const user = await User.create({
-        username,
+        name,
         email,
         password: hashedPassword,
         avatar: avatarUrl
       });
 
-      res.status(200).json({code: 200, data:user, message: "Utilisateur créé avec succès" });
+      res.status(201).json({
+        code: 201, 
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar
+        }, 
+        message: "Utilisateur créé avec succès" 
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Erreur serveur" });
+      res.status(500).json({ message: "Erreur serveur", error: error.message });
     }
   },
 
@@ -65,7 +79,7 @@ const UserController = {
         code: 200,
         message: "Connexion réussie",
         token,
-        user: { id: user.id, username: user.username, email: user.email, avatar: user.avatar },
+        user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
       });
     } catch (error) {
       console.error(error);
@@ -77,7 +91,7 @@ const UserController = {
   async getMe(req, res) {
     try {
       const user = await User.findByPk(req.user.id, {
-        attributes: ["id", "username", "email", "avatar"],
+        attributes: ["id", "name", "email", "avatar"],
       });
   
       if (!user) {
