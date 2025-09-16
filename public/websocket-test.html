@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket - Task Manager API</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .notification {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .task {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .task h3 { margin: 0 0 10px 0; color: #495057; }
+        .task p { margin: 5px 0; color: #6c757d; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Test WebSocket - Task Manager API</h1>
+        
+        <div id="status" class="status disconnected">
+            ❌ Non connecté
+        </div>
+
+        <div class="form-group">
+            <label for="token">Token JWT :</label>
+            <input type="text" id="token" placeholder="Collez votre token JWT ici" style="width: 100%;">
+            <button onclick="connect()">Se connecter</button>
+            <button onclick="disconnect()">Se déconnecter</button>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>📝 Test des tâches</h2>
+        
+        <div class="form-group">
+            <label for="taskTitle">Titre de la tâche :</label>
+            <input type="text" id="taskTitle" placeholder="Entrez le titre de la tâche">
+        </div>
+        
+        <div class="form-group">
+            <label for="taskStatus">Statut :</label>
+            <select id="taskStatus">
+                <option value="todo">À faire</option>
+                <option value="in_progress">En cours</option>
+                <option value="done">Terminé</option>
+            </select>
+        </div>
+        
+        <button onclick="createTask()" id="createBtn" disabled>Créer une tâche</button>
+        <button onclick="getTasks()" id="getTasksBtn" disabled>Récupérer les tâches</button>
+    </div>
+
+    <div class="container">
+        <h2>📡 Événements WebSocket</h2>
+        <div id="notifications"></div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Tâches</h2>
+        <div id="tasks"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        let isConnected = false;
+
+        function connect() {
+            const token = document.getElementById('token').value.trim();
+            
+            if (!token) {
+                showError('Veuillez entrer un token JWT valide');
+                return;
+            }
+
+            // Fermer la connexion existante si elle existe
+            if (socket) {
+                socket.disconnect();
+            }
+
+            // Créer une nouvelle connexion
+            socket = io('http://localhost:3000', {
+                query: { token: token }
+            });
+
+            // Gestion des événements de connexion
+            socket.on('connect', () => {
+                isConnected = true;
+                updateStatus('✅ Connecté au serveur WebSocket', 'connected');
+                document.getElementById('createBtn').disabled = false;
+                document.getElementById('getTasksBtn').disabled = false;
+                hideError();
+                addNotification('Connexion WebSocket établie', 'success');
+            });
+
+            socket.on('disconnect', () => {
+                isConnected = false;
+                updateStatus('❌ Déconnecté du serveur WebSocket', 'disconnected');
+                document.getElementById('createBtn').disabled = true;
+                document.getElementById('getTasksBtn').disabled = true;
+                addNotification('Connexion WebSocket fermée', 'error');
+            });
+
+            socket.on('connect_error', (error) => {
+                isConnected = false;
+                updateStatus('❌ Erreur de connexion', 'disconnected');
+                showError('Erreur de connexion: ' + error.message);
+                document.getElementById('createBtn').disabled = true;
+                document.getElementById('getTasksBtn').disabled = true;
+            });
+
+            // Gestion des événements de tâches
+            socket.on('task_created', (data) => {
+                addNotification(`📝 Nouvelle tâche créée: ${data.data.title}`, 'success');
+                getTasks(); // Recharger la liste
+            });
+
+            socket.on('task_updated', (data) => {
+                addNotification(`✏️ Tâche mise à jour: ${data.data.title}`, 'info');
+                getTasks(); // Recharger la liste
+            });
+
+            socket.on('task_deleted', (data) => {
+                addNotification(`🗑️ Tâche supprimée (ID: ${data.data.id})`, 'warning');
+                getTasks(); // Recharger la liste
+            });
+
+            socket.on('notification', (data) => {
+                addNotification(`🔔 ${data.data.title}: ${data.data.message}`, 'info');
+            });
+
+            socket.on('user_connected', (data) => {
+                addNotification(`👤 ${data.data.username} s'est connecté`, 'info');
+            });
+
+            socket.on('user_disconnected', (data) => {
+                addNotification(`👋 ${data.data.username} s'est déconnecté`, 'info');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function updateStatus(message, className) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${className}`;
+        }
+
+        function addNotification(message, type = 'info') {
+            const notificationsEl = document.getElementById('notifications');
+            const div = document.createElement('div');
+            div.className = `notification ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            notificationsEl.insertBefore(div, notificationsEl.firstChild);
+            
+            // Limiter à 10 notifications
+            while (notificationsEl.children.length > 10) {
+                notificationsEl.removeChild(notificationsEl.lastChild);
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        async function createTask() {
+            if (!isConnected) {
+                showError('Veuillez d\'abord vous connecter');
+                return;
+            }
+
+            const title = document.getElementById('taskTitle').value.trim();
+            const status = document.getElementById('taskStatus').value;
+
+            if (!title) {
+                showError('Veuillez entrer un titre pour la tâche');
+                return;
+            }
+
+            try {
+                const token = document.getElementById('token').value;
+                const response = await fetch('http://localhost:3000/api/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ title, status })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addNotification(`Tâche créée via API: ${data.data.title}`, 'success');
+                    document.getElementById('taskTitle').value = '';
+                } else {
+                    showError('Erreur lors de la création: ' + data.message);
+                }
+            } catch (error) {
+                showError('Erreur de connexion: ' + error.message);
+            }
+        }
+
+        async function getTasks() {
+            if (!isConnected) {
+                showError('Veuillez d\'abord vous connecter');
+                return;
+            }
+
+            try {
+                const token = document.getElementById('token').value;
+                const response = await fetch('http://localhost:3000/api/tasks', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayTasks(data.data);
+                } else {
+                    showError('Erreur lors du chargement: ' + data.message);
+                }
+            } catch (error) {
+                showError('Erreur de connexion: ' + error.message);
+            }
+        }
+
+        function displayTasks(tasks) {
+            const tasksEl = document.getElementById('tasks');
+            tasksEl.innerHTML = '';
+
+            if (tasks.length === 0) {
+                tasksEl.innerHTML = '<p>Aucune tâche trouvée</p>';
+                return;
+            }
+
+            tasks.forEach(task => {
+                const div = document.createElement('div');
+                div.className = 'task';
+                div.innerHTML = `
+                    <h3>${task.title}</h3>
+                    <p><strong>Statut:</strong> ${task.status}</p>
+                    <p><strong>Créé le:</strong> ${new Date(task.createdAt).toLocaleString()}</p>
+                    <p><strong>Modifié le:</strong> ${new Date(task.updatedAt).toLocaleString()}</p>
+                `;
+                tasksEl.appendChild(div);
+            });
+        }
+
+        // Charger automatiquement les tâches au chargement de la page si connecté
+        window.addEventListener('load', () => {
+            // Vous pouvez ajouter ici une logique pour charger automatiquement
+            // un token depuis le localStorage si disponible
+        });
+    </script>
+</body>
+</html>
