@@ -9,11 +9,25 @@ const options = {
       version: "1.0.0",
       description: "API de gestion des tâches et des utilisateurs",
     },
-    // servers: [
-    //   {
-    //     url: "http://localhost:3000/api", // adapte si ton prefix change
-    //   },
-    // ],
+    servers: [
+      {
+        url: "http://localhost:3000/api",
+        description: "Serveur de développement"
+      },
+      {
+        url: "http://192.168.1.3:3000/api",
+        description: "Serveur local (IP)"
+      }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT"
+        }
+      }
+    }
   },
   apis: ["./routes/*.js"], // Où Swagger va chercher les annotations
 };
