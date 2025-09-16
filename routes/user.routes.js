@@ -1,6 +1,7 @@
 const express = require("express")
 const authMiddleware = require("../middlewares/authmiddleware")
 const userController = require("../controllers/user.controller")
+const upload = require("../middlewares/upload")
 const router = express.Router();
 
 
@@ -31,7 +32,7 @@ const router = express.Router();
  *       200:
  *         description: Utilisateur créé avec succès
  */
-router.post("/register", userController.register);       // Inscription
+router.post("/register", upload.single('avatar'), userController.register);       // Inscription
 
 /**
  * @swagger
@@ -129,6 +130,6 @@ router.get("/me", authMiddleware, userController.getMe); // Obtenir les infos de
  *       401:
  *         description: Non autorisé, token manquant ou invalide
  */
-router.put("/updateavatar", authMiddleware, userController.updateAvatar); // Mettre à jour l'avatar
+router.put("/updateavatar", authMiddleware, upload.single('avatar'), userController.updateAvatar); // Mettre à jour l'avatar
 
 module.exports = router;
