@@ -41,7 +41,7 @@ class EmailService {
     };
 
     const provider = process.env.EMAIL_PROVIDER || 'gmail';
-    this.transporter = nodemailer.createTransporter(emailConfig[provider]);
+    this.transporter = nodemailer.createTransport(emailConfig[provider]);
   }
 
   // Vérifier la configuration email
