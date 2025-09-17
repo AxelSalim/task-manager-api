@@ -21,10 +21,12 @@ var corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, "uploads")));
+
 
 // Routes
 const userRoutes = require("./routes/user.routes");
-const taskRoutes = require("./routes/task.routes")
+const taskRoutes = require("./routes/task.routes");
 
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
