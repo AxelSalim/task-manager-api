@@ -1,8 +1,10 @@
-const { User } = require('../models');
+const { User, PasswordReset } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require("path");
 const fs = require('fs');
+const emailService = require('../services/emailService');
+const otpGenerator = require('../utils/otpGenerator');
 
 const UserController = {
 
@@ -139,6 +141,176 @@ const UserController = {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Erreur lors de la mise à jour de l'avatar" });
+    }
+  },
+
+  // Demander la réinitialisation de mot de passe
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+
+      // Validation de l'email
+      if (!email) {
+        return res.status(400).json({ message: "L'email est obligatoire" });
+      }
+
+      // Vérifier si l'utilisateur existe
+      const user = await User.findOne({ where: { email } });
+      if (!user) {
+        // Ne pas révéler si l'email existe ou non pour des raisons de sécurité
+        return res.status(200).json({ 
+          message: "Si cet email existe dans notre système, vous recevrez un code de vérification" 
+        });
+      }
+
+      // Supprimer les anciens codes OTP pour cet email
+      await PasswordReset.destroy({ where: { email } });
+
+      // Générer un nouveau code OTP
+      const otpCode = otpGenerator.generateValidOTP();
+      const hashedOTP = await otpGenerator.hashOTP(otpCode);
+      const expiresAt = otpGenerator.getExpiryDate();
+
+      // Sauvegarder le code OTP en base
+      await PasswordReset.create({
+        email,
+        otp_code: hashedOTP,
+        expires_at: expiresAt
+      });
+
+      // Envoyer l'email avec le code OTP
+      try {
+        await emailService.sendPasswordResetEmail(email, otpCode, user.name);
+        console.log(`📧 Code OTP envoyé à ${email}: ${otpCode}`);
+      } catch (emailError) {
+        console.error('❌ Erreur envoi email:', emailError);
+        // Supprimer le code OTP si l'email n'a pas pu être envoyé
+        await PasswordReset.destroy({ where: { email } });
+        return res.status(500).json({ 
+          message: "Erreur lors de l'envoi de l'email. Veuillez réessayer plus tard." 
+        });
+      }
+
+      res.status(200).json({ 
+        message: "Si cet email existe dans notre système, vous recevrez un code de vérification",
+        expiresIn: "15 minutes"
+      });
+
+    } catch (error) {
+      console.error('❌ Erreur forgotPassword:', error);
+      res.status(500).json({ message: "Erreur serveur", error: error.message });
+    }
+  },
+
+  // Vérifier le code OTP
+  async verifyOTP(req, res) {
+    try {
+      const { email, otp } = req.body;
+
+      // Validation des champs
+      if (!email || !otp) {
+        return res.status(400).json({ message: "L'email et le code OTP sont obligatoires" });
+      }
+
+      // Vérifier le format du code OTP
+      if (!otpGenerator.validateOTPFormat(otp)) {
+        return res.status(400).json({ message: "Le code OTP doit contenir exactement 6 chiffres" });
+      }
+
+      // Trouver le code OTP en base
+      const passwordReset = await PasswordReset.findOne({
+        where: { 
+          email,
+          used: false
+        },
+        order: [['created_at', 'DESC']] // Prendre le plus récent
+      });
+
+      if (!passwordReset) {
+        return res.status(400).json({ message: "Code OTP invalide ou expiré" });
+      }
+
+      // Vérifier si le code est expiré
+      if (passwordReset.isExpired()) {
+        await passwordReset.destroy();
+        return res.status(400).json({ message: "Code OTP expiré. Veuillez en demander un nouveau." });
+      }
+
+      // Vérifier le code OTP
+      const isOTPValid = await otpGenerator.verifyOTP(otp, passwordReset.otp_code);
+      if (!isOTPValid) {
+        return res.status(400).json({ message: "Code OTP incorrect" });
+      }
+
+      // Marquer le code comme utilisé
+      await passwordReset.markAsUsed();
+
+      // Générer un token de réinitialisation temporaire
+      const resetToken = otpGenerator.generateResetToken(email);
+
+      res.status(200).json({
+        message: "Code OTP vérifié avec succès",
+        reset_token: resetToken,
+        expiresIn: "30 minutes"
+      });
+
+    } catch (error) {
+      console.error('❌ Erreur verifyOTP:', error);
+      res.status(500).json({ message: "Erreur serveur", error: error.message });
+    }
+  },
+
+  // Réinitialiser le mot de passe
+  async resetPassword(req, res) {
+    try {
+      const { reset_token, new_password } = req.body;
+
+      // Validation des champs
+      if (!reset_token || !new_password) {
+        return res.status(400).json({ message: "Le token et le nouveau mot de passe sont obligatoires" });
+      }
+
+      // Vérifier le token de réinitialisation
+      const decodedToken = otpGenerator.verifyResetToken(reset_token);
+      if (!decodedToken || decodedToken.type !== 'password_reset') {
+        return res.status(400).json({ message: "Token de réinitialisation invalide ou expiré" });
+      }
+
+      // Vérifier que l'utilisateur existe
+      const user = await User.findOne({ where: { email: decodedToken.email } });
+      if (!user) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      // Valider le nouveau mot de passe
+      if (new_password.length < 6) {
+        return res.status(400).json({ message: "Le mot de passe doit contenir au moins 6 caractères" });
+      }
+
+      // Hasher le nouveau mot de passe
+      const hashedPassword = await bcrypt.hash(new_password, 10);
+
+      // Mettre à jour le mot de passe
+      await user.update({ password: hashedPassword });
+
+      // Supprimer tous les codes OTP pour cet email
+      await PasswordReset.destroy({ where: { email: decodedToken.email } });
+
+      // Envoyer un email de confirmation
+      try {
+        await emailService.sendPasswordChangedConfirmation(decodedToken.email, user.name);
+      } catch (emailError) {
+        console.error('❌ Erreur envoi email de confirmation:', emailError);
+        // Ne pas faire échouer le processus pour l'email de confirmation
+      }
+
+      res.status(200).json({
+        message: "Mot de passe réinitialisé avec succès"
+      });
+
+    } catch (error) {
+      console.error('❌ Erreur resetPassword:', error);
+      res.status(500).json({ message: "Erreur serveur", error: error.message });
     }
   }
 };
