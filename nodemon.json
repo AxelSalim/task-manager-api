@@ -1,5 +1,0 @@
-{
-  "watch": ["controllers", "models", "routes", "middlewares", "migrations", "seeders", "config", "app.js", "server.js"],
-  "ext": "js,json",
-  "ignore": ["uploads/*", "node_modules"]
-}
