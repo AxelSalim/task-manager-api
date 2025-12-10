@@ -1,0 +1,51 @@
+{
+  "name": "task-manager-api",
+  "version": "1.0.0",
+  "description": "Task Manager API",
+  "homepage": "https://github.com/AxelSalim/task-manager-api#readme",
+  "bugs": {
+    "url": "https://github.com/AxelSalim/task-manager-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AxelSalim/task-manager-api.git"
+  },
+  "license": "ISC",
+  "author": "ADJAKIDJE Axel",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "setup-db": "node scripts/setup-db.js",
+    "migrate": "npx sequelize db:migrate",
+    "migrate:undo": "npx sequelize db:migrate:undo"
+  },
+  "keywords": [],
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "firebase-admin": "^13.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "multer-firebase-storage": "^4.1.2",
+    "multer-storage-cloudinary": "^4.0.0",
+    "mysql2": "^3.14.4",
+    "nodemailer": "^7.0.11",
+    "sequelize": "^6.37.7",
+    "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
