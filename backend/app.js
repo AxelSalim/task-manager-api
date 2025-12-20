@@ -22,6 +22,8 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, "uploads")));
+// Servir les fichiers de stockage local (avatars, etc.)
+app.use('/storage', express.static(path.join(__dirname, "..", "data", "storage")));
 
 
 // Routes
