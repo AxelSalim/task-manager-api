@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   Task.init({
     title: { type: DataTypes.STRING, allowNull: false },
+    description: { 
+      type: DataTypes.TEXT, 
+      allowNull: true 
+    },
     status: { 
       type: DataTypes.STRING, 
       defaultValue: "todo",
@@ -16,6 +20,18 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         isIn: [["todo", "in-progress", "done"]]
       }
+    },
+    priority: {
+      type: DataTypes.STRING,
+      defaultValue: "normal",
+      allowNull: true,
+      validate: {
+        isIn: [["low", "normal", "high", "urgent"]]
+      }
+    },
+    dueDate: {
+      type: DataTypes.DATE,
+      allowNull: true
     },
   }, {
     sequelize,
