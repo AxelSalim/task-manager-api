@@ -1,35 +1,36 @@
-// Modèles Firestore
-const { Task: TaskModel, User: UserModel } = require('../models/firebase');
-// Modèles Sequelize (pour transition, à supprimer plus tard)
-// const { User, Task } = require('../models');
+// Modèles Sequelize
+const { Task, User } = require('../models');
 
 const websocketService = require('../services/websocketService');
-const FirebaseHelpers = require('../utils/firebaseHelpers');
 
 const TaskController = {
 
   // Récupérer toutes les tâches de l'utilisateur connecté
   async getTasks(req, res) {
     try {
-      // req.user.id contient maintenant l'UUID de l'utilisateur
-      const tasks = await TaskModel.findByUserId(req.user.id);
-
-      // Récupérer les infos utilisateur pour les ajouter à chaque tâche
-      const user = await UserModel.findById(req.user.id);
-      const userInfo = user ? {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      } : null;
-
-      // Formater les tâches et ajouter les infos utilisateur
-      const formattedTasks = tasks.map(task => {
-        const formatted = FirebaseHelpers.formatDocument(task);
-        return {
-          ...formatted,
-          user: userInfo
-        };
+      const tasks = await Task.findAll({
+        where: { userId: req.user.id },
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email']
+        }]
       });
+
+      // Formater les tâches
+      const formattedTasks = tasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        status: task.status,
+        userId: task.userId,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        user: task.user ? {
+          id: task.user.id,
+          name: task.user.name,
+          email: task.user.email
+        } : null
+      }));
       
       res.status(200).json({
         code: 200,
@@ -50,33 +51,43 @@ const TaskController = {
       if (!title) {
         return res.status(400).json({ message: "Le titre est obligatoire" });
       }
-  
-      // Créer la tâche avec Firestore (retourne l'UUID)
-      const taskId = await TaskModel.create({
+
+      // Créer la tâche avec Sequelize
+      const task = await Task.create({
         title,
         status: status || "todo",
-        userId: req.user.id, // UUID de l'utilisateur depuis le JWT
+        userId: req.user.id,
       });
 
-      // Récupérer la tâche créée avec les informations utilisateur
-      const task = await TaskModel.findById(taskId);
-      const user = await UserModel.findById(req.user.id);
-      
-      const taskWithUser = {
-        ...FirebaseHelpers.formatDocument(task),
-        user: user ? {
-          id: user.id,
-          name: user.name,
-          email: user.email
+      // Récupérer la tâche avec les informations utilisateur
+      const taskWithUser = await Task.findByPk(task.id, {
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email']
+        }]
+      });
+
+      const formattedTask = {
+        id: taskWithUser.id,
+        title: taskWithUser.title,
+        status: taskWithUser.status,
+        userId: taskWithUser.userId,
+        createdAt: taskWithUser.createdAt,
+        updatedAt: taskWithUser.updatedAt,
+        user: taskWithUser.user ? {
+          id: taskWithUser.user.id,
+          name: taskWithUser.user.name,
+          email: taskWithUser.user.email
         } : null
       };
 
       // Émettre l'événement WebSocket
-      websocketService.taskCreated(req.user.id, taskWithUser);
+      websocketService.taskCreated(req.user.id, formattedTask);
   
       res.status(200).json({
         code: 200,
-        data: FirebaseHelpers.formatDocument(task),
+        data: formattedTask,
         message: 'Tâche créée avec succès'
       });
     } catch (error) {
@@ -88,27 +99,39 @@ const TaskController = {
   // Récupérer une tâche par son ID
   async getTaskById(req, res) {
     try {
-      // req.params.id est maintenant un UUID
-      const task = await TaskModel.findByIdAndUserId(req.params.id, req.user.id);
+      const task = await Task.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.user.id
+        },
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email']
+        }]
+      });
   
       if (!task) {
         return res.status(404).json({ message: "Tâche introuvable" });
       }
 
-      // Récupérer les infos utilisateur
-      const user = await UserModel.findById(req.user.id);
-      const taskWithUser = {
-        ...FirebaseHelpers.formatDocument(task),
-        user: user ? {
-          id: user.id,
-          name: user.name,
-          email: user.email
+      const formattedTask = {
+        id: task.id,
+        title: task.title,
+        status: task.status,
+        userId: task.userId,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        user: task.user ? {
+          id: task.user.id,
+          name: task.user.name,
+          email: task.user.email
         } : null
       };
   
       res.status(200).json({
         code: 200,
-        data: taskWithUser,
+        data: formattedTask,
         message: 'Tâche récupérée avec succès'
       });
     } catch (error) {
@@ -123,7 +146,12 @@ const TaskController = {
       const { title, status } = req.body;
   
       // Vérifier que la tâche existe et appartient à l'utilisateur
-      const task = await TaskModel.findByIdAndUserId(req.params.id, req.user.id);
+      const task = await Task.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.user.id
+        }
+      });
   
       if (!task) {
         return res.status(404).json({ message: "Tâche introuvable" });
@@ -134,29 +162,38 @@ const TaskController = {
       if (title !== undefined) updateData.title = title;
       if (status !== undefined) updateData.status = status;
 
-      // Mettre à jour la tâche avec Firestore
-      await TaskModel.update(req.params.id, updateData);
+      // Mettre à jour la tâche
+      await task.update(updateData);
 
-      // Récupérer la tâche mise à jour
-      const updatedTask = await TaskModel.findById(req.params.id);
-      
-      // Récupérer les infos utilisateur
-      const user = await UserModel.findById(req.user.id);
-      const taskWithUser = {
-        ...FirebaseHelpers.formatDocument(updatedTask),
-        user: user ? {
-          id: user.id,
-          name: user.name,
-          email: user.email
+      // Récupérer la tâche mise à jour avec les informations utilisateur
+      const updatedTask = await Task.findByPk(task.id, {
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email']
+        }]
+      });
+
+      const formattedTask = {
+        id: updatedTask.id,
+        title: updatedTask.title,
+        status: updatedTask.status,
+        userId: updatedTask.userId,
+        createdAt: updatedTask.createdAt,
+        updatedAt: updatedTask.updatedAt,
+        user: updatedTask.user ? {
+          id: updatedTask.user.id,
+          name: updatedTask.user.name,
+          email: updatedTask.user.email
         } : null
       };
 
       // Émettre l'événement WebSocket
-      websocketService.taskUpdated(req.user.id, taskWithUser);
+      websocketService.taskUpdated(req.user.id, formattedTask);
   
       res.status(200).json({
         code: 200,
-        data: FirebaseHelpers.formatDocument(updatedTask),
+        data: formattedTask,
         message: 'Tâche modifiée avec succès'
       });
     } catch (error) {
@@ -169,17 +206,22 @@ const TaskController = {
   async deleteTask(req, res) {
     try {
       // Vérifier que la tâche existe et appartient à l'utilisateur
-      const task = await TaskModel.findByIdAndUserId(req.params.id, req.user.id);
+      const task = await Task.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.user.id
+        }
+      });
   
       if (!task) {
         return res.status(404).json({ message: "Tâche introuvable" });
       }
 
-      // Sauvegarder l'UUID de la tâche pour l'événement WebSocket
+      // Sauvegarder l'ID de la tâche pour l'événement WebSocket
       const taskId = task.id;
       
-      // Supprimer la tâche avec Firestore
-      await TaskModel.delete(taskId);
+      // Supprimer la tâche
+      await task.destroy();
 
       // Émettre l'événement WebSocket
       websocketService.taskDeleted(req.user.id, taskId);
