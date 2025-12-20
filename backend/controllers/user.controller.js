@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require('fs');
 const emailService = require('../services/emailService');
 const otpGenerator = require('../utils/otpGenerator');
-const cloudinaryService = require('../services/cloudinaryService');
+const storageService = require('../services/storageService');
 
 const UserController = {
 
@@ -37,44 +37,38 @@ const UserController = {
       // Hash du mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Gérer l'avatar avec Cloudinary (sera remplacé par stockage local plus tard)
-      let avatarUrl = null;
-
-      if (req.file) {
-        try {
-          // Pour l'instant, on utilise Cloudinary (sera remplacé en phase 1.3)
-          const uploadResult = await cloudinaryService.uploadAvatar(req.file, null);
-          avatarUrl = uploadResult.url;
-
-          // Supprimer le fichier local après upload vers Cloudinary
-          if (fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-          }
-        } catch (uploadError) {
-          console.error('❌ Erreur upload avatar Cloudinary:', uploadError);
-          // Supprimer le fichier local en cas d'erreur
-          if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-          }
-          // Ne pas bloquer l'inscription si l'upload échoue
-          console.warn('⚠️  Inscription continuée sans avatar');
-        }
-      }
-
       // Version actuelle des politiques
       const CONSENT_VERSION = '1.0';
 
-      // Création user avec Sequelize
+      // Création user avec Sequelize (sans avatar d'abord)
       const user = await User.create({
         name,
         email,
         password: hashedPassword,
-        avatar: avatarUrl,
+        avatar: null,
         // Champs RGPD (à ajouter dans une migration plus tard si nécessaire)
         // consentPrivacyPolicy: consentPrivacyPolicy === true || consentPrivacyPolicy === 'true',
         // consentTermsOfService: consentTermsOfService === true || consentTermsOfService === 'true',
         // consentVersion: CONSENT_VERSION
       });
+
+      // Gérer l'avatar avec stockage local (après création de l'utilisateur pour avoir l'ID)
+      let avatarUrl = null;
+
+      if (req.file) {
+        try {
+          // Uploader l'avatar avec l'ID de l'utilisateur
+          const uploadResult = await storageService.uploadAvatar(req.file, user.id);
+          avatarUrl = uploadResult.url;
+
+          // Mettre à jour l'utilisateur avec l'URL de l'avatar
+          await user.update({ avatar: avatarUrl });
+        } catch (uploadError) {
+          console.error('❌ Erreur upload avatar:', uploadError);
+          // Ne pas bloquer l'inscription si l'upload échoue
+          console.warn('⚠️  Inscription continuée sans avatar');
+        }
+      }
 
       res.status(201).json({
         code: 201, 
@@ -171,34 +165,21 @@ const UserController = {
 
       // Supprimer l'ancien avatar s'il existe
       if (user.avatar) {
-        if (cloudinaryService.isCloudinaryUrl(user.avatar)) {
-          // Supprimer l'ancien avatar de Cloudinary
-          try {
-            await cloudinaryService.deleteAvatarByUrl(user.avatar);
-          } catch (deleteError) {
-            console.warn('⚠️  Erreur suppression ancien avatar Cloudinary:', deleteError.message);
-          }
-        } else {
-          // Ancien système local
-          const oldAvatarPath = path.join(__dirname, '..', 'public', user.avatar);
-          if (fs.existsSync(oldAvatarPath)) {
-            fs.unlinkSync(oldAvatarPath);
-          }
+        try {
+          await storageService.deleteAvatar(user.avatar);
+        } catch (deleteError) {
+          console.warn('⚠️  Erreur suppression ancien avatar:', deleteError.message);
+          // Continuer même si la suppression échoue
         }
       }
 
-      // Uploader le nouvel avatar vers Cloudinary (sera remplacé par stockage local)
+      // Uploader le nouvel avatar vers le stockage local
       let avatarUrl;
       try {
-        const uploadResult = await cloudinaryService.uploadAvatar(req.file, req.user.id);
+        const uploadResult = await storageService.uploadAvatar(req.file, req.user.id);
         avatarUrl = uploadResult.url;
-
-        // Supprimer le fichier local après upload vers Cloudinary
-        if (fs.existsSync(req.file.path)) {
-          fs.unlinkSync(req.file.path);
-        }
       } catch (uploadError) {
-        console.error('❌ Erreur upload avatar Cloudinary:', uploadError);
+        console.error('❌ Erreur upload avatar:', uploadError);
         if (fs.existsSync(req.file.path)) {
           fs.unlinkSync(req.file.path);
         }
@@ -505,21 +486,13 @@ const UserController = {
       // Supprimer tous les codes OTP associés
       await PasswordReset.destroy({ where: { email: user.email } });
 
-      // Supprimer l'avatar (Cloudinary ou local)
+      // Supprimer l'avatar
       if (user.avatar) {
-        if (cloudinaryService.isCloudinaryUrl(user.avatar)) {
-          // Supprimer l'avatar de Cloudinary
-          try {
-            await cloudinaryService.deleteAvatarByUrl(user.avatar);
-          } catch (deleteError) {
-            console.warn('⚠️  Erreur suppression avatar Cloudinary:', deleteError.message);
-          }
-        } else {
-          // Ancien système local
-          const oldAvatarPath = path.join(__dirname, '..', 'public', user.avatar);
-          if (fs.existsSync(oldAvatarPath)) {
-            fs.unlinkSync(oldAvatarPath);
-          }
+        try {
+          await storageService.deleteAvatar(user.avatar);
+        } catch (deleteError) {
+          console.warn('⚠️  Erreur suppression avatar:', deleteError.message);
+          // Continuer même si la suppression échoue
         }
       }
 
