@@ -6,9 +6,7 @@ const websocketService = require('./services/websocketService')
 
 // Initialiser Firebase au démarrage
 try {
-  const { db, firebaseApp } = require('./config/firebase')
-  console.log('✅ Firebase initialisé avec succès')
-  console.log(`📊 Projet Firebase: ${firebaseApp.options.projectId || 'Non défini'}`)
+  require('./config/firebase')
 } catch (error) {
   console.error('❌ Erreur lors de l\'initialisation de Firebase:', error.message)
   console.error('⚠️  L\'application peut ne pas fonctionner correctement sans Firebase')
