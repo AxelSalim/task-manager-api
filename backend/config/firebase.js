@@ -40,9 +40,6 @@ try {
   // Obtenir l'instance Firestore
   db = admin.firestore();
 
-  console.log('✅ Firebase Admin SDK initialisé avec succès');
-  console.log(`📊 Projet Firebase: ${firebaseApp.options.projectId || 'Non défini'}`);
-
 } catch (error) {
   console.error('❌ Erreur lors de l\'initialisation de Firebase:', error.message);
   console.error('💡 Vérifiez vos variables d\'environnement ou le fichier de service account');
