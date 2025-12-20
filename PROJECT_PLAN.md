@@ -18,33 +18,33 @@
 - [x] Tester la connexion à la base de données
 
 #### 1.2 Suppression de Firebase
-- [ ] Supprimer `firebase-admin` des dépendances
-- [ ] Supprimer `backend/config/firebase.js`
-- [ ] Supprimer `backend/services/firebaseService.js`
-- [ ] Supprimer `backend/models/firebase/` (tous les fichiers)
-- [ ] Adapter `backend/models/User.js` (Sequelize) pour utiliser SQLite
-- [ ] Adapter `backend/models/Task.js` (Sequelize) pour utiliser SQLite
-- [ ] Adapter `backend/models/PasswordReset.js` (Sequelize) pour utiliser SQLite
-- [ ] Mettre à jour tous les contrôleurs pour utiliser les modèles Sequelize
+- [x] Supprimer `firebase-admin` des dépendances
+- [x] Supprimer `backend/config/firebase.js`
+- [x] Supprimer `backend/services/firebaseService.js`
+- [x] Supprimer `backend/models/firebase/` (tous les fichiers)
+- [x] Adapter `backend/models/User.js` (Sequelize) pour utiliser SQLite
+- [x] Adapter `backend/models/Task.js` (Sequelize) pour utiliser SQLite
+- [x] Adapter `backend/models/PasswordReset.js` (Sequelize) pour utiliser SQLite
+- [x] Mettre à jour tous les contrôleurs pour utiliser les modèles Sequelize
 
 #### 1.3 Remplacement de Cloudinary par Stockage Local
-- [ ] Supprimer `cloudinary` des dépendances
-- [ ] Supprimer `backend/config/cloudinary.js`
-- [ ] Supprimer `backend/services/cloudinaryService.js`
-- [ ] Créer `backend/services/storageService.js` pour le stockage local
-- [ ] Créer la structure de dossiers `data/storage/avatars/`
-- [ ] Adapter `backend/controllers/user.controller.js` pour le stockage local
-- [ ] Adapter le middleware `backend/middlewares/upload.js` si nécessaire
-- [ ] Tester l'upload et la suppression de fichiers locaux
+- [x] Supprimer `cloudinary` des dépendances
+- [x] Supprimer `backend/config/cloudinary.js`
+- [x] Supprimer `backend/services/cloudinaryService.js`
+- [x] Créer `backend/services/storageService.js` pour le stockage local
+- [x] Créer la structure de dossiers `data/storage/avatars/`
+- [x] Adapter `backend/controllers/user.controller.js` pour le stockage local
+- [x] Adapter le middleware `backend/middlewares/upload.js` si nécessaire
+- [x] Tester l'upload et la suppression de fichiers locaux
 
 #### 1.4 Enrichissement du Modèle Task (MVP)
-- [ ] Ajouter le champ `description` (TEXT) à la table `tasks`
-- [ ] Ajouter le champ `priority` (TEXT: 'low', 'normal', 'high', 'urgent') à la table `tasks`
-- [ ] Ajouter le champ `dueDate` (DATETIME, nullable) à la table `tasks`
-- [ ] Ajouter le champ `status` (TEXT: 'todo', 'in-progress', 'done') à la table `tasks`
-- [ ] Créer une migration pour ces nouveaux champs
-- [ ] Mettre à jour le modèle Sequelize `backend/models/Task.js`
-- [ ] Mettre à jour `backend/controllers/task.controller.js` pour gérer ces champs
+- [x] Ajouter le champ `description` (TEXT) à la table `tasks`
+- [x] Ajouter le champ `priority` (TEXT: 'low', 'normal', 'high', 'urgent') à la table `tasks`
+- [x] Ajouter le champ `dueDate` (DATETIME, nullable) à la table `tasks`
+- [x] Ajouter le champ `status` (TEXT: 'todo', 'in-progress', 'done') à la table `tasks` (déjà présent)
+- [x] Créer une migration pour ces nouveaux champs
+- [x] Mettre à jour le modèle Sequelize `backend/models/Task.js`
+- [x] Mettre à jour `backend/controllers/task.controller.js` pour gérer ces champs
 
 ### Phase 2 : Setup Electron
 
