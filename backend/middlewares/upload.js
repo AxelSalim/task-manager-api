@@ -2,8 +2,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Créer le dossier uploads s'il n'existe pas
-const uploadDir = './uploads/images/users';
+// Créer le dossier uploads temporaire s'il n'existe pas (pour les fichiers temporaires avant traitement)
+const uploadDir = './uploads/temp';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
