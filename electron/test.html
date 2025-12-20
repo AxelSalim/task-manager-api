@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 2.5em;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        .status-item {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .status-icon {
+            font-size: 1.2em;
+        }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        #apiStatus {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+        }
+        .error {
+            background: rgba(244, 67, 54, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Task Manager</h1>
+        <p>Application Desktop de Gestion de Tâches</p>
+        
+        <div class="status">
+            <div class="status-item">
+                <span class="status-icon">✅</span>
+                <span>Electron chargé</span>
+            </div>
+            <div class="status-item">
+                <span class="status-icon" id="serverIcon">⏳</span>
+                <span id="serverStatus">Vérification du serveur...</span>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="testAPI()">Tester l'API</button>
+            <button onclick="getServerPort()">Obtenir le port</button>
+        </div>
+
+        <div id="apiStatus"></div>
+    </div>
+
+    <script>
+        // Utiliser l'API Electron si disponible
+        let serverPort = null;
+
+        // Écouter le démarrage du serveur
+        if (window.electronAPI) {
+            window.electronAPI.onServerStarted((data) => {
+                serverPort = data.port;
+                document.getElementById('serverIcon').textContent = '✅';
+                document.getElementById('serverStatus').textContent = `Serveur démarré sur le port ${data.port}`;
+            });
+
+            // Obtenir le port si déjà disponible
+            window.electronAPI.getServerPort().then(port => {
+                if (port) {
+                    serverPort = port;
+                    document.getElementById('serverIcon').textContent = '✅';
+                    document.getElementById('serverStatus').textContent = `Serveur sur le port ${port}`;
+                }
+            });
+        }
+
+        async function testAPI() {
+            const statusDiv = document.getElementById('apiStatus');
+            
+            if (!serverPort) {
+                statusDiv.textContent = '❌ Serveur non démarré';
+                statusDiv.className = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:${serverPort}/api/docs`);
+                if (response.ok) {
+                    statusDiv.textContent = `✅ API accessible sur http://localhost:${serverPort}`;
+                    statusDiv.className = 'success';
+                } else {
+                    statusDiv.textContent = `⚠️ API répond avec le statut ${response.status}`;
+                    statusDiv.className = 'error';
+                }
+            } catch (error) {
+                statusDiv.textContent = `❌ Erreur: ${error.message}`;
+                statusDiv.className = 'error';
+            }
+        }
+
+        async function getServerPort() {
+            if (window.electronAPI) {
+                const port = await window.electronAPI.getServerPort();
+                alert(`Port du serveur: ${port || 'Non disponible'}`);
+            } else {
+                alert('API Electron non disponible');
+            }
+        }
+
+        // Tester automatiquement après 2 secondes
+        setTimeout(() => {
+            if (serverPort) {
+                testAPI();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
+
