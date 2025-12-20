@@ -15,8 +15,12 @@ module.exports = {
         allowNull: false
       },
       status: {
-        type: Sequelize.ENUM('todo', 'in-progress', 'done'),
-        defaultValue: 'todo'
+        type: Sequelize.STRING,
+        defaultValue: 'todo',
+        allowNull: false,
+        validate: {
+          isIn: [['todo', 'in-progress', 'done']]
+        }
       },
       userId: {
         type: Sequelize.INTEGER,
