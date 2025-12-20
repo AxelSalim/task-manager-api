@@ -9,7 +9,14 @@ module.exports = (sequelize, DataTypes) => {
   }
   Task.init({
     title: { type: DataTypes.STRING, allowNull: false },
-    status: { type: DataTypes.ENUM("todo", "in-progress", "done"), defaultValue: "todo" },
+    status: { 
+      type: DataTypes.STRING, 
+      defaultValue: "todo",
+      allowNull: false,
+      validate: {
+        isIn: [["todo", "in-progress", "done"]]
+      }
+    },
   }, {
     sequelize,
     modelName: "Task",
