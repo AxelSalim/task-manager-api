@@ -10,10 +10,7 @@ cloudinary.config({
 });
 
 // Vérifier la configuration
-if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-  console.log('✅ Cloudinary configuré avec succès');
-  console.log(`📸 Cloud: ${process.env.CLOUDINARY_CLOUD_NAME}`);
-} else {
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
   console.warn('⚠️  Configuration Cloudinary incomplète. Vérifiez vos variables d\'environnement.');
 }
 
