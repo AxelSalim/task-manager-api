@@ -4,14 +4,15 @@ const { Server } = require('socket.io')
 const websocketAuth = require('./middlewares/websocketAuth')
 const websocketService = require('./services/websocketService')
 
-// Initialiser Firebase au démarrage
-try {
-  require('./config/firebase')
-} catch (error) {
-  console.error('❌ Erreur lors de l\'initialisation de Firebase:', error.message)
-  console.error('⚠️  L\'application peut ne pas fonctionner correctement sans Firebase')
-  // Ne pas arrêter l'application, mais avertir l'utilisateur
-}
+// Initialiser la base de données Sequelize
+const db = require('./models');
+db.sequelize.authenticate()
+  .then(() => {
+    console.log('✅ Connexion à la base de données SQLite réussie');
+  })
+  .catch((error) => {
+    console.error('❌ Erreur de connexion à la base de données:', error.message);
+  });
 
 const PORT = process.env.PORT || 3000
 
