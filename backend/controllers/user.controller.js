@@ -1,16 +1,12 @@
-// Modèles Firestore
-const { User: UserModel, PasswordReset: PasswordResetModel } = require('../models/firebase');
-// Modèles Sequelize (pour transition, à supprimer plus tard)
-// const { User, PasswordReset } = require('../models');
+// Modèles Sequelize
+const { User, PasswordReset, Task } = require('../models');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require("path");
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
 const emailService = require('../services/emailService');
 const otpGenerator = require('../utils/otpGenerator');
-const FirebaseHelpers = require('../utils/firebaseHelpers');
 const cloudinaryService = require('../services/cloudinaryService');
 
 const UserController = {
@@ -32,26 +28,23 @@ const UserController = {
         });
       }
 
-      // Vérifier si l'email existe déjà (Firestore)
-      const emailExists = await UserModel.emailExists(email);
-      if (emailExists) {
+      // Vérifier si l'email existe déjà
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
         return res.status(400).json({ message: "Email déjà utilisé" });
       }
 
       // Hash du mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Gérer l'avatar avec Cloudinary
+      // Gérer l'avatar avec Cloudinary (sera remplacé par stockage local plus tard)
       let avatarUrl = null;
-      let avatarPublicId = null;
 
       if (req.file) {
         try {
-          // Générer un UUID temporaire pour l'upload (sera remplacé par le vrai userId après création)
-          const tempUserId = uuidv4();
-          const uploadResult = await cloudinaryService.uploadAvatar(req.file, tempUserId);
+          // Pour l'instant, on utilise Cloudinary (sera remplacé en phase 1.3)
+          const uploadResult = await cloudinaryService.uploadAvatar(req.file, null);
           avatarUrl = uploadResult.url;
-          avatarPublicId = uploadResult.publicId;
 
           // Supprimer le fichier local après upload vers Cloudinary
           if (fs.existsSync(req.file.path)) {
@@ -68,38 +61,28 @@ const UserController = {
         }
       }
 
-      // Version actuelle des politiques (à mettre à jour si les politiques changent)
+      // Version actuelle des politiques
       const CONSENT_VERSION = '1.0';
 
-      // Création user avec Firestore (retourne l'UUID)
-      const userId = await UserModel.create({
+      // Création user avec Sequelize
+      const user = await User.create({
         name,
         email,
         password: hashedPassword,
         avatar: avatarUrl,
-        // Champs RGPD
-        consentPrivacyPolicy: consentPrivacyPolicy === true || consentPrivacyPolicy === 'true',
-        consentTermsOfService: consentTermsOfService === true || consentTermsOfService === 'true',
-        consentVersion: CONSENT_VERSION
+        // Champs RGPD (à ajouter dans une migration plus tard si nécessaire)
+        // consentPrivacyPolicy: consentPrivacyPolicy === true || consentPrivacyPolicy === 'true',
+        // consentTermsOfService: consentTermsOfService === true || consentTermsOfService === 'true',
+        // consentVersion: CONSENT_VERSION
       });
-
-      // Si l'avatar a été uploadé avec un tempUserId, le renommer avec le vrai userId
-      if (avatarPublicId && avatarPublicId.includes('temp')) {
-        // Optionnel : renommer le fichier sur Cloudinary (peut être fait plus tard si nécessaire)
-        // Pour l'instant, on garde le public_id généré
-      }
-
-      // Récupérer l'utilisateur créé pour la réponse
-      const user = await UserModel.findById(userId);
-      const formattedUser = FirebaseHelpers.formatDocument(user);
 
       res.status(201).json({
         code: 201, 
         data: {
-          id: formattedUser.id, // UUID
-          name: formattedUser.name,
-          email: formattedUser.email,
-          avatar: formattedUser.avatar
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar
         }, 
         message: "Utilisateur créé avec succès" 
       });
@@ -114,8 +97,8 @@ const UserController = {
     try {
       const { email, password } = req.body;
   
-      // Vérifier si l'email existe (Firestore)
-      const user = await UserModel.findByEmail(email);
+      // Vérifier si l'email existe
+      const user = await User.findOne({ where: { email } });
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
@@ -126,25 +109,22 @@ const UserController = {
         return res.status(401).json({ message: "Mot de passe incorrect" });
       }
   
-      // Génération du token JWT (avec l'UUID comme id)
+      // Génération du token JWT
       const token = jwt.sign(
-        { id: user.id, email: user.email }, // user.id est maintenant un UUID
+        { id: user.id, email: user.email },
         process.env.JWT_SECRET,
         { expiresIn: "7d" }
       );
-  
-      // Formater l'utilisateur pour la réponse
-      const formattedUser = FirebaseHelpers.formatDocument(user);
 
       res.status(200).json({
         code: 200,
         message: "Connexion réussie",
         token,
         user: { 
-          id: formattedUser.id, // UUID
-          name: formattedUser.name, 
-          email: formattedUser.email, 
-          avatar: formattedUser.avatar 
+          id: user.id,
+          name: user.name, 
+          email: user.email, 
+          avatar: user.avatar 
         },
       });
     } catch (error) {
@@ -156,20 +136,17 @@ const UserController = {
   // Récupérer les informations User
   async getMe(req, res) {
     try {
-      // req.user.id contient maintenant l'UUID (depuis le JWT)
-      const user = await UserModel.findById(req.user.id);
+      const user = await User.findByPk(req.user.id);
   
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
 
-      // Formater et ne retourner que les champs nécessaires
-      const formattedUser = FirebaseHelpers.formatDocument(user);
       const userData = {
-        id: formattedUser.id, // UUID
-        name: formattedUser.name,
-        email: formattedUser.email,
-        avatar: formattedUser.avatar
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar
       };
   
       res.status(200).json({ code: 200, data: userData, message: "" });
@@ -182,8 +159,7 @@ const UserController = {
   // Mettre à jour l'avatar de l'utilisateur
   async updateAvatar(req, res) {
     try {
-      // Récupérer l'utilisateur avec Firestore (req.user.id est l'UUID)
-      const user = await UserModel.findById(req.user.id);
+      const user = await User.findByPk(req.user.id);
       
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
@@ -201,10 +177,9 @@ const UserController = {
             await cloudinaryService.deleteAvatarByUrl(user.avatar);
           } catch (deleteError) {
             console.warn('⚠️  Erreur suppression ancien avatar Cloudinary:', deleteError.message);
-            // Continuer même si la suppression échoue
           }
         } else {
-          // Ancien système local (migration)
+          // Ancien système local
           const oldAvatarPath = path.join(__dirname, '..', 'public', user.avatar);
           if (fs.existsSync(oldAvatarPath)) {
             fs.unlinkSync(oldAvatarPath);
@@ -212,7 +187,7 @@ const UserController = {
         }
       }
 
-      // Uploader le nouvel avatar vers Cloudinary
+      // Uploader le nouvel avatar vers Cloudinary (sera remplacé par stockage local)
       let avatarUrl;
       try {
         const uploadResult = await cloudinaryService.uploadAvatar(req.file, req.user.id);
@@ -224,7 +199,6 @@ const UserController = {
         }
       } catch (uploadError) {
         console.error('❌ Erreur upload avatar Cloudinary:', uploadError);
-        // Supprimer le fichier local en cas d'erreur
         if (fs.existsSync(req.file.path)) {
           fs.unlinkSync(req.file.path);
         }
@@ -234,8 +208,8 @@ const UserController = {
         });
       }
       
-      // Mise à jour de l'avatar avec Firestore
-      await UserModel.update(req.user.id, { avatar: avatarUrl });
+      // Mise à jour de l'avatar
+      await user.update({ avatar: avatarUrl });
 
       res.status(200).json({ 
         code: 200, 
@@ -258,8 +232,8 @@ const UserController = {
         return res.status(400).json({ message: "L'email est obligatoire" });
       }
 
-      // Vérifier si l'utilisateur existe (Firestore)
-      const user = await UserModel.findByEmail(email);
+      // Vérifier si l'utilisateur existe
+      const user = await User.findOne({ where: { email } });
       if (!user) {
         // Ne pas révéler si l'email existe ou non pour des raisons de sécurité
         return res.status(200).json({ 
@@ -267,16 +241,16 @@ const UserController = {
         });
       }
 
-      // Supprimer les anciens codes OTP pour cet email (Firestore)
-      await PasswordResetModel.deleteByEmail(email);
+      // Supprimer les anciens codes OTP pour cet email
+      await PasswordReset.destroy({ where: { email } });
 
       // Générer un nouveau code OTP
       const otpCode = otpGenerator.generateValidOTP();
       const hashedOTP = await otpGenerator.hashOTP(otpCode);
       const expiresAt = otpGenerator.getExpiryDate();
 
-      // Sauvegarder le code OTP en base (Firestore)
-      await PasswordResetModel.create({
+      // Sauvegarder le code OTP en base
+      await PasswordReset.create({
         email,
         otp_code: hashedOTP,
         expires_at: expiresAt
@@ -289,7 +263,7 @@ const UserController = {
       } catch (emailError) {
         console.error('❌ Erreur envoi email:', emailError);
         // Supprimer le code OTP si l'email n'a pas pu être envoyé
-        await PasswordResetModel.deleteByEmail(email);
+        await PasswordReset.destroy({ where: { email } });
         return res.status(500).json({ 
           message: "Erreur lors de l'envoi de l'email. Veuillez réessayer plus tard." 
         });
@@ -321,18 +295,20 @@ const UserController = {
         return res.status(400).json({ message: "Le code OTP doit contenir exactement 6 chiffres" });
       }
 
-      // Trouver le code OTP en base (Firestore - trouve automatiquement le plus récent)
-      const passwordReset = await PasswordResetModel.findLatestByEmail(email);
+      // Trouver le code OTP le plus récent pour cet email
+      const passwordReset = await PasswordReset.findOne({
+        where: { email },
+        order: [['createdAt', 'DESC']]
+      });
 
       if (!passwordReset) {
         return res.status(400).json({ message: "Code OTP invalide ou expiré" });
       }
 
-      // Vérifier si le code est expiré (utilise la méthode du modèle)
-      if (PasswordResetModel.isExpired(passwordReset)) {
+      // Vérifier si le code est expiré
+      if (passwordReset.isExpired()) {
         // Supprimer le code expiré
-        const { db } = require('../config/firebase');
-        await db.collection('passwordResets').doc(passwordReset.id).delete();
+        await passwordReset.destroy();
         return res.status(400).json({ message: "Code OTP expiré. Veuillez en demander un nouveau." });
       }
 
@@ -342,8 +318,8 @@ const UserController = {
         return res.status(400).json({ message: "Code OTP incorrect" });
       }
 
-      // Marquer le code comme utilisé (Firestore)
-      await PasswordResetModel.markAsUsed(passwordReset.id);
+      // Marquer le code comme utilisé
+      await passwordReset.markAsUsed();
 
       // Générer un token de réinitialisation temporaire
       const resetToken = otpGenerator.generateResetToken(email);
@@ -376,8 +352,8 @@ const UserController = {
         return res.status(400).json({ message: "Token de réinitialisation invalide ou expiré" });
       }
 
-      // Vérifier que l'utilisateur existe (Firestore)
-      const user = await UserModel.findByEmail(decodedToken.email);
+      // Vérifier que l'utilisateur existe
+      const user = await User.findOne({ where: { email: decodedToken.email } });
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
@@ -390,11 +366,11 @@ const UserController = {
       // Hasher le nouveau mot de passe
       const hashedPassword = await bcrypt.hash(new_password, 10);
 
-      // Mettre à jour le mot de passe (Firestore)
-      await UserModel.update(user.id, { password: hashedPassword });
+      // Mettre à jour le mot de passe
+      await user.update({ password: hashedPassword });
 
-      // Supprimer tous les codes OTP pour cet email (Firestore)
-      await PasswordResetModel.deleteByEmail(decodedToken.email);
+      // Supprimer tous les codes OTP pour cet email
+      await PasswordReset.destroy({ where: { email: decodedToken.email } });
 
       // Envoyer un email de confirmation
       try {
@@ -417,32 +393,19 @@ const UserController = {
   // RGPD - Droit d'accès : Exporter toutes les données de l'utilisateur
   async exportMyData(req, res) {
     try {
-      const userId = req.user.id; // UUID de l'utilisateur
+      const userId = req.user.id;
 
       // Récupérer l'utilisateur
-      const user = await UserModel.findById(userId);
+      const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
 
       // Récupérer toutes les tâches de l'utilisateur
-      const { Task: TaskModel } = require('../models/firebase');
-      const tasks = await TaskModel.findByUserId(userId);
+      const tasks = await Task.findAll({ where: { userId } });
 
-      // Récupérer les codes OTP (si nécessaire)
-      const { PasswordReset: PasswordResetModel } = require('../models/firebase');
-      const { db } = require('../config/firebase');
-      const passwordResetsSnapshot = await db.collection('passwordResets')
-        .where('email', '==', user.email)
-        .get();
-      
-      const passwordResets = passwordResetsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        email: doc.data().email,
-        createdAt: doc.data().createdAt,
-        expires_at: doc.data().expires_at,
-        used: doc.data().used
-      }));
+      // Récupérer les codes OTP
+      const passwordResets = await PasswordReset.findAll({ where: { email: user.email } });
 
       // Formater les données pour l'export
       const exportData = {
@@ -452,24 +415,20 @@ const UserController = {
           name: user.name,
           email: user.email,
           avatar: user.avatar,
-          consentPrivacyPolicy: user.consentPrivacyPolicy,
-          consentTermsOfService: user.consentTermsOfService,
-          consentDate: FirebaseHelpers.timestampToDate(user.consentDate),
-          consentVersion: user.consentVersion,
-          createdAt: FirebaseHelpers.timestampToDate(user.createdAt),
-          updatedAt: FirebaseHelpers.timestampToDate(user.updatedAt)
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
         },
         tasks: tasks.map(task => ({
           id: task.id,
           title: task.title,
           status: task.status,
-          createdAt: FirebaseHelpers.timestampToDate(task.createdAt),
-          updatedAt: FirebaseHelpers.timestampToDate(task.updatedAt)
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt
         })),
         passwordResets: passwordResets.map(reset => ({
           id: reset.id,
-          createdAt: FirebaseHelpers.timestampToDate(reset.createdAt),
-          expires_at: FirebaseHelpers.timestampToDate(reset.expires_at),
+          createdAt: reset.createdAt,
+          expires_at: reset.expires_at,
           used: reset.used
         })),
         metadata: {
@@ -479,9 +438,6 @@ const UserController = {
           version: '1.0'
         }
       };
-
-      // Marquer la date du dernier export
-      await UserModel.updateLastDataExport(userId);
 
       res.status(200).json({
         code: 200,
@@ -499,14 +455,12 @@ const UserController = {
     try {
       const userId = req.user.id;
 
-      // Utiliser la même méthode que exportMyData
-      const user = await UserModel.findById(userId);
+      const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
 
-      const { Task: TaskModel } = require('../models/firebase');
-      const tasks = await TaskModel.findByUserId(userId);
+      const tasks = await Task.findAll({ where: { userId } });
 
       const exportData = {
         format: 'portable',
@@ -520,12 +474,9 @@ const UserController = {
         tasks: tasks.map(task => ({
           title: task.title,
           status: task.status,
-          createdAt: FirebaseHelpers.timestampToDate(task.createdAt)
+          createdAt: task.createdAt
         }))
       };
-
-      // Marquer la date du dernier export
-      await UserModel.updateLastDataExport(userId);
 
       // Retourner en format JSON téléchargeable
       res.setHeader('Content-Type', 'application/json');
@@ -540,21 +491,19 @@ const UserController = {
   // RGPD - Droit à l'effacement : Supprimer complètement le compte et toutes les données
   async deleteMyAccount(req, res) {
     try {
-      const userId = req.user.id; // UUID de l'utilisateur
+      const userId = req.user.id;
 
       // Récupérer l'utilisateur pour vérifier qu'il existe
-      const user = await UserModel.findById(userId);
+      const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
 
       // Supprimer toutes les tâches de l'utilisateur
-      const { Task: TaskModel } = require('../models/firebase');
-      await TaskModel.deleteByUserId(userId);
+      await Task.destroy({ where: { userId } });
 
       // Supprimer tous les codes OTP associés
-      const { PasswordReset: PasswordResetModel } = require('../models/firebase');
-      await PasswordResetModel.deleteByEmail(user.email);
+      await PasswordReset.destroy({ where: { email: user.email } });
 
       // Supprimer l'avatar (Cloudinary ou local)
       if (user.avatar) {
@@ -564,10 +513,9 @@ const UserController = {
             await cloudinaryService.deleteAvatarByUrl(user.avatar);
           } catch (deleteError) {
             console.warn('⚠️  Erreur suppression avatar Cloudinary:', deleteError.message);
-            // Continuer même si la suppression échoue
           }
         } else {
-          // Ancien système local (migration)
+          // Ancien système local
           const oldAvatarPath = path.join(__dirname, '..', 'public', user.avatar);
           if (fs.existsSync(oldAvatarPath)) {
             fs.unlinkSync(oldAvatarPath);
@@ -576,7 +524,7 @@ const UserController = {
       }
 
       // Supprimer l'utilisateur
-      await UserModel.delete(userId);
+      await user.destroy();
 
       res.status(200).json({
         code: 200,
