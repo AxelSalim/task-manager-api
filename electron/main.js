@@ -74,10 +74,17 @@ function createWindow() {
   const isDev = process.env.NODE_ENV === 'development';
   
   if (isDev) {
-    // En développement, charger la page de test pour l'instant
-    // Une fois le frontend Next.js prêt, on pourra charger depuis http://localhost:3001
-    console.log('📄 Chargement de la page de test...');
-    mainWindow.loadFile(path.join(__dirname, 'test.html'));
+    // En développement, charger depuis le serveur Next.js (port 3001)
+    const nextJsUrl = 'http://localhost:3001';
+    console.log(`📄 Chargement du frontend Next.js depuis ${nextJsUrl}...`);
+    
+    // Essayer de charger depuis Next.js
+    mainWindow.loadURL(nextJsUrl).catch((error) => {
+      console.warn('⚠️  Serveur Next.js non disponible, chargement de la page de test');
+      console.warn('   Pour démarrer le frontend: cd frontend && npm run dev');
+      mainWindow.loadFile(path.join(__dirname, 'test.html'));
+    });
+    
     // Ouvrir DevTools en développement
     mainWindow.webContents.openDevTools();
   } else {
