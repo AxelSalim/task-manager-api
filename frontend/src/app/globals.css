@@ -122,6 +122,16 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    overflow: hidden; /* Prevent body scroll */
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
   body {
     @apply bg-background text-foreground;
     user-select: none;
@@ -136,4 +146,71 @@
     -moz-user-select: text;
     -ms-user-select: text;
   }
+}
+
+/* Scrollbar styles for sidebar content - visible when expanded */
+[data-slot="sidebar-content"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+  background-clip: padding-box;
+}
+
+/* Hide scrollbar when sidebar is collapsed (icon mode) */
+[data-state="collapsed"][data-collapsible="icon"] [data-slot="sidebar-content"] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-state="collapsed"][data-collapsible="icon"] [data-slot="sidebar-content"]::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Scrollbar styles for main page content (SidebarInset) - hidden */
+[data-slot="sidebar-inset"] {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+  overflow-y: auto;
+  height: 100vh;
+  max-height: 100vh;
+}
+
+[data-slot="sidebar-inset"]::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Scrollbar styles for main element (fallback) - hidden */
+main {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+main::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
 }
