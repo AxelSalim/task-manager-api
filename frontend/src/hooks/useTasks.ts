@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 import { tasksAPI } from '@/lib/api';
+import { Task } from '@/types/task';
 
 export function useTasks() {
   const { data, error, isLoading, mutate } = useSWR(
@@ -13,8 +14,11 @@ export function useTasks() {
     }
   );
 
+  // Type assertion pour les tâches
+  const tasks = (data?.data || []) as Task[];
+
   return {
-    tasks: data?.data || [],
+    tasks,
     isLoading,
     isError: error,
     mutate,
