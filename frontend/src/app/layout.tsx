@@ -4,7 +4,7 @@ import { Providers } from "@/components/Providers";
 import { chillax } from "@/lib/fonts";
 
 export const metadata: Metadata = {
-  title: "Task Manager",
+  title: "Spark",
   description: "Application de gestion de tâches",
 };
 
