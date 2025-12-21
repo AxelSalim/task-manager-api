@@ -1,0 +1,211 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useTasks } from '@/hooks/useTasks';
+import { TaskList } from '@/components/tasks/TaskList';
+import { Task } from '@/types/task';
+import { tasksAPI } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, Filter, ArrowUpDown } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+type FilterType = 'all' | 'todo' | 'in-progress' | 'done';
+type SortType = 'date-asc' | 'date-desc' | 'priority-asc' | 'priority-desc' | 'title-asc';
+
+export default function TasksPage() {
+  const searchParams = useSearchParams();
+  const { tasks, isLoading, mutate } = useTasks();
+  const { toast } = useToast();
+  
+  const [filter, setFilter] = useState<FilterType>(
+    (searchParams.get('filter') as FilterType) || 'all'
+  );
+  const [sort, setSort] = useState<SortType>('date-desc');
+
+  // Filtrer les tâches
+  const filteredTasks = useMemo(() => {
+    let result = [...tasks];
+
+    // Appliquer le filtre
+    if (filter !== 'all') {
+      result = result.filter((task) => task.status === filter);
+    }
+
+    // Appliquer le tri
+    result.sort((a, b) => {
+      switch (sort) {
+        case 'date-asc':
+          const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+          const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+          return dateA - dateB;
+        case 'date-desc':
+          const dateA2 = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+          const dateB2 = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+          return dateB2 - dateA2;
+        case 'priority-asc':
+          const priorityOrder = { low: 1, normal: 2, high: 3, urgent: 4 };
+          const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+          const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+          return priorityA - priorityB;
+        case 'priority-desc':
+          const priorityOrder2 = { low: 1, normal: 2, high: 3, urgent: 4 };
+          const priorityA2 = priorityOrder2[a.priority as keyof typeof priorityOrder2] || 0;
+          const priorityB2 = priorityOrder2[b.priority as keyof typeof priorityOrder2] || 0;
+          return priorityB2 - priorityA2;
+        case 'title-asc':
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [tasks, filter, sort]);
+
+  const handleToggle = async (taskId: number) => {
+    try {
+      const task = tasks.find((t) => t.id === taskId);
+      if (!task) return;
+
+      const newStatus = task.status === 'done' ? 'todo' : 'done';
+      await tasksAPI.update(taskId, { status: newStatus });
+      mutate();
+      
+      toast({
+        title: 'Tâche mise à jour',
+        description: `La tâche a été marquée comme ${newStatus === 'done' ? 'terminée' : 'à faire'}.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour la tâche.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEdit = (task: Task) => {
+    // TODO: Ouvrir le modal d'édition
+    console.log('Edit task:', task);
+  };
+
+  const handleDelete = async (taskId: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+      return;
+    }
+
+    try {
+      await tasksAPI.delete(taskId);
+      mutate();
+      
+      toast({
+        title: 'Tâche supprimée',
+        description: 'La tâche a été supprimée avec succès.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer la tâche.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const stats = useMemo(() => {
+    const total = tasks.length;
+    const done = tasks.filter((t) => t.status === 'done').length;
+    const inProgress = tasks.filter((t) => t.status === 'in-progress').length;
+    const todo = tasks.filter((t) => t.status === 'todo').length;
+
+    return { total, done, inProgress, todo };
+  }, [tasks]);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Mes Tâches</h1>
+          <p className="text-slate-600 mt-2">
+            Gérez toutes vos tâches en un seul endroit
+          </p>
+        </div>
+        <Button>
+          <Plus className="h-4 w-4 mr-2" />
+          Nouvelle tâche
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white border border-slate-200 rounded-lg p-4">
+          <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
+          <div className="text-sm text-slate-600">Total</div>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-lg p-4">
+          <div className="text-2xl font-bold text-blue-600">{stats.todo}</div>
+          <div className="text-sm text-slate-600">À faire</div>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-lg p-4">
+          <div className="text-2xl font-bold text-orange-600">{stats.inProgress}</div>
+          <div className="text-sm text-slate-600">En cours</div>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-lg p-4">
+          <div className="text-2xl font-bold text-green-600">{stats.done}</div>
+          <div className="text-sm text-slate-600">Terminées</div>
+        </div>
+      </div>
+
+      {/* Filters and Sort */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-slate-600" />
+          <Select value={filter} onValueChange={(value) => setFilter(value as FilterType)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filtrer" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes</SelectItem>
+              <SelectItem value="todo">À faire</SelectItem>
+              <SelectItem value="in-progress">En cours</SelectItem>
+              <SelectItem value="done">Terminées</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="h-4 w-4 text-slate-600" />
+          <Select value={sort} onValueChange={(value) => setSort(value as SortType)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Trier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">Date (récent)</SelectItem>
+              <SelectItem value="date-asc">Date (ancien)</SelectItem>
+              <SelectItem value="priority-desc">Priorité (haute)</SelectItem>
+              <SelectItem value="priority-asc">Priorité (basse)</SelectItem>
+              <SelectItem value="title-asc">Titre (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Task List */}
+      <TaskList
+        tasks={filteredTasks}
+        isLoading={isLoading}
+        onToggle={handleToggle}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+    </div>
+  );
+}
