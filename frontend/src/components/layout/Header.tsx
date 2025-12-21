@@ -3,9 +3,9 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, User, Settings } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { LogOut, User, Settings, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,28 +34,18 @@ export function Header() {
   };
 
   return (
-    <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 sticky top-0 z-50">
-      {/* Logo et nom */}
-      <div className="flex items-center">
-        <div className="relative w-12 h-12">
-          <Image
-            src="/logo_SPARK_COLOR.png"
-            alt="Spark Logo"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-        <h1 className="text-xl font-bold text-primary hidden sm:block">SPARK</h1>
-      </div>
-
+    <header className="min-h-[50px] h-[50px] border-b border-slate-200 bg-white flex items-center justify-between px-6 sticky top-0 z-50">
+      <SidebarTrigger className="cursor-pointer" />
       {/* Menu utilisateur */}
       <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" className="h-10 w-10 cursor-pointer">
+          <Search className="h-5 w-5" />
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-10 w-10 rounded-full"
+              className="relative h-10 w-10 rounded-full cursor-pointer"
             >
               <Avatar className="h-10 w-10">
                 <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'User'} />

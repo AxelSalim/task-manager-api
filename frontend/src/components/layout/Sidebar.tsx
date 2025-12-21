@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -12,18 +11,16 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { SidebarSeparator } from '@/components/ui/sidebar';
+import Image from 'next/image';
 import {
-  Search,
-  Menu,
   CheckSquare,
   Calendar,
   User,
@@ -74,7 +71,6 @@ const folders = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({
     'Travail': false,
   });
@@ -86,40 +82,26 @@ export function Sidebar() {
     }));
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
-    <ShadcnSidebar className="border-r-0">
-      <SidebarHeader className="border-b border-primary/20 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'User'} />
-              <AvatarFallback className="bg-white/20 text-white text-xs">
-                {user?.name ? getInitials(user.name) : 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <span className="font-semibold text-sm">{user?.name || 'Utilisateur'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10">
-              <Search className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10">
-              <Menu className="h-4 w-4" />
-            </Button>
+    <ShadcnSidebar className="border-r-0" collapsible="icon">
+      <SidebarHeader className="border-b border-primary/20 px-4">
+        <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:relative">
+          <div className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0">
+            <div className="relative h-12 w-12 shrink-0 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10">
+              <Image
+                src="/logo_SPARK.png"
+                alt="Spark Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <span className="font-semibold text-2xl text-white group-data-[collapsible=icon]:hidden">SPARK</span>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="overflow-x-hidden">
+      <SidebarContent className="overflow-x-hidden overflow-y-auto">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -137,13 +119,13 @@ export function Sidebar() {
                         isActive && 'bg-white/20 text-white'
                       )}
                     >
-                      <Link href={item.href} className="flex items-center justify-between w-full min-w-0">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{item.name}</span>
-                        </div>
+                      <Link href={item.href} className="flex items-center w-full min-w-0">
+                        <Icon className="h-6 w-6 shrink-0" />
+                        <span className="truncate">{item.name}</span>
                         {item.count !== null && (
-                          <span className="text-xs text-white/80 shrink-0 ml-2">{item.count}</span>
+                          <SidebarMenuBadge className="bg-white/20 text-white">
+                            {item.count}
+                          </SidebarMenuBadge>
                         )}
                       </Link>
                     </SidebarMenuButton>
@@ -171,7 +153,7 @@ export function Sidebar() {
                       <div className="flex items-center gap-2 w-full min-w-0">
                         <ChevronRight
                           className={cn(
-                            'h-4 w-4 transition-transform shrink-0',
+                            'h-6 w-6 transition-transform shrink-0',
                             isOpen && 'rotate-90'
                           )}
                         />
@@ -209,7 +191,7 @@ export function Sidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton className="text-white hover:bg-white/10">
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-6 w-6 mr-2" />
                   <span>Ajouter une liste</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -232,7 +214,7 @@ export function Sidebar() {
                   )}
                 >
                   <Link href="/tasks?filter=completed" className="flex items-center w-full min-w-0">
-                    <Check className="h-4 w-4 mr-2 shrink-0" />
+                    <Check className="h-6 w-6 mr-2 shrink-0" />
                     <span className="truncate">Terminé</span>
                   </Link>
                 </SidebarMenuButton>
@@ -247,7 +229,7 @@ export function Sidebar() {
                   )}
                 >
                   <Link href="/tasks?filter=trash" className="flex items-center w-full min-w-0">
-                    <Trash2 className="h-4 w-4 mr-2 shrink-0" />
+                    <Trash2 className="h-6 w-6 mr-2 shrink-0" />
                     <span className="truncate">Corbeille</span>
                   </Link>
                 </SidebarMenuButton>
@@ -256,6 +238,7 @@ export function Sidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
     </ShadcnSidebar>
   );
 }
