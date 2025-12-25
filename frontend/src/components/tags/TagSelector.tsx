@@ -35,10 +35,8 @@ export function TagSelector({ selectedTagIds, onSelectionChange, className }: Ta
   const loadTags = async () => {
     try {
       setIsLoading(true);
-      const response = await tagsAPI.getAll();
-      if (response.success && response.data) {
-        setTags(response.data);
-      }
+      const tags = await tagsAPI.getAll();
+      setTags(tags);
     } catch (error) {
       console.error('Erreur lors du chargement des tags:', error);
       toast({
@@ -70,25 +68,24 @@ export function TagSelector({ selectedTagIds, onSelectionChange, className }: Ta
     }
 
     try {
-      const response = await tagsAPI.create({
+      const newTag = await tagsAPI.create({
         name: newTagName.trim(),
         color: newTagColor,
       });
 
-      if (response.success && response.data) {
-        setTags([...tags, response.data]);
-        setNewTagName('');
-        setNewTagColor('#3b82f6');
-        toast({
-          title: 'Succès',
-          description: 'Tag créé avec succès',
-        });
-      }
-    } catch (error: any) {
+      setTags([...tags, newTag]);
+      setNewTagName('');
+      setNewTagColor('#3b82f6');
+      toast({
+        title: 'Succès',
+        description: 'Tag créé avec succès',
+      });
+    } catch (error) {
       console.error('Erreur lors de la création du tag:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Impossible de créer le tag';
       toast({
         title: 'Erreur',
-        description: error.message || 'Impossible de créer le tag',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
