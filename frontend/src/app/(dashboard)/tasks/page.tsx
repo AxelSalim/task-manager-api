@@ -44,10 +44,8 @@ export default function TasksPage() {
   useEffect(() => {
     const loadTags = async () => {
       try {
-        const response = await tagsAPI.getAll();
-        if (response.success && response.data) {
-          setTags(response.data);
-        }
+        const tags = await tagsAPI.getAll();
+        setTags(tags);
       } catch (error) {
         console.error('Erreur lors du chargement des tags:', error);
       }
@@ -158,6 +156,8 @@ export default function TasksPage() {
     status: Task['status'];
     priority: Task['priority'];
     dueDate?: string;
+    reminderDate?: string;
+    repeatPattern?: any;
     tagIds?: number[];
   }) => {
     try {
