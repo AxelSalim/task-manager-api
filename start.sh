@@ -43,6 +43,7 @@ trap cleanup SIGINT SIGTERM
 
 # Infos port backend
 BACKEND_PORT="3000"
+FRONTEND_PORT="3001"
 
 # Vérifier que Node.js est installé
 print_info "Vérification de Node.js..."
@@ -180,11 +181,12 @@ fi
 print_success "Frontend démarré (PID: $FRONTEND_PID)"
 print_info "Logs du frontend: tail -f frontend.log"
 
-# Essayer de détecter le port du frontend depuis les logs
-FRONTEND_PORT=$(grep -oE 'localhost:[0-9]+' frontend.log 2>/dev/null | head -1 | grep -oE '[0-9]+' || echo "")
-if [ -z "$FRONTEND_PORT" ]; then
-    # Par défaut, Next.js utilise 3000, mais si occupé, il utilise 3001, 3002, etc.
-    FRONTEND_PORT="3000 (ou port suivant si occupé)"
+# Le port frontend est défini dans package.json (3001)
+# On peut vérifier dans les logs si besoin
+DETECTED_PORT=$(grep -oE 'localhost:[0-9]+' frontend.log 2>/dev/null | head -1 | grep -oE '[0-9]+' || echo "")
+if [ -n "$DETECTED_PORT" ] && [ "$DETECTED_PORT" != "$FRONTEND_PORT" ]; then
+    print_warning "Le frontend semble tourner sur le port $DETECTED_PORT au lieu de $FRONTEND_PORT"
+    FRONTEND_PORT="$DETECTED_PORT"
 fi
 
 # Afficher les informations de connexion
