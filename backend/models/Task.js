@@ -5,6 +5,12 @@ module.exports = (sequelize, DataTypes) => {
   class Task extends Model {
     static associate(models) {
       Task.belongsTo(models.User, { foreignKey: "userId", as: "user" });
+      Task.belongsToMany(models.Tag, {
+        through: 'TaskTags',
+        foreignKey: 'taskId',
+        otherKey: 'tagId',
+        as: 'tags'
+      });
     }
   }
   Task.init({
@@ -32,6 +38,23 @@ module.exports = (sequelize, DataTypes) => {
     dueDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    subtasks: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: '[]',
+      get() {
+        const rawValue = this.getDataValue('subtasks');
+        if (!rawValue) return [];
+        try {
+          return JSON.parse(rawValue);
+        } catch (e) {
+          return [];
+        }
+      },
+      set(value) {
+        this.setDataValue('subtasks', JSON.stringify(value || []));
+      }
     },
   }, {
     sequelize,
