@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { getAvatarUrl } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -48,7 +49,7 @@ export function Header() {
               className="relative h-10 w-10 rounded-full cursor-pointer"
             >
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'User'} />
+                <AvatarImage src={getAvatarUrl(user?.avatar) || undefined} alt={user?.name || 'User'} />
                 <AvatarFallback className="bg-primary text-white">
                   {user?.name ? getInitials(user.name) : 'U'}
                 </AvatarFallback>
