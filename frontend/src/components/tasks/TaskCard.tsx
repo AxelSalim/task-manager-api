@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Calendar, Flag, MoreVertical, Trash2, Edit } from 'lucide-react';
+import { SubtaskList } from './SubtaskList';
+import { TagBadge } from '@/components/tags/TagBadge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +21,7 @@ interface TaskCardProps {
   onToggle?: (taskId: number) => void;
   onEdit?: (task: Task) => void;
   onDelete?: (taskId: number) => void;
+  onUpdateSubtasks?: (taskId: number, subtasks: Task['subtasks']) => void;
 }
 
 const priorityColors = {
@@ -35,7 +38,7 @@ const priorityIcons = {
   urgent: '🔴',
 };
 
-export function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }: TaskCardProps) {
   const isCompleted = task.status === 'done';
   const priority = (task.priority || 'normal') as keyof typeof priorityColors;
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
@@ -118,6 +121,15 @@ export function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
             </p>
           )}
 
+          {/* Tags */}
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {task.tags.map(tag => (
+                <TagBadge key={tag.id} tag={tag} size="sm" />
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-3 mt-3 flex-wrap">
             {priority && (
               <div
@@ -147,6 +159,21 @@ export function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
               </div>
             )}
           </div>
+
+          {/* Sous-tâches */}
+          {task.subtasks && task.subtasks.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-slate-200">
+              <SubtaskList
+                subtasks={task.subtasks}
+                taskId={task.id}
+                onUpdate={(updatedSubtasks) => {
+                  if (onUpdateSubtasks) {
+                    onUpdateSubtasks(task.id, updatedSubtasks);
+                  }
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

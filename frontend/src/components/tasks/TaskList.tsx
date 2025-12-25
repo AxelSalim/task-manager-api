@@ -12,6 +12,7 @@ interface TaskListProps {
   onToggle?: (taskId: number) => void;
   onEdit?: (task: Task) => void;
   onDelete?: (taskId: number) => void;
+  onUpdateSubtasks?: (taskId: number, subtasks: Task['subtasks']) => void;
 }
 
 export function TaskList({
@@ -20,6 +21,7 @@ export function TaskList({
   onToggle,
   onEdit,
   onDelete,
+  onUpdateSubtasks,
 }: TaskListProps) {
   if (isLoading) {
     return (
@@ -45,13 +47,14 @@ export function TaskList({
   return (
     <div className="space-y-3">
       {tasks.map((task) => (
-        <TaskCard
-          key={task.id}
-          task={task}
-          onToggle={onToggle}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+            <TaskCard
+              key={task.id}
+              task={task}
+              onToggle={onToggle}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onUpdateSubtasks={onUpdateSubtasks}
+            />
       ))}
     </div>
   );
