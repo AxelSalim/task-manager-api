@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTasks } from '@/hooks/useTasks';
 import { TaskList } from '@/components/tasks/TaskList';
+import { TaskForm } from '@/components/tasks/TaskForm';
 import { Task } from '@/types/task';
 import { tasksAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -92,9 +93,54 @@ export default function TasksPage() {
     }
   };
 
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
   const handleEdit = (task: Task) => {
-    // TODO: Ouvrir le modal d'édition
-    console.log('Edit task:', task);
+    setEditingTask(task);
+    setIsFormOpen(true);
+  };
+
+  const handleCreate = () => {
+    setEditingTask(null);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSubmit = async (values: {
+    title: string;
+    description?: string;
+    status: Task['status'];
+    priority: Task['priority'];
+    dueDate?: string;
+    tagIds?: number[];
+  }) => {
+    try {
+      if (editingTask) {
+        await tasksAPI.update(editingTask.id, { ...values, tagIds: values.tagIds });
+        toast({
+          title: 'Tâche mise à jour',
+          description: 'La tâche a été mise à jour avec succès.',
+        });
+      } else {
+        await tasksAPI.create({ ...values, tagIds: values.tagIds });
+        toast({
+          title: 'Tâche créée',
+          description: 'La tâche a été créée avec succès.',
+        });
+      }
+      mutate();
+      setIsFormOpen(false);
+      setEditingTask(null);
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: editingTask
+          ? 'Impossible de mettre à jour la tâche.'
+          : 'Impossible de créer la tâche.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
   };
 
   const handleDelete = async (taskId: number) => {
@@ -119,6 +165,19 @@ export default function TasksPage() {
     }
   };
 
+  const handleUpdateSubtasks = async (taskId: number, subtasks: Task['subtasks']) => {
+    try {
+      await tasksAPI.updateSubtasks(taskId, subtasks || []);
+      mutate();
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour les sous-tâches.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const stats = useMemo(() => {
     const total = tasks.length;
     const done = tasks.filter((t) => t.status === 'done').length;
@@ -138,7 +197,7 @@ export default function TasksPage() {
             Gérez toutes vos tâches en un seul endroit
           </p>
         </div>
-        <Button>
+        <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Nouvelle tâche
         </Button>
@@ -205,6 +264,15 @@ export default function TasksPage() {
         onToggle={handleToggle}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onUpdateSubtasks={handleUpdateSubtasks}
+      />
+
+      {/* Task Form Modal */}
+      <TaskForm
+        task={editingTask}
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onSubmit={handleFormSubmit}
       />
     </div>
   );
