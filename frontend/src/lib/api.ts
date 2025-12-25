@@ -2,7 +2,16 @@
  * Configuration de l'API et fonctions utilitaires pour les requêtes
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+/**
+ * Construire l'URL complète d'un avatar depuis une URL relative
+ */
+export function getAvatarUrl(avatarUrl: string | null | undefined): string | undefined {
+  if (!avatarUrl) return undefined;
+  if (avatarUrl.startsWith('http')) return avatarUrl;
+  return `${API_BASE_URL}${avatarUrl}`;
+}
 
 /**
  * Obtenir le token JWT depuis le localStorage
@@ -29,7 +38,48 @@ export function removeAuthToken(): void {
 }
 
 /**
- * Fonction helper pour faire des requêtes API
+ * Interface standardisée pour les réponses API de succès
+ */
+export interface ApiSuccessResponse<T = unknown> {
+  success: true;
+  code: number;
+  data: T;
+  message: string;
+}
+
+/**
+ * Interface standardisée pour les réponses API d'erreur
+ */
+export interface ApiErrorResponse {
+  success: false;
+  code: number;
+  message: string;
+  errors?: Record<string, string> | string[] | null;
+}
+
+/**
+ * Type union pour les réponses API
+ */
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+/**
+ * Classe d'erreur personnalisée pour les erreurs API
+ */
+export class ApiError extends Error {
+  code: number;
+  errors?: Record<string, string> | string[] | null;
+
+  constructor(message: string, code: number = 500, errors?: Record<string, string> | string[] | null) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.errors = errors;
+    Object.setPrototypeOf(this, ApiError.prototype);
+  }
+}
+
+/**
+ * Fonction helper pour faire des requêtes API avec gestion standardisée des erreurs
  */
 export async function apiRequest<T>(
   endpoint: string,
@@ -46,17 +96,53 @@ export async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Erreur serveur' }));
-    throw new Error(error.message || `Erreur ${response.status}`);
+    const data: ApiResponse<T> = await response.json().catch(() => {
+      // Si la réponse n'est pas du JSON valide
+      throw new ApiError(
+        'Réponse serveur invalide',
+        500
+      );
+    });
+
+    // Vérifier si c'est une réponse d'erreur standardisée
+    if (!response.ok || (data as ApiErrorResponse).success === false) {
+      const errorData = data as ApiErrorResponse;
+      throw new ApiError(
+        errorData.message || `Erreur ${response.status}`,
+        errorData.code || response.status,
+        errorData.errors
+      );
+    }
+
+    // Retourner les données de la réponse de succès
+    const successData = data as ApiSuccessResponse<T>;
+    return successData.data;
+  } catch (error) {
+    // Si c'est déjà une ApiError, la relancer
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    // Erreur réseau ou autre
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new ApiError(
+        'Erreur de connexion au serveur. Vérifiez votre connexion internet.',
+        0
+      );
+    }
+
+    // Erreur inconnue
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Une erreur inattendue s\'est produite',
+      500
+    );
   }
-
-  return response.json();
 }
 
 /**
@@ -70,7 +156,7 @@ export const authAPI = {
     consentPrivacyPolicy: boolean;
     consentTermsOfService: boolean;
   }) => {
-    return apiRequest<{ code: number; data: any; message: string }>('/api/users/register', {
+    return apiRequest<{ id: number; name: string; email: string; avatar: string | null }>('/api/users/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -78,8 +164,6 @@ export const authAPI = {
 
   login: async (email: string, password: string) => {
     const response = await apiRequest<{
-      code: number;
-      message: string;
       token: string;
       user: { id: number; name: string; email: string; avatar: string | null };
     }>('/api/users/login', {
@@ -99,11 +183,7 @@ export const authAPI = {
   },
 
   getMe: async () => {
-    return apiRequest<{
-      code: number;
-      data: { id: number; name: string; email: string; avatar: string | null };
-      message: string;
-    }>('/api/users/me');
+    return apiRequest<{ id: number; name: string; email: string; avatar: string | null }>('/api/users/me');
   },
 };
 
@@ -112,28 +192,32 @@ export const authAPI = {
  */
 export const tasksAPI = {
   getAll: async () => {
-    return apiRequest<{
-      code: number;
-      data: Array<{
-        id: number;
-        title: string;
-        description: string | null;
-        status: string;
-        priority: string;
-        dueDate: string | null;
-        userId: number;
-        createdAt: string;
-        updatedAt: string;
-      }>;
-      message: string;
-    }>('/api/tasks');
+    return apiRequest<Array<{
+      id: number;
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      dueDate: string | null;
+      subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
+    }>>('/api/tasks');
   },
 
   getById: async (id: number) => {
     return apiRequest<{
-      code: number;
-      data: any;
-      message: string;
+      id: number;
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      dueDate: string | null;
+      subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
     }>(`/api/tasks/${id}`);
   },
 
@@ -143,11 +227,19 @@ export const tasksAPI = {
     status?: string;
     priority?: string;
     dueDate?: string;
+    tagIds?: number[];
   }) => {
     return apiRequest<{
-      code: number;
-      data: any;
-      message: string;
+      id: number;
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      dueDate: string | null;
+      subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
     }>('/api/tasks', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -160,11 +252,19 @@ export const tasksAPI = {
     status?: string;
     priority?: string;
     dueDate?: string;
+    tagIds?: number[];
   }) => {
     return apiRequest<{
-      code: number;
-      data: any;
-      message: string;
+      id: number;
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      dueDate: string | null;
+      subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
     }>(`/api/tasks/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -172,10 +272,95 @@ export const tasksAPI = {
   },
 
   delete: async (id: number) => {
+    return apiRequest<null>(`/api/tasks/${id}`, {
+      method: 'DELETE',
+    });
+  },
+  updateSubtasks: async (id: number, subtasks: Array<{ id: string; title: string; completed: boolean }>) => {
     return apiRequest<{
       code: number;
+      data: {
+        id: number;
+        title: string;
+        description: string | null;
+        status: string;
+        priority: string;
+        dueDate: string | null;
+        subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+        userId: number;
+        createdAt: string;
+        updatedAt: string;
+      };
       message: string;
-    }>(`/api/tasks/${id}`, {
+    }>(`/api/tasks/${id}/subtasks`, {
+      method: 'PUT',
+      body: JSON.stringify({ subtasks }),
+    });
+  },
+};
+
+/**
+ * API pour les tags
+ */
+export const tagsAPI = {
+  getAll: async () => {
+    return apiRequest<Array<{
+      id: number;
+      name: string;
+      color: string;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
+    }>>('/api/tags');
+  },
+
+  getById: async (id: number) => {
+    return apiRequest<{
+      id: number;
+      name: string;
+      color: string;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
+    }>(`/api/tags/${id}`);
+  },
+
+  create: async (data: {
+    name: string;
+    color?: string;
+  }) => {
+    return apiRequest<{
+      id: number;
+      name: string;
+      color: string;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
+    }>('/api/tags', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: {
+    name?: string;
+    color?: string;
+  }) => {
+    return apiRequest<{
+      id: number;
+      name: string;
+      color: string;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
+    }>(`/api/tags/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return apiRequest<null>(`/api/tags/${id}`, {
       method: 'DELETE',
     });
   },
