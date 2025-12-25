@@ -69,9 +69,18 @@ app.set('io', io)
 // Initialiser le service WebSocket
 websocketService.setIO(io)
 
+// Démarrer le service de rappels
+const reminderService = require('./services/reminderService')
+reminderService.start()
+
+// Démarrer le service de tâches récurrentes
+const recurringTaskService = require('./services/recurringTaskService')
+recurringTaskService.start()
+
 // Démarrer le serveur
 server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`)
     console.log(`📡 WebSocket server ready`)
     console.log(`📚 API Documentation: http://localhost:${PORT}/api/docs`)
+    console.log(`🔔 Reminder service started`)
 })
