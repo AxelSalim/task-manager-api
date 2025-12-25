@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTasks } from '@/hooks/useTasks';
 import { TaskList } from '@/components/tasks/TaskList';
 import { TaskForm } from '@/components/tasks/TaskForm';
 import { Task } from '@/types/task';
-import { tasksAPI } from '@/lib/api';
+import { Tag } from '@/types/tag';
+import { tasksAPI, tagsAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -15,8 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Filter, ArrowUpDown } from 'lucide-react';
+import { TagBadge } from '@/components/tags/TagBadge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Plus, Filter, ArrowUpDown, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'todo' | 'in-progress' | 'done';
 type SortType = 'date-asc' | 'date-desc' | 'priority-asc' | 'priority-desc' | 'title-asc';
@@ -30,14 +36,42 @@ export default function TasksPage() {
     (searchParams.get('filter') as FilterType) || 'all'
   );
   const [sort, setSort] = useState<SortType>('date-desc');
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [isTagFilterOpen, setIsTagFilterOpen] = useState(false);
+
+  // Charger les tags
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const response = await tagsAPI.getAll();
+        if (response.success && response.data) {
+          setTags(response.data);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des tags:', error);
+      }
+    };
+    loadTags();
+  }, []);
 
   // Filtrer les tâches
   const filteredTasks = useMemo(() => {
     let result = [...tasks];
 
-    // Appliquer le filtre
+    // Appliquer le filtre de statut
     if (filter !== 'all') {
       result = result.filter((task) => task.status === filter);
+    }
+
+    // Appliquer le filtre par tag
+    if (selectedTagIds.length > 0) {
+      result = result.filter((task) => {
+        if (!task.tags || task.tags.length === 0) return false;
+        return selectedTagIds.some(tagId => 
+          task.tags?.some(tag => tag.id === tagId)
+        );
+      });
     }
 
     // Appliquer le tri
@@ -69,7 +103,19 @@ export default function TasksPage() {
     });
 
     return result;
-  }, [tasks, filter, sort]);
+  }, [tasks, filter, sort, selectedTagIds]);
+
+  const handleTagToggle = (tagId: number) => {
+    if (selectedTagIds.includes(tagId)) {
+      setSelectedTagIds(selectedTagIds.filter(id => id !== tagId));
+    } else {
+      setSelectedTagIds([...selectedTagIds, tagId]);
+    }
+  };
+
+  const clearTagFilter = () => {
+    setSelectedTagIds([]);
+  };
 
   const handleToggle = async (taskId: number) => {
     try {
@@ -224,7 +270,7 @@ export default function TasksPage() {
       </div>
 
       {/* Filters and Sort */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-slate-600" />
           <Select value={filter} onValueChange={(value) => setFilter(value as FilterType)}>
@@ -239,6 +285,84 @@ export default function TasksPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Filtre par tag */}
+        <Popover open={isTagFilterOpen} onOpenChange={setIsTagFilterOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Filter className="h-4 w-4" />
+              Tags
+              {selectedTagIds.length > 0 && (
+                <span className="ml-1 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  {selectedTagIds.length}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0" align="start">
+            <div className="p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Filtrer par tag</Label>
+                {selectedTagIds.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearTagFilter}
+                    className="h-7 text-xs"
+                  >
+                    Réinitialiser
+                  </Button>
+                )}
+              </div>
+              {tags.length === 0 ? (
+                <div className="text-sm text-muted-foreground py-4 text-center">
+                  Aucun tag disponible
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {tags.map(tag => (
+                    <div
+                      key={tag.id}
+                      className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer"
+                      onClick={() => handleTagToggle(tag.id)}
+                    >
+                      <Checkbox
+                        checked={selectedTagIds.includes(tag.id)}
+                        onCheckedChange={() => handleTagToggle(tag.id)}
+                      />
+                      <TagBadge tag={tag} variant="outline" size="sm" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Tags sélectionnés */}
+        {selectedTagIds.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {tags
+              .filter(tag => selectedTagIds.includes(tag.id))
+              .map(tag => (
+                <TagBadge
+                  key={tag.id}
+                  tag={tag}
+                  onRemove={() => handleTagToggle(tag.id)}
+                  size="sm"
+                />
+              ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearTagFilter}
+              className="h-7 text-xs"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Tout effacer
+            </Button>
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           <ArrowUpDown className="h-4 w-4 text-slate-600" />
