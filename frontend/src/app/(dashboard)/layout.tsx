@@ -11,9 +11,9 @@ export default function DashboardLayout({
   return (
     <ProtectedRoute>
       <SidebarProvider>
-        <div className="min-h-screen bg-white flex w-full">
+        <div className="h-screen bg-white flex w-full overflow-hidden">
           <Sidebar />
-          <SidebarInset>
+          <SidebarInset className="h-screen overflow-y-auto">
             <Header />
             <main className="p-6">
               {children}
