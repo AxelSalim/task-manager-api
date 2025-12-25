@@ -117,6 +117,7 @@ router.post("/login", authLimiter, userController.login);             // Connexi
  *         description: Non autorisé, token manquant ou invalide
  */
 router.get("/me", authMiddleware, userController.getMe); // Obtenir les infos de l'utilisateur connecté
+router.put("/me", authMiddleware, userController.updateProfile); // Mettre à jour le profil
 
 /**
  * @swagger

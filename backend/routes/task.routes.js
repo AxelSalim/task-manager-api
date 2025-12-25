@@ -245,4 +245,49 @@ router.post("/", authMiddleware, taskController.createTask);       // Créer une
  */
 router.delete("/:id", authMiddleware, taskController.deleteTask);  // Supprimer une tâche
 
+/**
+ * @swagger
+ * /tasks/{id}/subtasks:
+ *   put:
+ *     summary: Mettre à jour les sous-tâches d'une tâche
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la tâche
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               subtasks:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     title:
+ *                       type: string
+ *                     completed:
+ *                       type: boolean
+ *     responses:
+ *       200:
+ *         description: Sous-tâches mises à jour avec succès
+ *       400:
+ *         description: Requête invalide
+ *       401:
+ *         description: Non autorisé
+ *       404:
+ *         description: Tâche non trouvée
+ */
+router.put("/:id/subtasks", authMiddleware, taskController.updateSubtasks);  // Mettre à jour les sous-tâches
+
 module.exports = router;
