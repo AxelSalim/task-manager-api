@@ -49,7 +49,7 @@ export function MarkdownEditor({
           </p>
         </TabsContent>
         <TabsContent value="preview" className="mt-2">
-          <div className="border rounded-md p-4 min-h-[200px] bg-muted/50">
+          <div className="border rounded-md p-6 min-h-[400px] max-h-[600px] overflow-y-auto bg-muted/30">
             <MarkdownPreview content={value || placeholder} />
           </div>
         </TabsContent>
