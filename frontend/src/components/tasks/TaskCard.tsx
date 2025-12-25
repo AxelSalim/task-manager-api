@@ -4,9 +4,10 @@ import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Calendar, Flag, MoreVertical, Trash2, Edit } from 'lucide-react';
+import { Calendar, Flag, MoreVertical, Trash2, Edit, Bell } from 'lucide-react';
 import { SubtaskList } from './SubtaskList';
 import { TagBadge } from '@/components/tags/TagBadge';
+import { MarkdownPreview } from '@/components/markdown/MarkdownPreview';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +43,9 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }:
   const isCompleted = task.status === 'done';
   const priority = (task.priority || 'normal') as keyof typeof priorityColors;
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+  const reminderDate = task.reminderDate ? new Date(task.reminderDate) : null;
   const isOverdue = dueDate && dueDate < new Date() && !isCompleted;
+  const isReminderPassed = reminderDate && reminderDate < new Date() && !isCompleted;
 
   const handleToggle = () => {
     if (onToggle) {
@@ -111,14 +114,14 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }:
           </div>
 
           {task.description && (
-            <p
+            <div
               className={cn(
-                'text-sm text-slate-600 mt-1 line-clamp-2',
-                isCompleted && 'text-slate-400'
+                'text-sm text-slate-600 mt-1',
+                isCompleted && 'opacity-60'
               )}
             >
-              {task.description}
-            </p>
+              <MarkdownPreview content={task.description} className="text-sm" />
+            </div>
           )}
 
           {/* Tags */}
@@ -156,6 +159,18 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }:
                 <Calendar className="h-3 w-3" />
                 {format(dueDate, 'd MMM yyyy', { locale: fr })}
                 {isOverdue && ' (En retard)'}
+              </div>
+            )}
+
+            {reminderDate && (
+              <div
+                className={cn(
+                  'inline-flex items-center gap-1 text-xs',
+                  isReminderPassed ? 'text-orange-600 font-medium' : 'text-slate-600'
+                )}
+              >
+                <Bell className="h-3 w-3" />
+                {format(reminderDate, 'd MMM yyyy HH:mm', { locale: fr })}
               </div>
             )}
           </div>
