@@ -29,6 +29,7 @@ import {
   Plus,
   Check,
   Trash2,
+  Tag,
 } from 'lucide-react';
 
 const mainNavigation = [
@@ -36,6 +37,7 @@ const mainNavigation = [
   { name: "Aujourd'hui", href: '/tasks?filter=today', icon: CheckSquare, count: 9 },
   { name: 'Demain', href: '/tasks?filter=tomorrow', icon: CheckSquare, count: 6 },
   { name: 'Calendrier', href: '/calendar', icon: Calendar, count: null },
+  { name: 'Tags', href: '/tags', icon: Tag, count: null },
   { name: 'Assigné à moi', href: '/tasks?filter=assigned', icon: User, count: 12 },
   { name: 'Boîte de réception', href: '/inbox', icon: Inbox, count: 36 },
 ];
