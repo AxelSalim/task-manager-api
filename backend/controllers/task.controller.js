@@ -34,6 +34,8 @@ const TaskController = {
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate,
+        reminderDate: task.reminderDate,
+        repeatPattern: task.repeatPattern,
         subtasks: task.subtasks || [],
         tags: task.tags ? task.tags.map(tag => ({
           id: tag.id,
@@ -60,7 +62,7 @@ const TaskController = {
   // Créer une nouvelle tâche
   async createTask(req, res) {
     try {
-      const { title, description, status, priority, dueDate, subtasks } = req.body;
+      const { title, description, status, priority, dueDate, reminderDate, repeatPattern, subtasks } = req.body;
   
       if (!title) {
         return HTTP_ERRORS.BAD_REQUEST(res, "Le titre est obligatoire");
@@ -81,6 +83,25 @@ const TaskController = {
         }));
       }
 
+      // Valider le pattern de répétition si fourni
+      let validatedRepeatPattern = null;
+      if (repeatPattern) {
+        if (typeof repeatPattern === 'string') {
+          try {
+            validatedRepeatPattern = JSON.parse(repeatPattern);
+          } catch (e) {
+            return HTTP_ERRORS.BAD_REQUEST(res, "Format de pattern de répétition invalide");
+          }
+        } else if (typeof repeatPattern === 'object') {
+          validatedRepeatPattern = repeatPattern;
+        }
+        
+        // Valider le type de répétition
+        if (validatedRepeatPattern && !['daily', 'weekly', 'monthly', 'yearly', 'custom'].includes(validatedRepeatPattern.type)) {
+          return HTTP_ERRORS.BAD_REQUEST(res, "Type de répétition invalide. Types acceptés: daily, weekly, monthly, yearly, custom");
+        }
+      }
+
       // Créer la tâche avec Sequelize
       const task = await Task.create({
         title,
@@ -88,6 +109,8 @@ const TaskController = {
         status: status || "todo",
         priority: priority || "normal",
         dueDate: dueDate || null,
+        reminderDate: reminderDate || null,
+        repeatPattern: validatedRepeatPattern,
         subtasks: validatedSubtasks,
         userId: req.user.id,
       });
@@ -131,6 +154,7 @@ const TaskController = {
         status: taskWithUser.status,
         priority: taskWithUser.priority,
         dueDate: taskWithUser.dueDate,
+        reminderDate: taskWithUser.reminderDate,
         subtasks: taskWithUser.subtasks || [],
         tags: taskWithUser.tags ? taskWithUser.tags.map(tag => ({
           id: tag.id,
@@ -191,6 +215,8 @@ const TaskController = {
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate,
+        reminderDate: task.reminderDate,
+        repeatPattern: task.repeatPattern,
         subtasks: task.subtasks || [],
         tags: task.tags ? task.tags.map(tag => ({
           id: tag.id,
@@ -217,7 +243,7 @@ const TaskController = {
   // Mettre à jour une tâche
   async updateTask(req, res) {
     try {
-      const { title, description, status, priority, dueDate, subtasks } = req.body;
+      const { title, description, status, priority, dueDate, reminderDate, repeatPattern, subtasks } = req.body;
   
       // Vérifier que la tâche existe et appartient à l'utilisateur
       const task = await Task.findOne({
@@ -238,11 +264,37 @@ const TaskController = {
 
       // Préparer les données à mettre à jour
       const updateData = {};
+      
+      // Valider le pattern de répétition si fourni
+      if (repeatPattern !== undefined) {
+        if (repeatPattern === null || repeatPattern === '') {
+          updateData.repeatPattern = null;
+        } else {
+          let validatedRepeatPattern = null;
+          if (typeof repeatPattern === 'string') {
+            try {
+              validatedRepeatPattern = JSON.parse(repeatPattern);
+            } catch (e) {
+              return HTTP_ERRORS.BAD_REQUEST(res, "Format de pattern de répétition invalide");
+            }
+          } else if (typeof repeatPattern === 'object') {
+            validatedRepeatPattern = repeatPattern;
+          }
+          
+          // Valider le type de répétition
+          if (validatedRepeatPattern && !['daily', 'weekly', 'monthly', 'yearly', 'custom'].includes(validatedRepeatPattern.type)) {
+            return HTTP_ERRORS.BAD_REQUEST(res, "Type de répétition invalide. Types acceptés: daily, weekly, monthly, yearly, custom");
+          }
+          
+          updateData.repeatPattern = validatedRepeatPattern;
+        }
+      }
       if (title !== undefined) updateData.title = title;
       if (description !== undefined) updateData.description = description;
       if (status !== undefined) updateData.status = status;
       if (priority !== undefined) updateData.priority = priority;
       if (dueDate !== undefined) updateData.dueDate = dueDate;
+      if (reminderDate !== undefined) updateData.reminderDate = reminderDate;
       if (subtasks !== undefined) {
         // Valider les sous-tâches si fournies
         if (Array.isArray(subtasks)) {
