@@ -39,6 +39,26 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true
     },
+    reminderDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    repeatPattern: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      get() {
+        const rawValue = this.getDataValue('repeatPattern');
+        if (!rawValue) return null;
+        try {
+          return JSON.parse(rawValue);
+        } catch (e) {
+          return null;
+        }
+      },
+      set(value) {
+        this.setDataValue('repeatPattern', value ? JSON.stringify(value) : null);
+      }
+    },
     subtasks: {
       type: DataTypes.TEXT,
       allowNull: true,
