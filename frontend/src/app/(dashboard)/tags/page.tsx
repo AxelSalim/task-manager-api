@@ -49,10 +49,8 @@ export default function TagsPage() {
   const loadTags = async () => {
     try {
       setIsLoading(true);
-      const response = await tagsAPI.getAll();
-      if (response.success && response.data) {
-        setTags(response.data);
-      }
+      const tags = await tagsAPI.getAll();
+      setTags(tags);
     } catch (error) {
       console.error('Erreur lors du chargement des tags:', error);
       toast({
@@ -107,18 +105,16 @@ export default function TagsPage() {
           setIsDialogOpen(false);
         }
       } else {
-        const response = await tagsAPI.create({
-          name: formData.name.trim(),
-          color: formData.color,
-        });
-        if (response.success) {
-          toast({
-            title: 'Succès',
-            description: 'Tag créé avec succès',
-          });
-          loadTags();
-          setIsDialogOpen(false);
-        }
+      const newTag = await tagsAPI.create({
+        name: formData.name.trim(),
+        color: formData.color,
+      });
+      toast({
+        title: 'Succès',
+        description: 'Tag créé avec succès',
+      });
+      loadTags();
+      setIsDialogOpen(false);
       }
     } catch (error: any) {
       console.error('Erreur lors de la sauvegarde du tag:', error);
@@ -134,16 +130,14 @@ export default function TagsPage() {
     if (!deleteTagId) return;
 
     try {
-      const response = await tagsAPI.delete(deleteTagId);
-      if (response.success) {
-        toast({
-          title: 'Succès',
-          description: 'Tag supprimé avec succès',
-        });
-        loadTags();
-        setIsDeleteDialogOpen(false);
-        setDeleteTagId(null);
-      }
+      await tagsAPI.delete(deleteTagId);
+      toast({
+        title: 'Succès',
+        description: 'Tag supprimé avec succès',
+      });
+      loadTags();
+      setIsDeleteDialogOpen(false);
+      setDeleteTagId(null);
     } catch (error: any) {
       console.error('Erreur lors de la suppression du tag:', error);
       toast({
