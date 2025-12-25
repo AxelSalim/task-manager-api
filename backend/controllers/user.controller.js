@@ -8,6 +8,7 @@ const fs = require('fs');
 const emailService = require('../services/emailService');
 const otpGenerator = require('../utils/otpGenerator');
 const storageService = require('../services/storageService');
+const { sendSuccess, sendError, HTTP_ERRORS } = require('../utils/responseHandler');
 
 const UserController = {
 
@@ -18,20 +19,18 @@ const UserController = {
 
       // Validation des champs requis
       if (!name || !email || !password) {
-        return res.status(400).json({ message: "Tous les champs sont obligatoires" });
+        return HTTP_ERRORS.BAD_REQUEST(res, "Tous les champs sont obligatoires");
       }
 
       // Validation du consentement RGPD (obligatoire)
       if (!consentPrivacyPolicy || !consentTermsOfService) {
-        return res.status(400).json({ 
-          message: "Vous devez accepter la politique de confidentialité et les conditions d'utilisation" 
-        });
+        return HTTP_ERRORS.BAD_REQUEST(res, "Vous devez accepter la politique de confidentialité et les conditions d'utilisation");
       }
 
       // Vérifier si l'email existe déjà
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
-        return res.status(400).json({ message: "Email déjà utilisé" });
+        return HTTP_ERRORS.CONFLICT(res, "Email déjà utilisé");
       }
 
       // Hash du mot de passe
@@ -70,19 +69,15 @@ const UserController = {
         }
       }
 
-      res.status(201).json({
-        code: 201, 
-        data: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar
-        }, 
-        message: "Utilisateur créé avec succès" 
-      });
+      return sendSuccess(res, 201, {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar
+      }, "Utilisateur créé avec succès");
     } catch (error) {
       console.error('❌ Erreur register:', error);
-      res.status(500).json({ message: "Erreur serveur", error: error.message });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de l'inscription");
     }
   },
 
@@ -94,13 +89,13 @@ const UserController = {
       // Vérifier si l'email existe
       const user = await User.findOne({ where: { email } });
       if (!user) {
-        return res.status(404).json({ message: "Utilisateur non trouvé" });
+        return HTTP_ERRORS.NOT_FOUND(res, "Utilisateur non trouvé");
       }
-  
+
       // Vérifier le mot de passe
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        return res.status(401).json({ message: "Mot de passe incorrect" });
+        return HTTP_ERRORS.UNAUTHORIZED(res, "Mot de passe incorrect");
       }
   
       // Génération du token JWT
@@ -110,20 +105,24 @@ const UserController = {
         { expiresIn: "7d" }
       );
 
-      res.status(200).json({
+      // Pour le login, on retourne token et user directement dans data
+      return res.status(200).json({
+        success: true,
         code: 200,
         message: "Connexion réussie",
-        token,
-        user: { 
-          id: user.id,
-          name: user.name, 
-          email: user.email, 
-          avatar: user.avatar 
-        },
+        data: {
+          token,
+          user: { 
+            id: user.id,
+            name: user.name, 
+            email: user.email, 
+            avatar: user.avatar 
+          }
+        }
       });
     } catch (error) {
       console.error('❌ Erreur login:', error);
-      res.status(500).json({ message: "Erreur serveur" });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de la connexion");
     }
   },
 
@@ -133,7 +132,7 @@ const UserController = {
       const user = await User.findByPk(req.user.id);
   
       if (!user) {
-        return res.status(404).json({ message: "Utilisateur non trouvé" });
+        return HTTP_ERRORS.NOT_FOUND(res, "Utilisateur non trouvé");
       }
 
       const userData = {
@@ -143,10 +142,40 @@ const UserController = {
         avatar: user.avatar
       };
   
-      res.status(200).json({ code: 200, data: userData, message: "" });
+      return sendSuccess(res, 200, userData, "Utilisateur récupéré avec succès");
     } catch (error) {
       console.error('❌ Erreur getMe:', error);
-      res.status(500).json({ message: "Erreur serveur" });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de la récupération de l'utilisateur");
+    }
+  },
+
+  // Mettre à jour le profil de l'utilisateur connecté
+  async updateProfile(req, res) {
+    try {
+      const { name } = req.body;
+      const userId = req.user.id;
+
+      if (!name || name.trim().length < 2) {
+        return HTTP_ERRORS.BAD_REQUEST(res, "Le nom doit contenir au moins 2 caractères");
+      }
+
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return HTTP_ERRORS.NOT_FOUND(res, "Utilisateur non trouvé");
+      }
+
+      user.name = name.trim();
+      await user.save();
+
+      return sendSuccess(res, 200, {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      }, 'Profil mis à jour avec succès');
+    } catch (error) {
+      console.error('❌ Erreur updateProfile:', error);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de la mise à jour du profil");
     }
   },
 
@@ -156,11 +185,11 @@ const UserController = {
       const user = await User.findByPk(req.user.id);
       
       if (!user) {
-        return res.status(404).json({ message: "Utilisateur non trouvé" });
+        return HTTP_ERRORS.NOT_FOUND(res, "Utilisateur non trouvé");
       }
 
       if (!req.file) {
-        return res.status(400).json({ message: "Aucune image fournie" });
+        return HTTP_ERRORS.BAD_REQUEST(res, "Aucune image fournie");
       }
 
       // Supprimer l'ancien avatar s'il existe
@@ -183,23 +212,16 @@ const UserController = {
         if (fs.existsSync(req.file.path)) {
           fs.unlinkSync(req.file.path);
         }
-        return res.status(500).json({ 
-          message: "Erreur lors de l'upload de l'avatar", 
-          error: uploadError.message 
-        });
+        return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de l'upload de l'avatar");
       }
       
       // Mise à jour de l'avatar
       await user.update({ avatar: avatarUrl });
 
-      res.status(200).json({ 
-        code: 200, 
-        data: { avatar: avatarUrl }, 
-        message: "Avatar mis à jour avec succès" 
-      });
+      return sendSuccess(res, 200, { avatar: avatarUrl }, "Avatar mis à jour avec succès");
     } catch (error) {
       console.error('❌ Erreur updateAvatar:', error);
-      res.status(500).json({ message: "Erreur lors de la mise à jour de l'avatar" });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de la mise à jour de l'avatar");
     }
   },
 

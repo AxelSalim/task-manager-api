@@ -1,7 +1,8 @@
 // Modèles Sequelize
-const { Task, User } = require('../models');
+const { Task, User, Tag } = require('../models');
 
 const websocketService = require('../services/websocketService');
+const { sendSuccess, sendError, HTTP_ERRORS } = require('../utils/responseHandler');
 
 const TaskController = {
 
@@ -10,11 +11,19 @@ const TaskController = {
     try {
       const tasks = await Task.findAll({
         where: { userId: req.user.id },
-        include: [{
-          model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'email']
-        }]
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Tag,
+            as: 'tags',
+            attributes: ['id', 'name', 'color'],
+            through: { attributes: [] } // Ne pas inclure les attributs de la table de liaison
+          }
+        ]
       });
 
       // Formater les tâches
@@ -25,6 +34,12 @@ const TaskController = {
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate,
+        subtasks: task.subtasks || [],
+        tags: task.tags ? task.tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          color: tag.color
+        })) : [],
         userId: task.userId,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
@@ -35,31 +50,35 @@ const TaskController = {
         } : null
       }));
       
-      res.status(200).json({
-        code: 200,
-        data: formattedTasks,
-        message: 'Tâches récupérées avec succès'
-      });
+      return sendSuccess(res, 200, formattedTasks, 'Tâches récupérées avec succès');
     } catch (error) {
       console.error('❌ Erreur getTasks:', error);
-      res.status(500).json({ message: "Erreur lors de la récupération", error: error.message });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération des tâches');
     }
   },
 
   // Créer une nouvelle tâche
   async createTask(req, res) {
     try {
-      const { title, description, status, priority, dueDate } = req.body;
+      const { title, description, status, priority, dueDate, subtasks } = req.body;
   
       if (!title) {
-        return res.status(400).json({ message: "Le titre est obligatoire" });
+        return HTTP_ERRORS.BAD_REQUEST(res, "Le titre est obligatoire");
       }
 
       // Valider la priorité si fournie
       if (priority && !['low', 'normal', 'high', 'urgent'].includes(priority)) {
-        return res.status(400).json({ 
-          message: "La priorité doit être: low, normal, high ou urgent" 
-        });
+        return HTTP_ERRORS.BAD_REQUEST(res, "La priorité doit être: low, normal, high ou urgent");
+      }
+
+      // Valider les sous-tâches si fournies
+      let validatedSubtasks = [];
+      if (subtasks && Array.isArray(subtasks)) {
+        validatedSubtasks = subtasks.map((st, index) => ({
+          id: st.id || `subtask-${Date.now()}-${index}`,
+          title: st.title || '',
+          completed: st.completed || false
+        }));
       }
 
       // Créer la tâche avec Sequelize
@@ -69,16 +88,40 @@ const TaskController = {
         status: status || "todo",
         priority: priority || "normal",
         dueDate: dueDate || null,
+        subtasks: validatedSubtasks,
         userId: req.user.id,
       });
 
-      // Récupérer la tâche avec les informations utilisateur
+      // Gérer les tags si fournis
+      if (req.body.tagIds && Array.isArray(req.body.tagIds) && req.body.tagIds.length > 0) {
+        // Vérifier que tous les tags appartiennent à l'utilisateur
+        const tags = await Tag.findAll({
+          where: {
+            id: req.body.tagIds,
+            userId: req.user.id
+          }
+        });
+        
+        if (tags.length === req.body.tagIds.length) {
+          await task.setTags(tags);
+        }
+      }
+
+      // Récupérer la tâche avec les informations utilisateur et tags
       const taskWithUser = await Task.findByPk(task.id, {
-        include: [{
-          model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'email']
-        }]
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Tag,
+            as: 'tags',
+            attributes: ['id', 'name', 'color'],
+            through: { attributes: [] }
+          }
+        ]
       });
 
       const formattedTask = {
@@ -88,6 +131,12 @@ const TaskController = {
         status: taskWithUser.status,
         priority: taskWithUser.priority,
         dueDate: taskWithUser.dueDate,
+        subtasks: taskWithUser.subtasks || [],
+        tags: taskWithUser.tags ? taskWithUser.tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          color: tag.color
+        })) : [],
         userId: taskWithUser.userId,
         createdAt: taskWithUser.createdAt,
         updatedAt: taskWithUser.updatedAt,
@@ -101,14 +150,10 @@ const TaskController = {
       // Émettre l'événement WebSocket
       websocketService.taskCreated(req.user.id, formattedTask);
   
-      res.status(200).json({
-        code: 200,
-        data: formattedTask,
-        message: 'Tâche créée avec succès'
-      });
+      return sendSuccess(res, 201, formattedTask, 'Tâche créée avec succès');
     } catch (error) {
       console.error('❌ Erreur createTask:', error);
-      res.status(500).json({ message: "Erreur lors de la création", error: error.message });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la création de la tâche');
     }
   },
 
@@ -120,15 +165,23 @@ const TaskController = {
           id: req.params.id,
           userId: req.user.id
         },
-        include: [{
-          model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'email']
-        }]
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Tag,
+            as: 'tags',
+            attributes: ['id', 'name', 'color'],
+            through: { attributes: [] }
+          }
+        ]
       });
   
       if (!task) {
-        return res.status(404).json({ message: "Tâche introuvable" });
+        return HTTP_ERRORS.NOT_FOUND(res, "Tâche introuvable");
       }
 
       const formattedTask = {
@@ -138,6 +191,12 @@ const TaskController = {
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate,
+        subtasks: task.subtasks || [],
+        tags: task.tags ? task.tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          color: tag.color
+        })) : [],
         userId: task.userId,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
@@ -148,21 +207,17 @@ const TaskController = {
         } : null
       };
   
-      res.status(200).json({
-        code: 200,
-        data: formattedTask,
-        message: 'Tâche récupérée avec succès'
-      });
+      return sendSuccess(res, 200, formattedTask, 'Tâche récupérée avec succès');
     } catch (error) {
       console.error('❌ Erreur getTaskById:', error);
-      res.status(500).json({ message: "Erreur lors de la récupération", error: error.message });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération de la tâche');
     }
   },
 
   // Mettre à jour une tâche
   async updateTask(req, res) {
     try {
-      const { title, description, status, priority, dueDate } = req.body;
+      const { title, description, status, priority, dueDate, subtasks } = req.body;
   
       // Vérifier que la tâche existe et appartient à l'utilisateur
       const task = await Task.findOne({
@@ -173,14 +228,12 @@ const TaskController = {
       });
   
       if (!task) {
-        return res.status(404).json({ message: "Tâche introuvable" });
+        return HTTP_ERRORS.NOT_FOUND(res, "Tâche introuvable");
       }
 
       // Valider la priorité si fournie
       if (priority !== undefined && !['low', 'normal', 'high', 'urgent'].includes(priority)) {
-        return res.status(400).json({ 
-          message: "La priorité doit être: low, normal, high ou urgent" 
-        });
+        return HTTP_ERRORS.BAD_REQUEST(res, "La priorité doit être: low, normal, high ou urgent");
       }
 
       // Préparer les données à mettre à jour
@@ -190,17 +243,55 @@ const TaskController = {
       if (status !== undefined) updateData.status = status;
       if (priority !== undefined) updateData.priority = priority;
       if (dueDate !== undefined) updateData.dueDate = dueDate;
+      if (subtasks !== undefined) {
+        // Valider les sous-tâches si fournies
+        if (Array.isArray(subtasks)) {
+          updateData.subtasks = subtasks.map((st, index) => ({
+            id: st.id || `subtask-${Date.now()}-${index}`,
+            title: st.title || '',
+            completed: st.completed || false
+          }));
+        }
+      }
 
       // Mettre à jour la tâche
       await task.update(updateData);
 
-      // Récupérer la tâche mise à jour avec les informations utilisateur
+      // Gérer les tags si fournis
+      if (req.body.tagIds !== undefined) {
+        if (Array.isArray(req.body.tagIds) && req.body.tagIds.length > 0) {
+          // Vérifier que tous les tags appartiennent à l'utilisateur
+          const tags = await Tag.findAll({
+            where: {
+              id: req.body.tagIds,
+              userId: req.user.id
+            }
+          });
+          
+          if (tags.length === req.body.tagIds.length) {
+            await task.setTags(tags);
+          }
+        } else {
+          // Si tagIds est un tableau vide, supprimer tous les tags
+          await task.setTags([]);
+        }
+      }
+
+      // Récupérer la tâche mise à jour avec les informations utilisateur et tags
       const updatedTask = await Task.findByPk(task.id, {
-        include: [{
-          model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'email']
-        }]
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Tag,
+            as: 'tags',
+            attributes: ['id', 'name', 'color'],
+            through: { attributes: [] }
+          }
+        ]
       });
 
       const formattedTask = {
@@ -210,6 +301,12 @@ const TaskController = {
         status: updatedTask.status,
         priority: updatedTask.priority,
         dueDate: updatedTask.dueDate,
+        subtasks: updatedTask.subtasks || [],
+        tags: updatedTask.tags ? updatedTask.tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          color: tag.color
+        })) : [],
         userId: updatedTask.userId,
         createdAt: updatedTask.createdAt,
         updatedAt: updatedTask.updatedAt,
@@ -223,14 +320,10 @@ const TaskController = {
       // Émettre l'événement WebSocket
       websocketService.taskUpdated(req.user.id, formattedTask);
   
-      res.status(200).json({
-        code: 200,
-        data: formattedTask,
-        message: 'Tâche modifiée avec succès'
-      });
+      return sendSuccess(res, 200, formattedTask, 'Tâche modifiée avec succès');
     } catch (error) {
       console.error('❌ Erreur updateTask:', error);
-      res.status(500).json({ message: "Erreur lors de la mise à jour", error: error.message });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la mise à jour de la tâche');
     }
   },
 
@@ -246,7 +339,7 @@ const TaskController = {
       });
   
       if (!task) {
-        return res.status(404).json({ message: "Tâche introuvable" });
+        return HTTP_ERRORS.NOT_FOUND(res, "Tâche introuvable");
       }
 
       // Sauvegarder l'ID de la tâche pour l'événement WebSocket
@@ -258,13 +351,92 @@ const TaskController = {
       // Émettre l'événement WebSocket
       websocketService.taskDeleted(req.user.id, taskId);
       
-      res.status(200).json({
-        code: 200,
-        message: 'Tâche supprimée avec succès'
-      });
+      return sendSuccess(res, 200, null, 'Tâche supprimée avec succès');
     } catch (error) {
       console.error('❌ Erreur deleteTask:', error);
-      res.status(500).json({ message: "Erreur lors de la suppression", error: error.message });
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la suppression de la tâche');
+    }
+  },
+
+  // Mettre à jour les sous-tâches d'une tâche
+  async updateSubtasks(req, res) {
+    try {
+      const { subtasks } = req.body;
+  
+      // Vérifier que la tâche existe et appartient à l'utilisateur
+      const task = await Task.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.user.id
+        }
+      });
+  
+      if (!task) {
+        return HTTP_ERRORS.NOT_FOUND(res, "Tâche introuvable");
+      }
+
+      // Valider les sous-tâches si fournies
+      let validatedSubtasks = [];
+      if (subtasks !== undefined) {
+        if (Array.isArray(subtasks)) {
+          validatedSubtasks = subtasks.map((st, index) => ({
+            id: st.id || `subtask-${Date.now()}-${index}`,
+            title: st.title || '',
+            completed: st.completed || false
+          }));
+        }
+      }
+
+      // Mettre à jour uniquement les sous-tâches
+      await task.update({ subtasks: validatedSubtasks });
+
+      // Récupérer la tâche mise à jour avec les informations utilisateur et tags
+      const updatedTask = await Task.findByPk(task.id, {
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Tag,
+            as: 'tags',
+            attributes: ['id', 'name', 'color'],
+            through: { attributes: [] }
+          }
+        ]
+      });
+
+      const formattedTask = {
+        id: updatedTask.id,
+        title: updatedTask.title,
+        description: updatedTask.description,
+        status: updatedTask.status,
+        priority: updatedTask.priority,
+        dueDate: updatedTask.dueDate,
+        subtasks: updatedTask.subtasks || [],
+        tags: updatedTask.tags ? updatedTask.tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          color: tag.color
+        })) : [],
+        userId: updatedTask.userId,
+        createdAt: updatedTask.createdAt,
+        updatedAt: updatedTask.updatedAt,
+        user: updatedTask.user ? {
+          id: updatedTask.user.id,
+          name: updatedTask.user.name,
+          email: updatedTask.user.email
+        } : null
+      };
+
+      // Émettre l'événement WebSocket
+      websocketService.taskUpdated(req.user.id, formattedTask);
+  
+      return sendSuccess(res, 200, formattedTask, 'Sous-tâches mises à jour avec succès');
+    } catch (error) {
+      console.error('❌ Erreur updateSubtasks:', error);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la mise à jour des sous-tâches');
     }
   }
 };
