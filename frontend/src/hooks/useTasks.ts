@@ -15,7 +15,8 @@ export function useTasks() {
   );
 
   // Type assertion pour les tâches
-  const tasks = (data?.data || []) as Task[];
+  // apiRequest retourne déjà directement les données, pas besoin de data.data
+  const tasks = (data || []) as Task[];
 
   return {
     tasks,
@@ -35,7 +36,8 @@ export function useTask(id: number | null) {
   );
 
   return {
-    task: data?.data || null,
+    // apiRequest retourne déjà directement les données, pas besoin de data.data
+    task: data || null,
     isLoading,
     isError: error,
     mutate,
