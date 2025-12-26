@@ -199,7 +199,9 @@ export const tasksAPI = {
       status: string;
       priority: string;
       dueDate: string | null;
+      reminderDate: string | null;
       subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      tags?: Array<{ id: number; name: string; color: string }>;
       userId: number;
       createdAt: string;
       updatedAt: string;
@@ -214,7 +216,9 @@ export const tasksAPI = {
       status: string;
       priority: string;
       dueDate: string | null;
+      reminderDate: string | null;
       subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      tags?: Array<{ id: number; name: string; color: string }>;
       userId: number;
       createdAt: string;
       updatedAt: string;
@@ -227,6 +231,8 @@ export const tasksAPI = {
     status?: string;
     priority?: string;
     dueDate?: string;
+    reminderDate?: string;
+    repeatPattern?: any;
     tagIds?: number[];
   }) => {
     return apiRequest<{
@@ -236,7 +242,9 @@ export const tasksAPI = {
       status: string;
       priority: string;
       dueDate: string | null;
+      reminderDate: string | null;
       subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      tags?: Array<{ id: number; name: string; color: string }>;
       userId: number;
       createdAt: string;
       updatedAt: string;
@@ -252,6 +260,8 @@ export const tasksAPI = {
     status?: string;
     priority?: string;
     dueDate?: string;
+    reminderDate?: string;
+    repeatPattern?: any;
     tagIds?: number[];
   }) => {
     return apiRequest<{
@@ -261,7 +271,9 @@ export const tasksAPI = {
       status: string;
       priority: string;
       dueDate: string | null;
+      reminderDate: string | null;
       subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      tags?: Array<{ id: number; name: string; color: string }>;
       userId: number;
       createdAt: string;
       updatedAt: string;
@@ -278,20 +290,18 @@ export const tasksAPI = {
   },
   updateSubtasks: async (id: number, subtasks: Array<{ id: string; title: string; completed: boolean }>) => {
     return apiRequest<{
-      code: number;
-      data: {
-        id: number;
-        title: string;
-        description: string | null;
-        status: string;
-        priority: string;
-        dueDate: string | null;
-        subtasks?: Array<{ id: string; title: string; completed: boolean }>;
-        userId: number;
-        createdAt: string;
-        updatedAt: string;
-      };
-      message: string;
+      id: number;
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      dueDate: string | null;
+      reminderDate: string | null;
+      subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      tags?: Array<{ id: number; name: string; color: string }>;
+      userId: number;
+      createdAt: string;
+      updatedAt: string;
     }>(`/api/tasks/${id}/subtasks`, {
       method: 'PUT',
       body: JSON.stringify({ subtasks }),
