@@ -13,6 +13,14 @@ export interface Task {
   status: 'todo' | 'in-progress' | 'done';
   priority: 'low' | 'normal' | 'high' | 'urgent';
   dueDate: string | null;
+  reminderDate: string | null;
+  repeatPattern?: {
+    type: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+    interval?: number;
+    daysOfWeek?: number[];
+    endDate?: string;
+    count?: number;
+  } | null;
   subtasks?: Subtask[];
   tags?: Tag[];
   userId: number;
