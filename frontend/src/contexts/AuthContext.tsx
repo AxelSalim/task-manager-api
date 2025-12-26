@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await authAPI.getMe();
-      setUser(response.data);
+      setUser(response);
     } catch (error) {
       // Token invalide, supprimer
       removeAuthToken();
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     try {
       const response = await authAPI.getMe();
-      setUser(response.data);
+      setUser(response);
     } catch (error) {
       setUser(null);
     }
