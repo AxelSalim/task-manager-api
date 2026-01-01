@@ -21,23 +21,18 @@ import {
 import { SidebarSeparator } from '@/components/ui/sidebar';
 import Image from 'next/image';
 import {
-  CheckSquare,
   Calendar,
   ChevronRight,
   Plus,
   Check,
   Trash2,
-  Tag,
   LayoutGrid,
 } from 'lucide-react';
 
-/** Navigation type Blitzit: Today en premier, puis vues */
+/** Navigation : Kanban puis Calendrier (les tags se gèrent dans le Kanban) */
 const mainNavigation = [
-  { name: "Aujourd'hui", href: '/tasks', icon: CheckSquare, count: null },
-  { name: 'Tâches', href: '/tasks', icon: CheckSquare, count: null },
   { name: 'Kanban', href: '/kanban', icon: LayoutGrid, count: null },
   { name: 'Calendrier', href: '/calendar', icon: Calendar, count: null },
-  { name: 'Tags', href: '/tags', icon: Tag, count: null },
 ];
 
 /** Listes (type Blitzit: simplifié, listes utilisateur à venir) */
@@ -142,7 +137,7 @@ export function Sidebar() {
                           <SidebarMenuSubItem key={item.name}>
                             <SidebarMenuSubButton asChild>
                               <Link
-                                href={`/tasks?folder=${encodeURIComponent(item.name)}`}
+                                href={`/kanban?folder=${encodeURIComponent(item.name)}`}
                                 className="flex items-center justify-between w-full min-w-0 text-white/90 hover:text-white"
                               >
                                 <span className="truncate">{item.name}</span>
@@ -183,13 +178,13 @@ export function Sidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname?.includes('completed')}
+                  isActive={pathname === '/kanban'}
                   className={cn(
                     'text-white hover:bg-white/10',
-                    pathname?.includes('completed') && 'bg-white/20 text-white'
+                    pathname === '/kanban' && 'bg-white/20 text-white'
                   )}
                 >
-                  <Link href="/tasks?filter=completed" className="flex items-center w-full min-w-0">
+                  <Link href="/kanban" className="flex items-center w-full min-w-0">
                     <Check className="h-6 w-6 mr-2 shrink-0" />
                     <span className="truncate">Terminé</span>
                   </Link>
@@ -198,13 +193,9 @@ export function Sidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname?.includes('trash')}
-                  className={cn(
-                    'text-white hover:bg-white/10',
-                    pathname?.includes('trash') && 'bg-white/20 text-white'
-                  )}
+                  className="text-white hover:bg-white/10"
                 >
-                  <Link href="/tasks?filter=trash" className="flex items-center w-full min-w-0">
+                  <Link href="/kanban" className="flex items-center w-full min-w-0">
                     <Trash2 className="h-6 w-6 mr-2 shrink-0" />
                     <span className="truncate">Corbeille</span>
                   </Link>
