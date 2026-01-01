@@ -51,11 +51,11 @@ export default function TagsPage() {
       setIsLoading(true);
       const tags = await tagsAPI.getAll();
       setTags(tags);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erreur lors du chargement des tags:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de charger les tags',
+        description: error instanceof Error ? error.message : 'Impossible de charger les tags',
         variant: 'destructive',
       });
     } finally {
@@ -92,35 +92,33 @@ export default function TagsPage() {
 
     try {
       if (editingTag) {
-        const response = await tagsAPI.update(editingTag.id, {
+        await tagsAPI.update(editingTag.id, {
           name: formData.name.trim(),
           color: formData.color,
         });
-        if (response.success) {
-          toast({
-            title: 'Succès',
-            description: 'Tag modifié avec succès',
-          });
-          loadTags();
-          setIsDialogOpen(false);
-        }
+        toast({
+          title: 'Succès',
+          description: 'Tag modifié avec succès',
+        });
+        loadTags();
+        setIsDialogOpen(false);
       } else {
-      const newTag = await tagsAPI.create({
-        name: formData.name.trim(),
-        color: formData.color,
-      });
-      toast({
-        title: 'Succès',
-        description: 'Tag créé avec succès',
-      });
-      loadTags();
-      setIsDialogOpen(false);
+        await tagsAPI.create({
+          name: formData.name.trim(),
+          color: formData.color,
+        });
+        toast({
+          title: 'Succès',
+          description: 'Tag créé avec succès',
+        });
+        loadTags();
+        setIsDialogOpen(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur lors de la sauvegarde du tag:', error);
       toast({
         title: 'Erreur',
-        description: error.message || 'Impossible de sauvegarder le tag',
+        description: error instanceof Error ? error.message : 'Impossible de sauvegarder le tag',
         variant: 'destructive',
       });
     }
@@ -138,11 +136,11 @@ export default function TagsPage() {
       loadTags();
       setIsDeleteDialogOpen(false);
       setDeleteTagId(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur lors de la suppression du tag:', error);
       toast({
         title: 'Erreur',
-        description: error.message || 'Impossible de supprimer le tag',
+        description: error instanceof Error ? error.message : 'Impossible de supprimer le tag',
         variant: 'destructive',
       });
     }
@@ -292,7 +290,7 @@ export default function TagsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer le tag ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le tag sera supprimé de toutes les tâches qui l'utilisent.
+              Cette action est irréversible. Le tag sera supprimé de toutes les tâches qui l&apos;utilisent.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
