@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, Save, X } from 'lucide-react';
+import { Camera, Save, Lock, Loader2 } from 'lucide-react';
 import { authAPI, getAvatarUrl } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -25,11 +25,14 @@ const profileSchema = Yup.object().shape({
 });
 
 export default function ProfilePage() {
-  const { user, updateUser, refreshUser } = useAuth();
+  const { user, updateUser, refreshUser, setPin, lock } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [pinValue, setPinValue] = useState('');
+  const [pinConfirm, setPinConfirm] = useState('');
+  const [pinLoading, setPinLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -285,6 +288,86 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Sécurité : code PIN + verrouiller */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            Sécurité
+          </CardTitle>
+          <CardDescription>
+            Définir un code PIN pour verrouiller l&apos;application au démarrage (4 à 8 chiffres)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="pin">Nouveau code PIN</Label>
+              <Input
+                id="pin"
+                type="password"
+                inputMode="numeric"
+                maxLength={8}
+                value={pinValue}
+                onChange={(e) => setPinValue(e.target.value.replace(/\D/g, ''))}
+                placeholder="4 à 8 chiffres"
+                className="font-mono"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pinConfirm">Confirmer le PIN</Label>
+              <Input
+                id="pinConfirm"
+                type="password"
+                inputMode="numeric"
+                maxLength={8}
+                value={pinConfirm}
+                onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))}
+                placeholder="Confirmer"
+                className="font-mono"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="default"
+              disabled={pinLoading || pinValue.length < 4 || pinValue !== pinConfirm}
+              onClick={async () => {
+                setPinLoading(true);
+                try {
+                  await setPin(pinValue);
+                  setPinValue('');
+                  setPinConfirm('');
+                  toast({ title: 'PIN enregistré', description: 'Votre code PIN a été défini.' });
+                } catch (err) {
+                  toast({
+                    title: 'Erreur',
+                    description: err instanceof Error ? err.message : 'Impossible d\'enregistrer le PIN',
+                    variant: 'destructive',
+                  });
+                } finally {
+                  setPinLoading(false);
+                }
+              }}
+            >
+              {pinLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4 mr-2" />}
+              Enregistrer le PIN
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                lock();
+                window.location.href = '/lock';
+              }}
+            >
+              Verrouiller maintenant
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
