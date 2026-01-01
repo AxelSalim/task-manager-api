@@ -67,10 +67,10 @@ export default function ProfilePage() {
           title: 'Profil mis à jour',
           description: 'Vos informations ont été mises à jour avec succès.',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         toast({
           title: 'Erreur',
-          description: error.message || 'Impossible de mettre à jour le profil.',
+          description: error instanceof Error ? error.message : 'Impossible de mettre à jour le profil.',
           variant: 'destructive',
         });
       } finally {
@@ -161,10 +161,10 @@ export default function ProfilePage() {
       });
       
       setAvatarPreview(null);
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Erreur',
-        description: 'Impossible de mettre à jour l\'avatar.',
+        description: error instanceof Error ? error.message : 'Impossible de mettre à jour l\'avatar.',
         variant: 'destructive',
       });
     } finally {
@@ -341,10 +341,10 @@ export default function ProfilePage() {
                   setPinValue('');
                   setPinConfirm('');
                   toast({ title: 'PIN enregistré', description: 'Votre code PIN a été défini.' });
-                } catch (err) {
+                } catch (error: unknown) {
                   toast({
                     title: 'Erreur',
-                    description: err instanceof Error ? err.message : 'Impossible d\'enregistrer le PIN',
+                    description: error instanceof Error ? error.message : 'Impossible d\'enregistrer le PIN',
                     variant: 'destructive',
                   });
                 } finally {
