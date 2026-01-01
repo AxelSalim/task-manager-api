@@ -206,6 +206,52 @@ export const authAPI = {
       body: JSON.stringify({ reset_token: resetToken, new_password: newPassword }),
     });
   },
+
+  // --- Mode desktop : profil minimal + PIN ---
+  getProfileStatus: async () => {
+    const res = await fetch(`${API_BASE_URL}/api/users/profile/status`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Erreur');
+    return data.data as { hasUser: boolean; hasPin: boolean; userName: string | null };
+  },
+  setup: async (name: string) => {
+    const res = await fetch(`${API_BASE_URL}/api/users/setup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Erreur');
+    const payload = data.data as { token: string; user: { id: number; name: string; email: string; avatar: string | null } };
+    if (payload.token) setAuthToken(payload.token);
+    return payload;
+  },
+  desktopSession: async () => {
+    const res = await fetch(`${API_BASE_URL}/api/users/desktop-session`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'PIN requis');
+    const payload = data.data as { token: string; user: { id: number; name: string; email: string; avatar: string | null } };
+    if (payload.token) setAuthToken(payload.token);
+    return payload;
+  },
+  verifyPin: async (pin: string) => {
+    const res = await fetch(`${API_BASE_URL}/api/users/verify-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Code PIN incorrect');
+    const payload = data.data as { token: string; user: { id: number; name: string; email: string; avatar: string | null } };
+    if (payload.token) setAuthToken(payload.token);
+    return payload;
+  },
+  setPin: async (pin: string) => {
+    return apiRequest<null>('/api/users/profile/pin', {
+      method: 'PATCH',
+      body: JSON.stringify({ pin }),
+    });
+  },
 };
 
 /**
