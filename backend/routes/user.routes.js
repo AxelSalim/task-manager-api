@@ -119,6 +119,13 @@ router.post("/login", authLimiter, userController.login);             // Connexi
 router.get("/me", authMiddleware, userController.getMe); // Obtenir les infos de l'utilisateur connecté
 router.put("/me", authMiddleware, userController.updateProfile); // Mettre à jour le profil
 
+// --- Mode desktop : profil minimal + PIN (sans auth pour status/setup/session/verify-pin) ---
+router.get("/profile/status", userController.getProfileStatus);
+router.post("/setup", userController.setup);
+router.post("/desktop-session", userController.desktopSession);
+router.post("/verify-pin", userController.verifyPin);
+router.patch("/profile/pin", authMiddleware, userController.setPin);
+
 /**
  * @swagger
  * /users/updateavatar:
