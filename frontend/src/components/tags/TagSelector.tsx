@@ -37,11 +37,11 @@ export function TagSelector({ selectedTagIds, onSelectionChange, className }: Ta
       setIsLoading(true);
       const tags = await tagsAPI.getAll();
       setTags(tags);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erreur lors du chargement des tags:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de charger les tags',
+        description: error instanceof Error ? error.message : 'Impossible de charger les tags',
         variant: 'destructive',
       });
     } finally {
@@ -80,12 +80,11 @@ export function TagSelector({ selectedTagIds, onSelectionChange, className }: Ta
         title: 'Succès',
         description: 'Tag créé avec succès',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erreur lors de la création du tag:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Impossible de créer le tag';
       toast({
         title: 'Erreur',
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Impossible de créer le tag',
         variant: 'destructive',
       });
     }
