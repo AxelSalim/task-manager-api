@@ -1,17 +1,7 @@
 'use client';
 
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -20,13 +10,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NewFinanceCategorySheet } from '@/components/finance/NewFinanceCategorySheet';
+import { NewFinanceTransactionSheet } from '@/components/finance/NewFinanceTransactionSheet';
 import {
   financeAPI,
   type FinanceCategoryDto,
   type FinanceTransactionDto,
   type FinanceTransactionType,
 } from '@/lib/api';
-import { Plus, Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -45,21 +37,12 @@ function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [savingCategory, setSavingCategory] = useState(false);
-  const [newCatName, setNewCatName] = useState('');
-  const [newCatType, setNewCatType] = useState<FinanceTransactionType>('depenses');
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
 
-  const [formDate, setFormDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
-  const [formType, setFormType] = useState<FinanceTransactionType>('depenses');
-  const [formCategoryId, setFormCategoryId] = useState<string>('');
-  const [formAmount, setFormAmount] = useState('');
-  const [formComment, setFormComment] = useState('');
   const { toast } = useToast();
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [txList, catList] = await Promise.all([
@@ -68,85 +51,20 @@ function FinancePage() {
       ]);
       setTransactions(txList);
       setCategories(catList);
-    } catch (e) {
+    } catch (error: unknown) {
       toast({
         title: 'Erreur',
-        description: e instanceof Error ? e.message : 'Impossible de charger les données',
+        description: error instanceof Error ? error.message : 'Impossible de charger les données',
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [month, toast, year]);
 
   useEffect(() => {
     loadData();
-  }, [year, month]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const amount = parseFloat(formAmount.replace(',', '.'));
-    if (isNaN(amount)) {
-      toast({ title: 'Montant invalide', variant: 'destructive' });
-      return;
-    }
-    setSaving(true);
-    try {
-      await financeAPI.createTransaction({
-        date: formDate,
-        type: formType,
-        categoryId: formCategoryId ? parseInt(formCategoryId, 10) : null,
-        amount,
-        comment: formComment || null,
-      });
-      toast({ title: 'Transaction ajoutée' });
-      setSheetOpen(false);
-      resetForm();
-      loadData();
-    } catch (err) {
-      toast({
-        title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Échec de l\'enregistrement',
-        variant: 'destructive',
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const resetForm = () => {
-    setFormDate(format(new Date(), 'yyyy-MM-dd'));
-    setFormType('depenses');
-    setFormCategoryId('');
-    setFormAmount('');
-    setFormComment('');
-  };
-
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const name = newCatName.trim();
-    if (!name) {
-      toast({ title: 'Nom requis', variant: 'destructive' });
-      return;
-    }
-    setSavingCategory(true);
-    try {
-      await financeAPI.createCategory({ name, type: newCatType });
-      toast({ title: 'Catégorie créée' });
-      setCategorySheetOpen(false);
-      setNewCatName('');
-      setNewCatType('depenses');
-      loadData();
-    } catch (err) {
-      toast({
-        title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Échec de l\'enregistrement',
-        variant: 'destructive',
-      });
-    } finally {
-      setSavingCategory(false);
-    }
-  };
+  }, [loadData]);
 
   const handleDelete = async (id: number) => {
     if (!confirm('Supprimer cette transaction ?')) return;
@@ -154,16 +72,15 @@ function FinancePage() {
       await financeAPI.deleteTransaction(id);
       toast({ title: 'Transaction supprimée' });
       loadData();
-    } catch (err) {
+    } catch (error: unknown) {
       toast({
         title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Échec de la suppression',
+        description: error instanceof Error ? error.message : 'Échec de la suppression',
         variant: 'destructive',
       });
     }
   };
 
-  const categoriesByType = categories.filter((c) => c.type === formType);
   const totalIn = transactions
     .filter((t) => t.type === 'revenus')
     .reduce((s, t) => s + t.amount, 0);
@@ -206,141 +123,19 @@ function FinancePage() {
               })()}
             </SelectContent>
           </Select>
-          <Sheet open={categorySheetOpen} onOpenChange={setCategorySheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="rounded-sm">
-                Nouvelle catégorie
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-sm rounded-none border-l">
-              <form onSubmit={handleCreateCategory}>
-                <SheetHeader>
-                  <SheetTitle>Nouvelle catégorie</SheetTitle>
-                </SheetHeader>
-                <div className="grid gap-4 py-6">
-                  <div className="grid gap-2">
-                    <Label>Nom</Label>
-                    <Input
-                      className="rounded-sm"
-                      value={newCatName}
-                      onChange={(e) => setNewCatName(e.target.value)}
-                      placeholder="ex. Salaire net"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Type</Label>
-                    <Select value={newCatType} onValueChange={(v) => setNewCatType(v as FinanceTransactionType)}>
-                      <SelectTrigger className="rounded-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(Object.keys(TYPE_LABELS) as FinanceTransactionType[]).map((t) => (
-                          <SelectItem key={t} value={t}>{TYPE_LABELS[t]}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <SheetFooter className="gap-2 rounded-sm">
-                  <Button type="button" variant="outline" className="rounded-sm" onClick={() => setCategorySheetOpen(false)}>Annuler</Button>
-                  <Button type="submit" className="rounded-sm" disabled={savingCategory}>
-                    {savingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Créer'}
-                  </Button>
-                </SheetFooter>
-              </form>
-            </SheetContent>
-          </Sheet>
-          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetTrigger asChild>
-              <Button className="rounded-sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter une transaction
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-md rounded-none border-l">
-              <form onSubmit={handleSubmit}>
-                <SheetHeader>
-                  <SheetTitle>Nouvelle transaction</SheetTitle>
-                </SheetHeader>
-                <div className="grid gap-4 py-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="date">Date</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      className="rounded-sm"
-                      value={formDate}
-                      onChange={(e) => setFormDate(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="type">Type</Label>
-                    <Select value={formType} onValueChange={(v) => { setFormType(v as FinanceTransactionType); setFormCategoryId(''); }}>
-                      <SelectTrigger id="type" className="rounded-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(Object.keys(TYPE_LABELS) as FinanceTransactionType[]).map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {TYPE_LABELS[t]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="category">Catégorie (optionnel)</Label>
-                    <Select value={formCategoryId || 'none'} onValueChange={(v) => setFormCategoryId(v === 'none' ? '' : v)}>
-                      <SelectTrigger id="category" className="rounded-sm">
-                        <SelectValue placeholder="Aucune" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Aucune</SelectItem>
-                        {categoriesByType.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="amount">Montant (CFA)</Label>
-                    <Input
-                      id="amount"
-                      type="text"
-                      inputMode="decimal"
-                      className="rounded-sm"
-                      placeholder="0"
-                      value={formAmount}
-                      onChange={(e) => setFormAmount(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="comment">Commentaire</Label>
-                    <Input
-                      id="comment"
-                      className="rounded-sm"
-                      value={formComment}
-                      onChange={(e) => setFormComment(e.target.value)}
-                      placeholder="Optionnel"
-                    />
-                  </div>
-                </div>
-                <SheetFooter className="gap-2 rounded-sm">
-                  <Button type="button" variant="outline" className="rounded-sm" onClick={() => setSheetOpen(false)}>
-                    Annuler
-                  </Button>
-                  <Button type="submit" className="rounded-sm" disabled={saving}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enregistrer'}
-                  </Button>
-                </SheetFooter>
-              </form>
-            </SheetContent>
-          </Sheet>
+          <NewFinanceCategorySheet
+            open={categorySheetOpen}
+            onOpenChange={setCategorySheetOpen}
+            typeLabels={TYPE_LABELS}
+            onCreated={loadData}
+          />
+          <NewFinanceTransactionSheet
+            open={sheetOpen}
+            onOpenChange={setSheetOpen}
+            categories={categories}
+            typeLabels={TYPE_LABELS}
+            onCreated={loadData}
+          />
         </div>
       </div>
 
