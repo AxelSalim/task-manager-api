@@ -145,7 +145,180 @@ const UserController = {
       return sendSuccess(res, 200, userData, "Utilisateur récupéré avec succès");
     } catch (error) {
       console.error('❌ Erreur getMe:', error);
-      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de la récupération de l'utilisateur");
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur serveur");
+    }
+  },
+
+  // --- Mode desktop : profil minimal + PIN ---
+
+  // Statut du profil (premier lancement ou verrouillé)
+  async getProfileStatus(req, res) {
+    try {
+      const user = await User.findOne({ order: [['id', 'ASC']] });
+      if (!user) {
+        return res.status(200).json({
+          success: true,
+          data: { hasUser: false, hasPin: false, userName: null },
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        data: {
+          hasUser: true,
+          hasPin: !!user.pin_hash,
+          userName: user.name,
+        },
+      });
+    } catch (error) {
+      console.error('❌ Erreur getProfileStatus:', error);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur serveur");
+    }
+  },
+
+  // Premier lancement : créer le profil (nom uniquement)
+  async setup(req, res) {
+    try {
+      const { name } = req.body;
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return HTTP_ERRORS.BAD_REQUEST(res, "Le nom est obligatoire");
+      }
+
+      const existing = await User.findOne();
+      if (existing) {
+        return HTTP_ERRORS.CONFLICT(res, "Un profil existe déjà");
+      }
+
+      const hashedPassword = await bcrypt.hash(`desktop-${Date.now()}`, 10);
+      const user = await User.create({
+        name: name.trim(),
+        email: 'local@desktop',
+        password: hashedPassword,
+        avatar: null,
+        pin_hash: null,
+      });
+
+      const token = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+
+      return res.status(201).json({
+        success: true,
+        code: 201,
+        message: "Profil créé",
+        data: {
+          token,
+          user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+        },
+      });
+    } catch (error) {
+      console.error('❌ Erreur setup:', error);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur lors de la création du profil");
+    }
+  },
+
+  // Session desktop sans PIN (si pas de PIN défini)
+  async desktopSession(req, res) {
+    try {
+      const user = await User.findOne({ order: [['id', 'ASC']] });
+      if (!user) {
+        return HTTP_ERRORS.NOT_FOUND(res, "Aucun profil");
+      }
+      if (user.pin_hash) {
+        return res.status(401).json({
+          success: false,
+          code: 401,
+          message: "PIN requis",
+        });
+      }
+
+      const token = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+
+      return res.status(200).json({
+        success: true,
+        code: 200,
+        message: "Session ouverte",
+        data: {
+          token,
+          user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+        },
+      });
+    } catch (error) {
+      console.error('❌ Erreur desktopSession:', error);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur serveur");
+    }
+  },
+
+  // Vérifier le PIN et retourner un token
+  async verifyPin(req, res) {
+    try {
+      const { pin } = req.body;
+      if (!pin || typeof pin !== 'string') {
+        return HTTP_ERRORS.BAD_REQUEST(res, "Le code PIN est obligatoire");
+      }
+
+      const user = await User.findOne({ order: [['id', 'ASC']] });
+      if (!user || !user.pin_hash) {
+        return HTTP_ERRORS.BAD_REQUEST(res, "PIN non configuré");
+      }
+
+      const valid = await bcrypt.compare(pin, user.pin_hash);
+      if (!valid) {
+        return HTTP_ERRORS.UNAUTHORIZED(res, "Code PIN incorrect");
+      }
+
+      const token = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+
+      return res.status(200).json({
+        success: true,
+        code: 200,
+        message: "Déverrouillé",
+        data: {
+          token,
+          user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+        },
+      });
+    } catch (error) {
+      console.error('❌ Erreur verifyPin:', error);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur serveur");
+    }
+  },
+
+  // Définir ou modifier le PIN (authentifié)
+  async setPin(req, res) {
+    try {
+      const userId = req.user.id;
+      const { pin } = req.body;
+
+      if (!pin || typeof pin !== 'string') {
+        return HTTP_ERRORS.BAD_REQUEST(res, "Le code PIN est obligatoire");
+      }
+      const trimmed = pin.replace(/\D/g, '');
+      if (trimmed.length < 4 || trimmed.length > 8) {
+        return HTTP_ERRORS.BAD_REQUEST(res, "Le PIN doit contenir entre 4 et 8 chiffres");
+      }
+
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return HTTP_ERRORS.NOT_FOUND(res, "Utilisateur non trouvé");
+      }
+
+      const pin_hash = await bcrypt.hash(trimmed, 10);
+      await user.update({ pin_hash });
+
+      return sendSuccess(res, 200, null, "PIN enregistré");
+    } catch (error) {
+      console.error('❌ Erreur setPin:', error);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, "Erreur serveur");
     }
   },
 
