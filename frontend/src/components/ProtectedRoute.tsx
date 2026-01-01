@@ -6,14 +6,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, status } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/login');
+    if (loading) return;
+    if (!isAuthenticated) {
+      if (status === 'onboarding') router.push('/onboarding');
+      else if (status === 'locked') router.push('/lock');
+      else router.push('/');
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, status, router]);
 
   if (loading) {
     return (
@@ -29,4 +32,3 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-
