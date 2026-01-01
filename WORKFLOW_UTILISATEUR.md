@@ -6,13 +6,15 @@ Ce document décrit le processus complet d'utilisation du système Task Manager 
 
 ## 🎯 Vue d'ensemble
 
-**Task Manager Desktop** est une **application desktop** (exécutable) de gestion de tâches inspirée de TickTick, permettant aux utilisateurs de :
-- Créer et gérer leurs tâches personnelles **localement** sur leur machine
-- Suivre l'état d'avancement de leurs tâches
+**Task Manager Desktop (Spark)** est une **application desktop** (exécutable) de gestion de tâches (type Blitzit), permettant aux utilisateurs de :
+- Créer et gérer leurs tâches **localement** (vue principale : **Kanban**, puis Calendrier)
+- Suivre l'état d'avancement (colonnes À faire / En cours / Terminé, liste des tâches)
+- **Authentification mode desktop** : premier lancement = onboarding (nom uniquement) ; verrouillage optionnel par **code PIN**
 - Recevoir des mises à jour en temps réel via WebSocket (communication interne)
-- Gérer leur profil utilisateur
+- Gérer leur profil (nom, avatar, définition du PIN)
 - Exporter ou supprimer leurs données (conformité RGPD)
-- **Fonctionner entièrement hors ligne** - toutes les données sont stockées localement
+- **Fonctionner entièrement hors ligne** – toutes les données sont stockées localement
+- **Suivi financier** (à venir) : voir `docs/SUIVI_FINANCIER_IMPLEMENTATION.md`
 
 ### Architecture Technique
 - **Application Desktop** : Construite avec Electron
@@ -41,76 +43,81 @@ Ce document décrit le processus complet d'utilisation du système Task Manager 
 
 ---
 
-## 🔐 1. PROCESSUS D'AUTHENTIFICATION
+## 🔐 1. PROCESSUS D'AUTHENTIFICATION (MODE DESKTOP)
 
-### 1.1 Inscription (Register)
+L'application fonctionne en **mode desktop** : un seul profil par machine, pas d'inscription email/mot de passe. Au premier lancement, l'utilisateur crée son profil (nom uniquement) ; un **code PIN** optionnel permet de verrouiller l'accès.
 
-**Endpoint Local** : `POST http://localhost:<port>/api/users/register`
+### 1.1 Statut du profil (au chargement)
+
+**Endpoint Local** : `GET http://localhost:<port>/api/users/profile/status`
 
 **Workflow** :
-1. L'utilisateur ouvre l'application desktop
-2. Il accède à la fenêtre d'inscription depuis l'interface
-3. Il remplit le formulaire avec :
-   - **Nom** (obligatoire)
-   - **Email** (obligatoire, doit être unique)
-   - **Mot de passe** (obligatoire)
-   - **Avatar** (optionnel - fichier image)
-   - **Consentement politique de confidentialité** (obligatoire - checkbox)
-   - **Consentement conditions d'utilisation** (obligatoire - checkbox)
+1. Au démarrage de l'application, le frontend appelle cet endpoint (sans token).
+2. Réponse : `{ hasUser: boolean, hasPin: boolean, userName: string | null }`
+3. Comportement :
+   - **hasUser = false** → redirection vers l'écran d'onboarding (premier lancement)
+   - **hasUser = true et hasPin = true** (et pas de token en localStorage) → écran de verrouillage (saisie PIN)
+   - **hasUser = true et hasPin = false** → appel à `POST /api/users/desktop-session` pour obtenir un token, puis accès à l'interface
+   - **hasUser = true et token présent** → vérification du token (GET /me) ; si invalide, écran de verrouillage
 
-3. Le système valide les données :
-   - Vérifie que tous les champs obligatoires sont remplis
-   - Vérifie que l'email n'existe pas déjà dans la base SQLite locale
-   - Vérifie que les consentements RGPD sont acceptés
-
-4. Si l'avatar est fourni :
-   - Sauvegarde du fichier localement dans `data/storage/avatars/`
-   - Génération d'un chemin relatif vers l'avatar
-
-5. Création du compte :
-   - Hash du mot de passe avec bcrypt
-   - Création de l'utilisateur dans la base SQLite locale
-   - Enregistrement des consentements RGPD avec version et date
-
-6. Réponse : Retourne les informations utilisateur (id, name, email, avatar)
-
-**Résultat** : Compte créé localement, utilisateur peut se connecter
-
-**Note** : Toutes les données sont stockées sur la machine de l'utilisateur, aucune donnée n'est envoyée vers un serveur distant.
+**Résultat** : L'application affiche soit l'onboarding, soit l'écran PIN, soit l'interface principale (Kanban).
 
 ---
 
-### 1.2 Connexion (Login)
+### 1.2 Premier lancement (Onboarding – création du profil)
 
-**Endpoint Local** : `POST http://localhost:<port>/api/users/login`
+**Endpoint Local** : `POST http://localhost:<port>/api/users/setup`
 
 **Workflow** :
-1. L'utilisateur ouvre l'application desktop
-2. Il accède à la fenêtre de connexion depuis l'interface
-3. Il saisit :
-   - **Email**
-   - **Mot de passe**
+1. L'utilisateur ouvre l'application pour la première fois (aucun utilisateur en base).
+2. Il est redirigé vers la page **Onboarding** (« Comment vous appelez-vous ? »).
+3. Il saisit son **prénom ou nom** (au moins 2 caractères).
+4. Le frontend envoie `POST /api/users/setup` avec `{ name: "…" }`.
+5. Le backend :
+   - Vérifie qu'aucun utilisateur n'existe déjà
+   - Crée un utilisateur avec : name, email interne `local@desktop`, mot de passe technique hashé, `pin_hash` à null
+   - Génère un token JWT (valide 30 jours)
+6. Réponse : `{ token, user }`. Le frontend stocke le token (localStorage) et redirige vers le Kanban.
 
-4. Le système vérifie (localement dans SQLite) :
-   - Si l'email existe dans la base de données locale
-   - Si le mot de passe correspond (comparaison avec hash bcrypt)
-
-5. Si les identifiants sont valides :
-   - Génération d'un token JWT (valide 7 jours)
-   - Le token contient : `{ id: userId, email: email }`
-   - Le token est stocké localement dans le localStorage de l'application
-
-6. Réponse : Retourne le token JWT et les informations utilisateur
-
-**Résultat** : Utilisateur authentifié, interface principale de l'application s'affiche
-
-**Note** : 
-- Rate limiting appliqué pour éviter les attaques par force brute
-- Toute l'authentification se fait localement, aucune connexion Internet requise
+**Résultat** : Profil créé localement, utilisateur accède directement à l'application (vue Kanban).
 
 ---
 
-### 1.3 Récupération du Profil (Get Me)
+### 1.3 Session sans PIN (ouverture automatique)
+
+**Endpoint Local** : `POST http://localhost:<port>/api/users/desktop-session`
+
+**Workflow** :
+1. Un profil existe déjà et **aucun PIN n'est défini**.
+2. Au chargement, le frontend appelle `POST /api/users/desktop-session` (sans body).
+3. Le backend renvoie un token JWT et les infos utilisateur.
+4. Le frontend stocke le token et affiche l'interface principale.
+
+**Résultat** : Accès direct au Kanban sans saisie de mot de passe ni PIN.
+
+---
+
+### 1.4 Verrouillage et déverrouillage (PIN)
+
+**Déverrouillage – Endpoint Local** : `POST http://localhost:<port>/api/users/verify-pin`
+
+**Workflow** :
+1. Un profil existe avec un PIN défini ; l'utilisateur n'a pas de token valide (ou a cliqué sur « Verrouiller maintenant »).
+2. L'écran de verrouillage s'affiche (« Entrez votre code PIN »).
+3. L'utilisateur saisit son code PIN (4 à 8 chiffres).
+4. Le frontend envoie `POST /api/users/verify-pin` avec `{ pin: "…" }`.
+5. Le backend compare le PIN au hash stocké ; si valide, renvoie un token JWT et les infos utilisateur.
+6. Le frontend stocke le token et redirige vers le Kanban.
+
+**Définir ou modifier le PIN** : Page **Profil** → section **Sécurité** → champs « Nouveau code PIN » et « Confirmer » → bouton « Enregistrer le PIN ». Endpoint : `PATCH http://localhost:<port>/api/users/profile/pin` (authentifié), body `{ pin: "…" }`.
+
+**Verrouiller maintenant** : Depuis le profil, bouton « Verrouiller maintenant » ; le token est supprimé et l'utilisateur est redirigé vers l'écran de verrouillage.
+
+**Résultat** : Accès protégé par PIN ; déverrouillage par saisie du PIN.
+
+---
+
+### 1.5 Récupération du Profil (Get Me)
 
 **Endpoint Local** : `GET http://localhost:<port>/api/users/me`
 
@@ -120,59 +127,9 @@ Ce document décrit le processus complet d'utilisation du système Task Manager 
 3. Le système récupère les informations utilisateur depuis la base SQLite locale
 4. Réponse : Retourne les informations utilisateur (id, name, email, avatar)
 
-**Utilisation** : Vérifier l'authentification au démarrage de l'app, récupérer les infos utilisateur après connexion, afficher le profil dans l'interface
+**Utilisation** : Vérifier l'authentification après déverrouillage ou ouverture de session, afficher le profil dans l'interface.
 
----
-
-### 1.4 Réinitialisation du Mot de Passe
-
-#### Étape 1 : Demande de réinitialisation
-**Endpoint Local** : `POST http://localhost:<port>/api/users/forgot-password`
-
-**Workflow** :
-1. L'utilisateur accède à la fenêtre "Mot de passe oublié" dans l'application desktop
-2. Il saisit son email
-3. Le système vérifie si l'email existe dans la base SQLite locale (sans révéler l'existence ou non)
-4. Génération d'un code OTP à 6 chiffres
-5. Hash du code OTP et sauvegarde dans la base SQLite locale avec expiration (15 minutes)
-6. Envoi d'un email avec le code OTP (nécessite une connexion Internet pour l'envoi d'email)
-7. Réponse : Message générique (sécurité)
-
-**Note** : Cette fonctionnalité nécessite une connexion Internet pour l'envoi d'email, mais le reste de l'application fonctionne hors ligne.
-
-#### Étape 2 : Vérification du code OTP
-**Endpoint Local** : `POST http://localhost:<port>/api/users/verify-otp`
-
-**Workflow** :
-1. L'utilisateur saisit son email et le code OTP reçu par email dans l'interface desktop
-2. Le système vérifie localement dans SQLite :
-   - Vérifie le format du code (6 chiffres)
-   - Récupère le code le plus récent pour cet email
-   - Vérifie qu'il n'est pas expiré
-   - Compare le code fourni avec le hash stocké
-3. Si valide :
-   - Marque le code comme utilisé dans la base locale
-   - Génère un token de réinitialisation temporaire (30 minutes)
-4. Réponse : Retourne le token de réinitialisation
-
-#### Étape 3 : Réinitialisation du mot de passe
-**Endpoint Local** : `POST http://localhost:<port>/api/users/reset-password`
-
-**Workflow** :
-1. L'utilisateur envoie depuis l'interface desktop :
-   - Le token de réinitialisation
-   - Le nouveau mot de passe (minimum 6 caractères)
-2. Le système traite localement :
-   - Vérifie la validité du token
-   - Hash le nouveau mot de passe
-   - Met à jour le mot de passe dans la base SQLite locale
-   - Supprime tous les codes OTP pour cet email
-   - Envoie un email de confirmation (nécessite Internet)
-3. Réponse : Confirmation de réinitialisation
-
-**Résultat** : Mot de passe modifié localement, utilisateur peut se connecter avec le nouveau mot de passe
-
-**Note** : Rate limiting appliqué à chaque étape pour éviter les abus. Seul l'envoi d'email nécessite Internet.
+**Note (mode desktop)** : Les anciennes pages `/login` et `/register` redirigent vers `/`. Le flux « mot de passe oublié » (`/forgot-password`) et les endpoints associés existent encore côté backend mais ne sont pas utilisés dans le flux desktop. En secours (ex. profil déjà créé avec ancienne auth), un script backend `node backend/scripts/reset-password.js <email> <nouveau_mot_de_passe>` permet de réinitialiser un mot de passe en base.
 
 ---
 
@@ -409,40 +366,30 @@ Ce document décrit le processus complet d'utilisation du système Task Manager 
 
 ## 🔄 6. WORKFLOW COMPLET TYPIQUE
 
-### Scénario 1 : Nouvel Utilisateur
+### Scénario 1 : Nouvel Utilisateur (mode desktop)
 
 1. **Installation et Premier Lancement**
    - Installation de l'application desktop (.exe)
-   - Premier lancement de l'application
-   - Le backend démarre automatiquement en arrière-plan
-   - La base de données SQLite est créée automatiquement
+   - Premier lancement : le backend démarre, la base SQLite est créée/initialisée
+   - Appel à `GET /api/users/profile/status` → `hasUser: false`
 
-2. **Inscription**
-   - Affichage de la fenêtre d'inscription dans l'application
-   - Remplissage du formulaire dans l'interface desktop
-   - Acceptation des conditions RGPD (checkboxes)
-   - Sélection optionnelle d'un avatar depuis l'ordinateur
-   - Création du compte dans la base locale
+2. **Onboarding (création du profil)**
+   - Redirection vers la page « Comment vous appelez-vous ? »
+   - Saisie du prénom ou nom (min. 2 caractères)
+   - `POST /api/users/setup` → création du profil (nom, utilisateur technique local), réception du token JWT
+   - Stockage du token en localStorage, redirection vers **Kanban** (`/kanban`)
 
-3. **Connexion**
-   - Affichage de la fenêtre de connexion
-   - Saisie email/mot de passe
-   - Réception du token JWT
-   - Stockage du token dans le localStorage de l'application
+3. **Première Utilisation**
+   - Affichage du **Kanban** (vue principale des tâches)
+   - Navigation : **Kanban**, **Calendrier** (pas de liens « Aujourd’hui », « Tâches » ni « Tags » dans la sidebar ; les tags se gèrent dans le Kanban)
+   - Création de tâches depuis le Kanban (« + Ajouter une carte ») ou formulaire associé
+   - Profil accessible pour modifier le nom, l’avatar, et optionnellement **définir un code PIN** (section Sécurité)
 
-4. **Première Utilisation**
-   - Affichage de l'interface principale
-   - Récupération automatique du profil (`GET /me`)
-   - Affichage de la liste vide des tâches (`GET /tasks`)
-   - Création de la première tâche (`POST /tasks`)
-
-5. **Utilisation Quotidienne**
-   - Lancement de l'application desktop
-   - Connexion automatique avec le token stocké
-   - Création/modification/suppression de tâches
-   - Mise à jour en temps réel via WebSocket local
-   - Gestion du profil (avatar, etc.)
-   - Toutes les données sont sauvegardées localement
+4. **Utilisation Quotidienne**
+   - Lancement de l’application → si pas de PIN : ouverture automatique (`POST /desktop-session`) → Kanban
+   - Si PIN défini : écran de verrouillage → saisie du PIN (`POST /verify-pin`) → Kanban
+   - Création / modification / suppression de tâches ; mise à jour en temps réel via WebSocket local
+   - « Verrouiller maintenant » (profil) : suppression du token, redirection vers l’écran PIN
 
 ---
 
@@ -451,52 +398,42 @@ Ce document décrit le processus complet d'utilisation du système Task Manager 
 1. **Lancement de l'Application**
    - Double-clic sur l'icône de l'application desktop
    - Le backend démarre automatiquement
-   - L'application vérifie si un token existe
+   - Appel à `GET /api/users/profile/status` pour déterminer l'état (onboarding / verrouillé / authentifié)
 
-2. **Connexion**
-   - Si token valide : connexion automatique
-   - Si pas de token : affichage de la fenêtre de connexion
-   - Authentification avec email/mot de passe
-   - Réception du token JWT
-   - Affichage de l'interface principale
+2. **Accès à l'interface**
+   - **Pas de profil** : redirection vers onboarding (création du profil avec le nom)
+   - **Profil sans PIN** : `POST /desktop-session` → token reçu → affichage du Kanban
+   - **Profil avec PIN et token valide** : affichage du Kanban
+   - **Profil avec PIN et pas de token** : écran de verrouillage → saisie du PIN → `POST /verify-pin` → Kanban
 
 3. **Gestion des Tâches**
-   - Consultation de la liste des tâches (`GET /tasks`) depuis la base locale
-   - Création de nouvelles tâches (`POST /tasks`) - sauvegarde locale
-   - Modification de tâches existantes (`PUT /tasks/:id`) - mise à jour locale
-   - Changement de statut (todo → in-progress → done) via l'interface
-   - Suppression de tâches terminées (`DELETE /tasks/:id`) - suppression locale
-   - Toutes les modifications sont visibles immédiatement
+   - Vue principale : **Kanban** (`/kanban`) ; la route `/tasks` redirige vers `/kanban`
+   - Consultation des tâches (`GET /api/tasks`), création (`POST /api/tasks`), modification (`PUT /api/tasks/:id`), suppression (`DELETE /api/tasks/:id`)
+   - Changement de statut par glisser-déposer entre colonnes (À faire / En cours / Terminé)
+   - Mise à jour en temps réel via WebSocket local
 
 4. **Mise à Jour du Profil**
-   - Accès aux paramètres du profil dans l'interface
-   - Modification de l'avatar (`PUT /users/updateavatar`) - sauvegarde locale
+   - Accès à la page **Profil** : nom, avatar (`PUT /users/updateavatar`), section **Sécurité** (définir le PIN, « Verrouiller maintenant »)
    - Consultation du profil (`GET /users/me`)
 
 ---
 
-### Scénario 3 : Mot de Passe Oublié
+### Scénario 3 : Verrouillage / Déverrouillage (PIN)
 
-1. **Demande de Réinitialisation**
-   - Accès à la fenêtre "Mot de passe oublié" dans l'application desktop
-   - Saisie de l'email
-   - Génération et sauvegarde locale du code OTP
-   - Envoi d'un code OTP par email (nécessite Internet)
-   - Réception d'un code OTP par email
+1. **Définir un PIN** (optionnel)
+   - Accès à la page **Profil** → section **Sécurité**
+   - Saisie du nouveau code PIN (4 à 8 chiffres) et confirmation
+   - `PATCH /api/users/profile/pin` → PIN hashé et enregistré en base
 
-2. **Vérification du Code**
-   - Accès à la fenêtre de vérification OTP dans l'application
-   - Saisie de l'email et du code OTP reçu
-   - Vérification locale du code dans la base SQLite
-   - Réception d'un token de réinitialisation
+2. **Verrouiller maintenant**
+   - Depuis le profil, clic sur « Verrouiller maintenant »
+   - Suppression du token en localStorage, redirection vers l’écran de verrouillage
 
-3. **Nouveau Mot de Passe**
-   - Accès à la fenêtre de réinitialisation dans l'application
-   - Saisie du token et du nouveau mot de passe
-   - Mise à jour locale du mot de passe dans SQLite
-   - Confirmation de réinitialisation
-   - Retour à l'écran de connexion
-   - Connexion avec le nouveau mot de passe
+3. **Déverrouiller**
+   - Saisie du code PIN sur l’écran de verrouillage
+   - `POST /api/users/verify-pin` → si valide, réception du token et redirection vers le Kanban
+
+**Note** : En mode desktop, le flux « mot de passe oublié » (email + OTP) n’est pas utilisé. En secours, le script `backend/scripts/reset-password.js` permet de réinitialiser un mot de passe en base si besoin.
 
 ---
 
@@ -522,7 +459,7 @@ Ce document décrit le processus complet d'utilisation du système Task Manager 
    - Confirmation avec dialog de sécurité (action irréversible)
    - Suppression définitive de toutes les données de la base SQLite locale
    - Suppression des fichiers associés (avatar) du disque local
-   - Retour à l'écran de connexion/inscription
+   - Retour à l'écran d'onboarding (premier lancement)
 
 ---
 
@@ -607,15 +544,22 @@ task-manager-api/
 
 ### Routes Locales (http://localhost:<port>/api/...)
 
-#### Routes Publiques
-- `POST /api/users/register` - Inscription
-- `POST /api/users/login` - Connexion
-- `POST /api/users/forgot-password` - Demande réinitialisation
+#### Routes Publiques (mode desktop)
+- `GET /api/users/profile/status` - Statut du profil (hasUser, hasPin, userName)
+- `POST /api/users/setup` - Premier lancement : création du profil (body: `{ name }`)
+- `POST /api/users/desktop-session` - Obtenir un token si pas de PIN
+- `POST /api/users/verify-pin` - Déverrouillage (body: `{ pin }`)
+
+#### Anciennes routes (redirigées en desktop, conservées au besoin)
+- `POST /api/users/register` - Inscription (non utilisée en flux desktop)
+- `POST /api/users/login` - Connexion (non utilisée en flux desktop)
+- `POST /api/users/forgot-password` - Demande réinitialisation (non utilisée en flux desktop)
 - `POST /api/users/verify-otp` - Vérification OTP
 - `POST /api/users/reset-password` - Réinitialisation
 
 #### Routes Protégées (Authentification requise)
 - `GET /api/users/me` - Profil utilisateur
+- `PATCH /api/users/profile/pin` - Définir ou modifier le code PIN
 - `PUT /api/users/updateavatar` - Mise à jour avatar
 - `GET /api/users/me/export` - Export données
 - `GET /api/users/me/export/portable` - Export portable
@@ -636,7 +580,7 @@ task-manager-api/
 1. **Lancement** : L'application démarre comme une application desktop classique (double-clic sur l'exécutable)
 2. **Backend Intégré** : Le serveur Express démarre automatiquement en arrière-plan, aucun serveur externe requis
 3. **Base de Données Locale** : SQLite stockée dans `data/task-manager.db` sur la machine de l'utilisateur
-4. **Fonctionnement Hors Ligne** : L'application fonctionne entièrement hors ligne, sauf pour l'envoi d'emails (réinitialisation mot de passe)
+4. **Fonctionnement Hors Ligne** : L'application fonctionne entièrement hors ligne (pas d'email en flux desktop)
 
 ### Authentification
 1. **Token JWT** : Doit être inclus dans le header `Authorization: Bearer <token>` pour toutes les routes protégées
@@ -669,5 +613,5 @@ task-manager-api/
 
 ---
 
-**Dernière mise à jour** : 2025-01-16
+**Dernière mise à jour** : 2026-02-18 — Mode desktop : onboarding + PIN ; navigation Kanban / Calendrier ; Suivi financier prévu (voir `docs/SUIVI_FINANCIER_IMPLEMENTATION.md`).
 
