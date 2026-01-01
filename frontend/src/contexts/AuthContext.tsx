@@ -10,18 +10,18 @@ interface User {
   avatar: string | null;
 }
 
+export type AuthStatus = 'loading' | 'onboarding' | 'locked' | 'authenticated';
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  status: AuthStatus;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: {
-    name: string;
-    email: string;
-    password: string;
-    consentPrivacyPolicy: boolean;
-    consentTermsOfService: boolean;
-  }) => Promise<void>;
+  userName: string | null;
+  completeOnboarding: (name: string) => Promise<void>;
+  unlock: (pin: string) => Promise<void>;
+  lock: () => void;
+  setPin: (pin: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
@@ -32,66 +32,105 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<AuthStatus>('loading');
+  const [userName, setUserName] = useState<string | null>(null);
 
-  // Vérifier l'authentification au chargement
   useEffect(() => {
     checkAuth();
   }, []);
 
   const checkAuth = async () => {
-    const token = getAuthToken();
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await authAPI.getMe();
-      setUser(response);
+      const profile = await authAPI.getProfileStatus();
+      setUserName(profile.userName);
+
+      if (!profile.hasUser) {
+        setStatus('onboarding');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      if (profile.hasPin) {
+        const token = getAuthToken();
+        if (!token) {
+          setStatus('locked');
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        try {
+          const me = await authAPI.getMe();
+          setUser(me);
+          setStatus('authenticated');
+        } catch {
+          removeAuthToken();
+          setStatus('locked');
+          setUser(null);
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Pas de PIN : ouvrir session automatiquement
+      try {
+        const session = await authAPI.desktopSession();
+        setUser(session.user);
+        setStatus('authenticated');
+      } catch {
+        setStatus('locked');
+        setUser(null);
+      }
     } catch (error) {
-      // Token invalide, supprimer
-      removeAuthToken();
+      console.error('Erreur checkAuth:', error);
+      setStatus('onboarding');
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (email: string, password: string) => {
-    const response = await authAPI.login(email, password);
-    setUser(response.user);
+  const completeOnboarding = async (name: string) => {
+    const { user: newUser } = await authAPI.setup(name);
+    setUser(newUser);
+    setUserName(newUser.name);
+    setStatus('authenticated');
   };
 
-  const register = async (data: {
-    name: string;
-    email: string;
-    password: string;
-    consentPrivacyPolicy: boolean;
-    consentTermsOfService: boolean;
-  }) => {
-    await authAPI.register(data);
-    // Après l'inscription, connecter automatiquement
-    await login(data.email, data.password);
+  const unlock = async (pin: string) => {
+    const { user: u } = await authAPI.verifyPin(pin);
+    setUser(u);
+    setStatus('authenticated');
+  };
+
+  const lock = () => {
+    removeAuthToken();
+    setUser(null);
+    setStatus('locked');
+  };
+
+  const setPin = async (pin: string) => {
+    await authAPI.setPin(pin);
   };
 
   const logout = () => {
-    authAPI.logout();
+    removeAuthToken();
     setUser(null);
+    setStatus('onboarding');
+    setUserName(null);
   };
 
   const refreshUser = async () => {
     try {
-      const response = await authAPI.getMe();
-      setUser(response);
-    } catch (error) {
+      const me = await authAPI.getMe();
+      setUser(me);
+    } catch {
       setUser(null);
     }
   };
 
   const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      setUser({ ...user, ...userData });
-    }
+    if (user) setUser({ ...user, ...userData });
   };
 
   return (
@@ -99,9 +138,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         loading,
-        isAuthenticated: !!user,
-        login,
-        register,
+        status,
+        isAuthenticated: status === 'authenticated',
+        userName,
+        completeOnboarding,
+        unlock,
+        lock,
+        setPin,
         logout,
         refreshUser,
         updateUser,
@@ -119,4 +162,3 @@ export function useAuth() {
   }
   return context;
 }
-
