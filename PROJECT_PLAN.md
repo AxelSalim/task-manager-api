@@ -96,29 +96,30 @@
 - [x] Créer la structure de dossiers frontend
 - [x] Configurer le routing
 
-#### 3.2 Authentification Frontend
-- [x] Créer la page de connexion (`/login`)
-- [x] Créer la page d'inscription (`/register`)
-- [x] Créer le composant de formulaire avec Formik + Yup
-- [x] Implémenter la gestion du token JWT (localStorage)
-- [x] Créer un contexte d'authentification
-- [x] Créer un middleware de protection des routes
-- [ ] Tester le flux d'authentification complet
+#### 3.2 Authentification Frontend (mode desktop)
+- [x] **Onboarding** : premier lancement → page « Comment vous appelez-vous ? » → création du profil (nom uniquement)
+- [x] **Session desktop** : ouverture automatique si pas de PIN ; sinon écran de verrouillage
+- [x] **Verrouillage PIN** : écran de déverrouillage (saisie PIN), option « Verrouiller maintenant » et définition du PIN dans le profil
+- [x] Endpoints backend : `GET /profile/status`, `POST /setup`, `POST /desktop-session`, `POST /verify-pin`, `PATCH /profile/pin`
+- [x] Contexte d’authentification (statuts : onboarding, locked, authenticated)
+- [x] Protection des routes (redirection vers onboarding ou écran PIN si non authentifié)
+- [x] Pages `/login` et `/register` redirigent vers `/` (flux desktop uniquement)
+- [ ] Tester le flux complet (onboarding → Kanban → PIN → verrouiller → déverrouiller)
 
 #### 3.3 Interface Principale (Layout)
 - [x] Créer le composant `Header` (barre supérieure)
 - [x] Créer le composant `Sidebar` (menu latéral)
 - [x] Créer le layout principal avec Header + Sidebar + Content
-- [x] Ajouter la navigation entre les pages
+- [x] **Navigation actuelle** : Kanban (vue principale), Calendrier ; pas de liens « Aujourd’hui », « Tâches » ni « Tags » (les tags se gèrent dans le Kanban)
+- [x] La route `/tasks` redirige vers `/kanban`
 - [ ] Implémenter le mode sombre/clair (optionnel pour MVP)
 
-#### 3.4 Vue Liste des Tâches (MVP)
-- [x] Créer la page principale `/tasks`
-- [x] Créer le composant `TaskList` (liste des tâches)
-- [x] Créer le composant `TaskCard` (carte de tâche)
+#### 3.4 Vue principale : Kanban (MVP)
+- [x] La vue principale des tâches est le **Kanban** (`/kanban`) ; `/tasks` redirige vers `/kanban`
+- [x] Créer le composant `TaskList` / listes utilisées dans le Kanban
+- [x] Créer le composant `TaskCard` (carte de tâche, utilisé dans Kanban)
 - [x] Implémenter l'affichage des tâches (GET /api/tasks)
-- [x] Ajouter les filtres basiques (toutes, en cours, terminées)
-- [x] Implémenter le tri (par date, priorité)
+- [x] Filtres et tri disponibles dans le Kanban (colonnes par statut)
 
 #### 3.5 CRUD Tâches Frontend
 - [x] Créer le formulaire de création de tâche (modal ou page)
@@ -367,10 +368,10 @@
 - [ ] Gérer les conflits lors de l'import
 
 #### 12.3 Gestion du Compte
-- [ ] Permettre le changement de mot de passe
+- [x] **Mode desktop** : pas de mot de passe (profil minimal + PIN) ; script `backend/scripts/reset-password.js` pour secours si besoin
 - [ ] Permettre la suppression du compte
 - [ ] Implémenter la confirmation avant suppression
-- [ ] Nettoyer toutes les données associées
+- [ ] Nettoyer toutes les données associées (tâches, tags, données finance si implémenté)
 
 ### Phase 13 : Améliorations UX/UI
 
@@ -434,21 +435,21 @@
 
 ### Phase 16 : Packaging Final
 
-#### 16.1 Configuration Electron Builder
+#### 17.1 Configuration Electron Builder
 - [ ] Configurer pour Windows (.exe)
 - [ ] Configurer pour macOS (.dmg) si nécessaire
 - [ ] Configurer pour Linux (.AppImage) si nécessaire
 - [ ] Ajouter une icône d'application
 - [ ] Configurer les métadonnées (version, description, etc.)
 
-#### 16.2 Tests de Distribution
+#### 17.2 Tests de Distribution
 - [ ] Tester l'installation sur une machine vierge
 - [ ] Vérifier que toutes les dépendances sont incluses
 - [ ] Tester la mise à jour de l'application
 - [ ] Vérifier la taille de l'exécutable
 - [ ] Optimiser la taille si nécessaire
 
-#### 16.3 Finalisation
+#### 17.3 Finalisation
 - [ ] Créer un fichier CHANGELOG
 - [ ] Créer un fichier LICENSE
 - [ ] Préparer les notes de version
@@ -477,8 +478,9 @@
 3. **Phase 5 (tags, rappels, récurrence, notes)** : Déjà en place ou en cours ; finaliser si besoin
 4. **Phase 11** : Rapports (temps par liste/tag, ponctualité) — comme Blitzit "Reports"
 5. **Phase 6 (Kanban, Calendrier)** : Vues multiples déjà prévues
-6. **Phase 12-13** : Paramètres (thème sombre/clair), raccourcis clavier
-7. **Phase 10, 14-16** : Recherche, perf, tests, packaging
+6. **Phase 16** : Suivi Financier (voir `docs/SUIVI_FINANCIER_IMPLEMENTATION.md`)
+7. **Phase 12-13** : Paramètres (thème sombre/clair), raccourcis clavier
+8. **Phase 10, 14-15, 17** : Recherche, perf, tests, packaging
 
 ---
 
@@ -494,4 +496,6 @@
 **Dernière mise à jour** : 2026-02-18
 
 **Alignement Blitzit** : Vision et tableau de fonctionnalités ajoutés ; Phase 5.7 (estimation/suivi temps), priorités et Focus Mode (6.4) précisés pour un produit type Blitzit entièrement gratuit.
+
+**Mode desktop** : Authentification simplifiée (onboarding au premier lancement + PIN optionnel) ; navigation réduite à Kanban et Calendrier ; vue principale = Kanban. Module Suivi Financier prévu (Phase 16, voir `docs/SUIVI_FINANCIER_IMPLEMENTATION.md`).
 
