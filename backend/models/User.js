@@ -6,6 +6,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       User.hasMany(models.Task, { foreignKey: "userId", as: "tasks" });
       User.hasMany(models.Tag, { foreignKey: "userId", as: "tags" });
+      User.hasMany(models.FinanceCategory, { foreignKey: "userId", as: "financeCategories" });
+      User.hasMany(models.FinanceTransaction, { foreignKey: "userId", as: "financeTransactions" });
     }
   }
   User.init({
