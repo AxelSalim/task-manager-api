@@ -27,12 +27,14 @@ import {
   Check,
   Trash2,
   LayoutGrid,
+  Wallet,
 } from 'lucide-react';
 
-/** Navigation : Kanban puis Calendrier (les tags se gèrent dans le Kanban) */
+/** Navigation : Kanban, Calendrier, Suivi financier */
 const mainNavigation = [
   { name: 'Kanban', href: '/kanban', icon: LayoutGrid, count: null },
   { name: 'Calendrier', href: '/calendar', icon: Calendar, count: null },
+  { name: 'Suivi financier', href: '/finance', icon: Wallet, count: null },
 ];
 
 /** Listes (type Blitzit: simplifié, listes utilisateur à venir) */
