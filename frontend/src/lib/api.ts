@@ -446,3 +446,96 @@ export const tagsAPI = {
   },
 };
 
+/** Types de flux finance */
+export type FinanceTransactionType = 'revenus' | 'factures' | 'depenses' | 'epargnes' | 'credits';
+
+export interface FinanceCategoryDto {
+  id: number;
+  userId: number;
+  name: string;
+  type: FinanceTransactionType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinanceTransactionDto {
+  id: number;
+  userId: number;
+  date: string;
+  type: FinanceTransactionType;
+  categoryId: number | null;
+  category: { id: number; name: string; type: string } | null;
+  amount: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * API Suivi financier
+ */
+export const financeAPI = {
+  getCategories: async (type?: FinanceTransactionType) => {
+    const q = type ? `?type=${type}` : '';
+    return apiRequest<FinanceCategoryDto[]>(`/api/finance/categories${q}`);
+  },
+
+  createCategory: async (data: { name: string; type: FinanceTransactionType }) => {
+    return apiRequest<FinanceCategoryDto>('/api/finance/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateCategory: async (id: number, data: { name?: string; type?: FinanceTransactionType }) => {
+    return apiRequest<FinanceCategoryDto>(`/api/finance/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteCategory: async (id: number) => {
+    return apiRequest<null>(`/api/finance/categories/${id}`, { method: 'DELETE' });
+  },
+
+  getTransactions: async (params?: { year?: number; month?: number; type?: FinanceTransactionType; categoryId?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.year != null) search.set('year', String(params.year));
+    if (params?.month != null) search.set('month', String(params.month));
+    if (params?.type) search.set('type', params.type);
+    if (params?.categoryId != null) search.set('categoryId', String(params.categoryId));
+    const q = search.toString() ? `?${search.toString()}` : '';
+    return apiRequest<FinanceTransactionDto[]>(`/api/finance/transactions${q}`);
+  },
+
+  createTransaction: async (data: {
+    date: string;
+    type: FinanceTransactionType;
+    categoryId?: number | null;
+    amount: number;
+    comment?: string | null;
+  }) => {
+    return apiRequest<FinanceTransactionDto>('/api/finance/transactions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateTransaction: async (id: number, data: {
+    date?: string;
+    type?: FinanceTransactionType;
+    categoryId?: number | null;
+    amount?: number;
+    comment?: string | null;
+  }) => {
+    return apiRequest<FinanceTransactionDto>(`/api/finance/transactions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteTransaction: async (id: number) => {
+    return apiRequest<null>(`/api/finance/transactions/${id}`, { method: 'DELETE' });
+  },
+};
+
