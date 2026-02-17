@@ -116,7 +116,7 @@ export default function LoginPage() {
                     id="email"
                     name="email"
                     type="email"
-                    className="h-11 bg-slate-50 border-slate-200 text-slate-900 pl-10 pr-4 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
+                    className="h-11 border-slate-200 text-slate-900 pl-10 pr-4 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
                     autoComplete="off"
                   />
                 </div>
@@ -180,7 +180,7 @@ export default function LoginPage() {
               {/* Bouton de connexion */}
               <Button
                 type="submit"
-                className="w-full h-11 mt-2 bg-primary text-white hover:bg-primary/90 font-semibold text-md rounded-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                className="w-full h-11 mt-2 bg-primary text-white hover:bg-primary/90 font-semibold text-md rounded-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

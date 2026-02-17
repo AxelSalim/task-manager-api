@@ -30,12 +30,14 @@ import {
   Check,
   Trash2,
   Tag,
+  LayoutGrid,
 } from 'lucide-react';
 
 const mainNavigation = [
   { name: 'Tout', href: '/tasks', icon: CheckSquare, count: 189 },
   { name: "Aujourd'hui", href: '/tasks?filter=today', icon: CheckSquare, count: 9 },
   { name: 'Demain', href: '/tasks?filter=tomorrow', icon: CheckSquare, count: 6 },
+  { name: 'Kanban', href: '/kanban', icon: LayoutGrid, count: null },
   { name: 'Calendrier', href: '/calendar', icon: Calendar, count: null },
   { name: 'Tags', href: '/tags', icon: Tag, count: null },
   { name: 'Assigné à moi', href: '/tasks?filter=assigned', icon: User, count: 12 },

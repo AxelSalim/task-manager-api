@@ -271,7 +271,7 @@ export default function RegisterPage() {
                 {/* Bouton d'inscription */}
                 <Button
                   type="submit"
-                  className="w-full h-11 mt-2 bg-primary text-white hover:bg-primary/90 font-semibold text-md rounded-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  className="w-full h-11 mt-2 bg-primary text-white hover:bg-primary/90 font-semibold text-md rounded-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
