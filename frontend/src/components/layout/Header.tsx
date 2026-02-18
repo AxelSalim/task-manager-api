@@ -35,21 +35,27 @@ export function Header() {
   };
 
   return (
-    <header className="min-h-[50px] h-[50px] border-b border-slate-200 bg-white flex items-center justify-between px-6 sticky top-0 z-50">
-      <SidebarTrigger className="cursor-pointer" />
+    <header className="min-h-[52px] h-[52px] border-b border-slate-200 bg-white flex items-center justify-between px-6 sticky top-0 z-50 shrink-0">
+      <SidebarTrigger className="cursor-pointer min-h-11 min-w-11 rounded-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-label="Ouvrir ou fermer le menu" />
       {/* Menu utilisateur */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="h-10 w-10 cursor-pointer">
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-11 w-11 min-h-11 min-w-11 cursor-pointer rounded-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          aria-label="Rechercher"
+        >
           <Search className="h-5 w-5" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-10 w-10 rounded-full cursor-pointer"
+              className="relative h-11 w-11 min-h-11 min-w-11 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-label="Menu utilisateur"
             >
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={getAvatarUrl(user?.avatar) || undefined} alt={user?.name || 'User'} />
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={getAvatarUrl(user?.avatar) || undefined} alt={user?.name ? `Avatar de ${user.name}` : 'Avatar utilisateur'} />
                 <AvatarFallback className="bg-primary text-white">
                   {user?.name ? getInitials(user.name) : 'U'}
                 </AvatarFallback>
