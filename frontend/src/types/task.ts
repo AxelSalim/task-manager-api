@@ -14,6 +14,10 @@ export interface Task {
   priority: 'low' | 'normal' | 'high' | 'urgent';
   dueDate: string | null;
   reminderDate: string | null;
+  /** Durée estimée en minutes (type Blitzit "Est") */
+  estimatedMinutes?: number | null;
+  /** Temps passé en minutes (type Blitzit "Done") */
+  spentMinutes?: number;
   repeatPattern?: {
     type: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
     interval?: number;

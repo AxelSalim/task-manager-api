@@ -7,6 +7,7 @@ import { TaskList } from '@/components/tasks/TaskList';
 import { TaskForm } from '@/components/tasks/TaskForm';
 import { Task } from '@/types/task';
 import { Tag } from '@/types/tag';
+import { RepeatPattern } from '@/components/tasks/RepeatSelector';
 import { tasksAPI, tagsAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
@@ -157,18 +158,29 @@ export default function TasksPage() {
     priority: Task['priority'];
     dueDate?: string;
     reminderDate?: string;
-    repeatPattern?: any;
+    repeatPattern?: RepeatPattern;
     tagIds?: number[];
+    estimatedMinutes?: number | null;
+    spentMinutes?: number;
   }) => {
     try {
       if (editingTask) {
-        await tasksAPI.update(editingTask.id, { ...values, tagIds: values.tagIds });
+        await tasksAPI.update(editingTask.id, {
+          ...values,
+          tagIds: values.tagIds,
+          estimatedMinutes: values.estimatedMinutes,
+          spentMinutes: values.spentMinutes,
+        });
         toast({
           title: 'Tâche mise à jour',
           description: 'La tâche a été mise à jour avec succès.',
         });
       } else {
-        await tasksAPI.create({ ...values, tagIds: values.tagIds });
+        await tasksAPI.create({
+          ...values,
+          tagIds: values.tagIds,
+          estimatedMinutes: values.estimatedMinutes,
+        });
         toast({
           title: 'Tâche créée',
           description: 'La tâche a été créée avec succès.',

@@ -76,6 +76,17 @@ module.exports = (sequelize, DataTypes) => {
         this.setDataValue('subtasks', JSON.stringify(value || []));
       }
     },
+    estimatedMinutes: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: 'Durée estimée en minutes (Est, type Blitzit)',
+    },
+    spentMinutes: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      comment: 'Temps passé en minutes (Done, type Blitzit)',
+    },
   }, {
     sequelize,
     modelName: "Task",

@@ -37,6 +37,8 @@ const TaskController = {
         reminderDate: task.reminderDate,
         repeatPattern: task.repeatPattern,
         subtasks: task.subtasks || [],
+        estimatedMinutes: task.estimatedMinutes ?? null,
+        spentMinutes: task.spentMinutes ?? 0,
         tags: task.tags ? task.tags.map(tag => ({
           id: tag.id,
           name: tag.name,
@@ -62,7 +64,7 @@ const TaskController = {
   // Créer une nouvelle tâche
   async createTask(req, res) {
     try {
-      const { title, description, status, priority, dueDate, reminderDate, repeatPattern, subtasks } = req.body;
+      const { title, description, status, priority, dueDate, reminderDate, repeatPattern, subtasks, estimatedMinutes } = req.body;
   
       if (!title) {
         return HTTP_ERRORS.BAD_REQUEST(res, "Le titre est obligatoire");
@@ -102,6 +104,12 @@ const TaskController = {
         }
       }
 
+      // Valider estimatedMinutes si fourni (entier positif)
+      const validatedEstimatedMinutes =
+        estimatedMinutes != null
+          ? Math.max(0, parseInt(estimatedMinutes, 10) || 0) || null
+          : null;
+
       // Créer la tâche avec Sequelize
       const task = await Task.create({
         title,
@@ -112,6 +120,8 @@ const TaskController = {
         reminderDate: reminderDate || null,
         repeatPattern: validatedRepeatPattern,
         subtasks: validatedSubtasks,
+        estimatedMinutes: validatedEstimatedMinutes,
+        spentMinutes: 0,
         userId: req.user.id,
       });
 
@@ -155,7 +165,10 @@ const TaskController = {
         priority: taskWithUser.priority,
         dueDate: taskWithUser.dueDate,
         reminderDate: taskWithUser.reminderDate,
+        repeatPattern: taskWithUser.repeatPattern,
         subtasks: taskWithUser.subtasks || [],
+        estimatedMinutes: taskWithUser.estimatedMinutes ?? null,
+        spentMinutes: taskWithUser.spentMinutes ?? 0,
         tags: taskWithUser.tags ? taskWithUser.tags.map(tag => ({
           id: tag.id,
           name: tag.name,
@@ -218,6 +231,8 @@ const TaskController = {
         reminderDate: task.reminderDate,
         repeatPattern: task.repeatPattern,
         subtasks: task.subtasks || [],
+        estimatedMinutes: task.estimatedMinutes ?? null,
+        spentMinutes: task.spentMinutes ?? 0,
         tags: task.tags ? task.tags.map(tag => ({
           id: tag.id,
           name: tag.name,
@@ -243,7 +258,7 @@ const TaskController = {
   // Mettre à jour une tâche
   async updateTask(req, res) {
     try {
-      const { title, description, status, priority, dueDate, reminderDate, repeatPattern, subtasks } = req.body;
+      const { title, description, status, priority, dueDate, reminderDate, repeatPattern, subtasks, estimatedMinutes, spentMinutes } = req.body;
   
       // Vérifier que la tâche existe et appartient à l'utilisateur
       const task = await Task.findOne({
@@ -305,6 +320,18 @@ const TaskController = {
           }));
         }
       }
+      if (estimatedMinutes !== undefined) {
+        updateData.estimatedMinutes =
+          estimatedMinutes == null || estimatedMinutes === ''
+            ? null
+            : Math.max(0, parseInt(estimatedMinutes, 10) || 0);
+      }
+      if (spentMinutes !== undefined) {
+        const val = parseInt(spentMinutes, 10);
+        if (!Number.isNaN(val) && val >= 0) {
+          updateData.spentMinutes = val;
+        }
+      }
 
       // Mettre à jour la tâche
       await task.update(updateData);
@@ -353,7 +380,11 @@ const TaskController = {
         status: updatedTask.status,
         priority: updatedTask.priority,
         dueDate: updatedTask.dueDate,
+        reminderDate: updatedTask.reminderDate,
+        repeatPattern: updatedTask.repeatPattern,
         subtasks: updatedTask.subtasks || [],
+        estimatedMinutes: updatedTask.estimatedMinutes ?? null,
+        spentMinutes: updatedTask.spentMinutes ?? 0,
         tags: updatedTask.tags ? updatedTask.tags.map(tag => ({
           id: tag.id,
           name: tag.name,
@@ -466,7 +497,11 @@ const TaskController = {
         status: updatedTask.status,
         priority: updatedTask.priority,
         dueDate: updatedTask.dueDate,
+        reminderDate: updatedTask.reminderDate,
+        repeatPattern: updatedTask.repeatPattern,
         subtasks: updatedTask.subtasks || [],
+        estimatedMinutes: updatedTask.estimatedMinutes ?? null,
+        spentMinutes: updatedTask.spentMinutes ?? 0,
         tags: updatedTask.tags ? updatedTask.tags.map(tag => ({
           id: tag.id,
           name: tag.name,

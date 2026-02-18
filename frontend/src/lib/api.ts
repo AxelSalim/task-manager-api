@@ -234,6 +234,7 @@ export const tasksAPI = {
     reminderDate?: string;
     repeatPattern?: any;
     tagIds?: number[];
+    estimatedMinutes?: number | null;
   }) => {
     return apiRequest<{
       id: number;
@@ -263,6 +264,8 @@ export const tasksAPI = {
     reminderDate?: string;
     repeatPattern?: any;
     tagIds?: number[];
+    estimatedMinutes?: number | null;
+    spentMinutes?: number;
   }) => {
     return apiRequest<{
       id: number;

@@ -1,6 +1,28 @@
 # 📋 Plan de Développement - Task Manager Desktop
 
-> Application de gestion de tâches inspirée de TickTick, en version desktop exécutable
+> **Vision** : Application type [Blitzit](https://www.blitzit.app/) — to-do list + timer, mode focus, Pomodoro, listes, notes, planification, rapports — **100 % gratuite**, sans abonnement ni limitation.
+
+---
+
+## 🎯 Alignement avec Blitzit (tout gratuit)
+
+| Fonctionnalité Blitzit | Statut projet | Phase / Note |
+|------------------------|---------------|--------------|
+| To-do list + checklist satisfaisante | ✅ Fait (sous-tâches) | Phase 5.1 |
+| **Estimer et suivre le temps** (Est: X min, Done: Y min) | ❌ À faire | Phase 5.7 (nouveau) |
+| **Mode focus** (une tâche, timer visible) | ❌ À faire | Phase 6.4 |
+| **Timer flottant** (toujours visible pendant le focus) | ❌ À faire | Phase 6.4 + Electron |
+| **Pomodoro** (sprint travail / pause) | ❌ À faire | Phase 7 |
+| Listes / catégories | 🔶 Partiel (tags) | Phase 5.2, listes dédiées optionnel |
+| Notes sur les tâches (liens, texte) | ✅ Fait (description) | Phase 5.5 (markdown) |
+| Planification (dates, récurrence) | ✅ Fait | Phase 5.3, 5.4 |
+| Rappels / alertes | ✅ Fait (reminderDate) | Phase 5.3 |
+| **Rapports** (temps par liste, ponctualité) | ❌ À faire | Phase 11 |
+| Raccourcis clavier | ❌ À faire | Phase 13.1 |
+| Thème sombre / clair | ❌ Optionnel MVP | Phase 12.1 |
+| Export (PDF/rapports) | ❌ À faire | Phase 11 + 12.2 |
+
+*Pas de monétisation : tout est gratuit, pas de version “pro” ou payante.*
 
 ---
 
@@ -185,14 +207,16 @@
 - [ ] Implémenter l'édition en temps réel
 
 #### 5.6 Pièces Jointes
-- [ ] Ajouter le champ `attachments` (JSON) à la table `tasks`
-- [ ] Créer la structure de dossiers `data/storage/attachments/`
-- [ ] Créer l'endpoint API pour upload de pièces jointes
-- [ ] Créer l'endpoint API pour suppression de pièces jointes
-- [ ] Créer le composant `AttachmentList` dans le frontend
-- [ ] Implémenter l'upload multiple
-- [ ] Implémenter la prévisualisation (images)
-- [ ] Implémenter le téléchargement
+- [x] ~~Phase non nécessaire - ignorée~~
+
+#### 5.7 Estimation et suivi du temps (type Blitzit)
+- [x] Ajouter le champ `estimatedMinutes` (INTEGER, nullable) à la table `tasks`
+- [ ] Ajouter le champ `spentMinutes` (INTEGER, défaut 0) ou table `task_time_entries` pour cumul
+- [x] Créer une migration pour ces champs
+- [ ] Mettre à jour le modèle Task et le contrôleur (CRUD + PATCH pour temps)
+- [x] Dans le frontend : afficher "Est: X min" et "Done: Y min" sur chaque tâche
+- [x] Permettre de saisir l'estimation à la création/édition
+- [ ] Incrémenter le temps passé quand on marque "en cours" / "terminé" ou via le timer (Phase 7)
 
 ### Phase 6 : Vues Multiples
 
@@ -223,13 +247,14 @@
 - [ ] Grouper par date
 - [ ] Ajouter les filtres par période
 
-#### 6.4 Focus Mode
-- [ ] Créer la page `/focus`
-- [ ] Créer le composant `FocusView`
-- [ ] Implémenter l'affichage d'une seule tâche en plein écran
-- [ ] Masquer les distractions
-- [ ] Ajouter le timer Pomodoro intégré (voir Phase 7)
-- [ ] Permettre la navigation entre les tâches
+#### 6.4 Focus Mode (cœur Blitzit)
+- [ ] Créer la page `/focus` ou vue dédiée
+- [ ] Créer le composant `FocusView` (une tâche à la fois, plein écran ou fenêtre épurée)
+- [ ] **Timer flottant** : fenêtre ou panneau toujours visible avec compte à rebours (Electron : fenêtre secondaire "always on top" optionnelle)
+- [ ] Masquer les distractions (sidebar, liste complète)
+- [ ] Intégrer le timer Pomodoro (Phase 7) dans la vue focus
+- [ ] Au démarrage du focus : lancer le timer (estimation ou Pomodoro)
+- [ ] Permettre la navigation entre les tâches sans quitter le mode focus
 
 ### Phase 7 : Pomodoro Timer
 
@@ -243,9 +268,10 @@
 - [ ] Sauvegarder les sessions en base de données
 
 #### 7.2 Intégration avec les Tâches
-- [ ] Permettre de lancer un Pomodoro depuis une tâche
-- [ ] Afficher le timer dans la vue Focus
-- [ ] Afficher le timer dans la TaskCard
+- [ ] Permettre de lancer un Pomodoro depuis une tâche (bouton "Focus" / "Démarrer" sur TaskCard)
+- [ ] Afficher le timer dans la vue Focus (et en fenêtre flottante si Electron)
+- [ ] Afficher le timer dans la TaskCard (optionnel : mini timer ou "en cours")
+- [ ] **Lier le temps Pomodoro au temps passé** : ajouter les minutes complétées à `spentMinutes` de la tâche (Phase 5.7)
 - [ ] Afficher les statistiques de sessions par tâche
 
 #### 7.3 Statistiques Pomodoro
@@ -444,26 +470,28 @@
 
 ---
 
-## 🎯 Priorités
+## 🎯 Priorités (orientées Blitzit, tout gratuit)
 
-1. **MVP** : Fonctionnalités essentielles pour une utilisation de base
-2. **Phase 5-6** : Enrichissement des tâches et vues multiples (haute valeur)
-3. **Phase 7-9** : Pomodoro, Templates, Habitudes (valeur ajoutée)
-4. **Phase 10-12** : Recherche, Stats, Paramètres (amélioration UX)
-5. **Phase 13-16** : Polish, Tests, Packaging (finalisation)
+1. **MVP** : Fonctionnalités essentielles pour une utilisation de base (déjà bien avancé)
+2. **Phase 5.7 + 6.4 + 7** : **Cœur Blitzit** — estimation/suivi temps, mode focus + timer flottant, Pomodoro
+3. **Phase 5 (tags, rappels, récurrence, notes)** : Déjà en place ou en cours ; finaliser si besoin
+4. **Phase 11** : Rapports (temps par liste/tag, ponctualité) — comme Blitzit "Reports"
+5. **Phase 6 (Kanban, Calendrier)** : Vues multiples déjà prévues
+6. **Phase 12-13** : Paramètres (thème sombre/clair), raccourcis clavier
+7. **Phase 10, 14-16** : Recherche, perf, tests, packaging
 
 ---
 
 ## 📝 Notes
 
-- Cocher les cases `[ ]` au fur et à mesure de l'avancement
-- Prioriser le MVP pour avoir une version fonctionnelle rapidement
-- Itérer sur les fonctionnalités complètes selon les besoins
-- Tester régulièrement pour éviter l'accumulation de bugs
+- **Vision** : équivalent Blitzit, **100 % gratuit** — pas d’abonnement, pas de fonctionnalités payantes.
+- Cocher les cases `[ ]` au fur et à mesure de l'avancement.
+- Priorité après MVP : **estimation/suivi temps (5.7)** → **mode focus + timer flottant (6.4)** → **Pomodoro (7)** → rapports (11).
+- Tester régulièrement pour éviter l'accumulation de bugs.
 
 ---
 
-**Dernière mise à jour** : 2025-01-16
+**Dernière mise à jour** : 2026-02-18
 
-**Phase 3.6 terminée** : Profil Utilisateur avec upload d'avatar et modification du nom
+**Alignement Blitzit** : Vision et tableau de fonctionnalités ajoutés ; Phase 5.7 (estimation/suivi temps), priorités et Focus Mode (6.4) précisés pour un produit type Blitzit entièrement gratuit.
 

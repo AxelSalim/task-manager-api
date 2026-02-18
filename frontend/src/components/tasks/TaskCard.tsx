@@ -4,7 +4,7 @@ import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Calendar, Flag, MoreVertical, Trash2, Edit, Bell } from 'lucide-react';
+import { Calendar, Flag, MoreVertical, Trash2, Edit, Bell, Clock } from 'lucide-react';
 import { SubtaskList } from './SubtaskList';
 import { TagBadge } from '@/components/tags/TagBadge';
 import { MarkdownPreview } from '@/components/markdown/MarkdownPreview';
@@ -16,6 +16,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+function formatMinutes(min: number): string {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m > 0 ? `${h}h ${m}min` : `${h}h`;
+}
 
 interface TaskCardProps {
   task: Task;
@@ -171,6 +178,20 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }:
               >
                 <Bell className="h-3 w-3" />
                 {format(reminderDate, 'd MMM yyyy HH:mm', { locale: fr })}
+              </div>
+            )}
+
+            {/* Est / Done (type Blitzit) */}
+            {(task.estimatedMinutes != null || (task.spentMinutes ?? 0) > 0) && (
+              <div className="inline-flex items-center gap-1 text-xs text-slate-600">
+                <Clock className="h-3 w-3" />
+                {task.estimatedMinutes != null && (
+                  <span>Est: {formatMinutes(task.estimatedMinutes)}</span>
+                )}
+                {(task.estimatedMinutes != null && (task.spentMinutes ?? 0) > 0) && <span> · </span>}
+                {(task.spentMinutes ?? 0) > 0 && (
+                  <span>Fait: {formatMinutes(task.spentMinutes ?? 0)}</span>
+                )}
               </div>
             )}
           </div>

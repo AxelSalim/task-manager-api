@@ -42,12 +42,16 @@ interface TaskFormProps {
     reminderDate?: string;
     repeatPattern?: RepeatPattern;
     tagIds?: number[];
+    estimatedMinutes?: number | null;
+    spentMinutes?: number;
   }) => Promise<void>;
 }
 
 const taskSchema = Yup.object().shape({
   title: Yup.string().required('Le titre est requis').max(200, 'Le titre ne peut pas dépasser 200 caractères'),
   description: Yup.string().max(5000, 'La description ne peut pas dépasser 5000 caractères'),
+  estimatedMinutes: Yup.number().nullable().min(0, 'Doit être positif').integer('Nombre entier'),
+  spentMinutes: Yup.number().min(0, 'Doit être positif').integer('Nombre entier'),
 });
 
 export function TaskForm({ task, open, onOpenChange, onSubmit }: TaskFormProps) {
@@ -67,6 +71,8 @@ export function TaskForm({ task, open, onOpenChange, onSubmit }: TaskFormProps) 
       priority: (task?.priority || 'normal') as Task['priority'],
       dueDate: task?.dueDate ? new Date(task.dueDate) : null as Date | null,
       reminderDate: task?.reminderDate ? new Date(task.reminderDate) : null as Date | null,
+      estimatedMinutes: task?.estimatedMinutes ?? undefined as number | undefined,
+      spentMinutes: task?.spentMinutes ?? 0,
     },
     validationSchema: taskSchema,
     enableReinitialize: true,
@@ -81,6 +87,8 @@ export function TaskForm({ task, open, onOpenChange, onSubmit }: TaskFormProps) 
           reminderDate: values.reminderDate ? values.reminderDate.toISOString() : undefined,
           repeatPattern: repeatPattern || undefined,
           tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
+          estimatedMinutes: values.estimatedMinutes ?? undefined,
+          spentMinutes: values.spentMinutes !== undefined && values.spentMinutes > 0 ? values.spentMinutes : undefined,
         });
         resetForm();
         setSelectedTagIds([]);
@@ -244,6 +252,44 @@ Exemples de syntaxe :
                 </div>
                 
                 <Separator />
+
+                {/* Temps estimé / passé (type Blitzit) */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="estimatedMinutes" className="text-sm font-medium">Temps estimé (min)</Label>
+                    <Input
+                      id="estimatedMinutes"
+                      type="number"
+                      min={0}
+                      step={1}
+                      placeholder="Ex: 90"
+                      value={formik.values.estimatedMinutes === undefined || formik.values.estimatedMinutes === null ? '' : formik.values.estimatedMinutes}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        formik.setFieldValue('estimatedMinutes', v === '' ? undefined : parseInt(v, 10) || 0);
+                      }}
+                      onBlur={formik.handleBlur}
+                      className="h-11 text-base"
+                    />
+                    <p className="text-xs text-muted-foreground">Durée estimée en minutes (Est)</p>
+                  </div>
+                  {isEditing && (
+                    <div className="space-y-2">
+                      <Label htmlFor="spentMinutes" className="text-sm font-medium">Temps passé (min)</Label>
+                      <Input
+                        id="spentMinutes"
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={formik.values.spentMinutes ?? 0}
+                        onChange={(e) => formik.setFieldValue('spentMinutes', parseInt(e.target.value, 10) || 0)}
+                        onBlur={formik.handleBlur}
+                        className="h-11 text-base"
+                      />
+                      <p className="text-xs text-muted-foreground">Temps déjà passé (Done)</p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Répétition */}
                 <div className="space-y-2">
