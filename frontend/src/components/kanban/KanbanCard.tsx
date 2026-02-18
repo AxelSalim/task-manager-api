@@ -55,8 +55,8 @@ export function KanbanCard({ task, onClick, onDelete, isDone }: KanbanCardProps)
       {...listeners}
       onClick={onClick}
       className={cn(
-        'rounded-lg border bg-slate-700/90 border-slate-600 p-3 cursor-grab active:cursor-grabbing',
-        'shadow-sm hover:shadow-md hover:border-slate-500 transition-all duration-200 relative group',
+        'rounded-lg border bg-primary-foreground/10 border-primary-foreground/25 p-3 cursor-grab active:cursor-grabbing',
+        'shadow-sm hover:shadow-md hover:border-primary-foreground/40 transition-all duration-200 relative group',
         isDragging && 'opacity-50 rotate-1 shadow-lg z-50'
       )}
     >
@@ -71,8 +71,8 @@ export function KanbanCard({ task, onClick, onDelete, isDone }: KanbanCardProps)
         {/* Titre */}
         <h4
           className={cn(
-            'font-medium text-sm text-slate-100 line-clamp-2',
-            isDone && 'line-through text-slate-400'
+            'font-medium text-sm text-primary-foreground line-clamp-2',
+            isDone && 'line-through text-primary-foreground/60'
           )}
         >
           {task.title}
@@ -96,12 +96,12 @@ export function KanbanCard({ task, onClick, onDelete, isDone }: KanbanCardProps)
             <TagBadge key={tag.id} tag={tag} size="sm" />
           ))}
           {task.tags && task.tags.length > 4 && (
-            <span className="text-xs text-slate-500">+{task.tags.length - 4}</span>
+            <span className="text-xs text-primary-foreground/60">+{task.tags.length - 4}</span>
           )}
         </div>
 
         {/* Métadonnées — date + checklist X/Y (style image) */}
-        <div className="flex items-center gap-3 text-xs text-slate-400">
+        <div className="flex items-center gap-3 text-xs text-primary-foreground/70">
           {task.dueDate && (
             <span className="inline-flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
@@ -129,7 +129,7 @@ export function KanbanCard({ task, onClick, onDelete, isDone }: KanbanCardProps)
         variant="ghost"
         size="icon"
         onClick={handleDelete}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-slate-400 hover:text-red-400 hover:bg-slate-600/80 cursor-pointer"
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-primary-foreground/70 hover:text-red-400 hover:bg-primary-foreground/20 cursor-pointer"
         aria-label="Supprimer la tâche"
       >
         <Trash2 className="h-3.5 w-3.5" />

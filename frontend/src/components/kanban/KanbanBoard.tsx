@@ -26,10 +26,14 @@ interface KanbanBoardProps {
   onAddCard?: () => void;
 }
 
-const columns = [
-  { id: 'todo', title: 'À faire', status: 'todo' as const },
-  { id: 'in-progress', title: 'En cours', status: 'in-progress' as const },
-  { id: 'done', title: 'Terminé', status: 'done' as const },
+const columns: Array<
+  | { id: 'list'; title: string; status?: undefined }
+  | { id: string; title: string; status: 'todo' | 'in-progress' | 'done' }
+> = [
+  { id: 'list', title: 'Liste des tâches' },
+  { id: 'todo', title: 'À faire', status: 'todo' },
+  { id: 'in-progress', title: 'En cours', status: 'in-progress' },
+  { id: 'done', title: 'Terminé', status: 'done' },
 ];
 
 export function KanbanBoard({
@@ -50,10 +54,14 @@ export function KanbanBoard({
     })
   );
 
-  // Organiser les tâches par colonne
+  // Organiser les tâches par colonne : "Liste des tâches" = toutes, les autres par statut
   const tasksByColumn = columns.reduce(
     (acc, column) => {
-      acc[column.id] = tasks.filter((task) => task.status === column.status);
+      if (column.id === 'list') {
+        acc.list = tasks;
+      } else {
+        acc[column.id] = tasks.filter((task) => task.status === column.status);
+      }
       return acc;
     },
     {} as Record<string, Task[]>
@@ -79,17 +87,18 @@ export function KanbanBoard({
 
     // Si on dépose sur une colonne (over.id est l'id de la colonne)
     const targetColumn = columns.find((col) => col.id === over.id);
-    if (targetColumn && task.status !== targetColumn.status) {
+    // Ne pas changer le statut si on dépose sur "Liste des tâches" (vue seule)
+    const targetStatus = targetColumn && 'status' in targetColumn ? targetColumn.status : undefined;
+    if (targetStatus && task.status !== targetStatus) {
       try {
         // Mettre à jour le statut de la tâche
         await tasksAPI.update(taskId, {
-          ...task,
-          status: targetColumn.status,
+          status: targetStatus,
         });
 
         toast({
           title: 'Tâche déplacée',
-          description: `La tâche a été déplacée vers "${targetColumn.title}"`,
+          description: `La tâche a été déplacée vers "${targetColumn?.title ?? ''}"`,
         });
 
         // Rafraîchir les tâches
@@ -123,12 +132,12 @@ export function KanbanBoard({
             <KanbanColumn
               id={column.id}
               title={column.title}
-              status={column.status}
+              status={'status' in column ? column.status : undefined}
               tasks={tasksByColumn[column.id] || []}
               onTaskClick={onTaskClick}
               onTaskDelete={onTaskDelete}
               onAddCard={onAddCard}
-              isDoneColumn={column.status === 'done'}
+              isDoneColumn={'status' in column && column.status === 'done'}
             />
           </SortableContext>
         ))}

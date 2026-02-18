@@ -15,7 +15,7 @@ export default function DashboardLayout({
           <Sidebar />
           <SidebarInset className="h-screen overflow-y-auto bg-slate-50">
             <Header />
-            <main className="p-6 max-w-5xl mx-auto">
+            <main className="p-6">
               {children}
             </main>
           </SidebarInset>
