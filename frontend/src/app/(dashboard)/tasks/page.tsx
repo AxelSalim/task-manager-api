@@ -21,9 +21,8 @@ import { TagBadge } from '@/components/tags/TagBadge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Plus, Filter, ArrowUpDown, X } from 'lucide-react';
+import { Plus, Filter, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'todo' | 'in-progress' | 'done';
 type SortType = 'date-asc' | 'date-desc' | 'priority-asc' | 'priority-desc' | 'title-asc';
@@ -246,63 +245,45 @@ export default function TasksPage() {
   }, [tasks]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Mes Tâches</h1>
-          <p className="text-slate-600 mt-2">
-            Gérez toutes vos tâches en un seul endroit
-          </p>
+    <div className="space-y-5">
+      {/* Header type Blitzit: titre + progression X/Y DONE + CTA */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            {filter === 'all' ? 'Mes tâches' : filter === 'done' ? 'Terminées' : filter === 'todo' ? 'À faire' : 'En cours'}
+          </h1>
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+            {stats.done}/{stats.total} terminées
+          </span>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button
+          onClick={handleCreate}
+          className="min-h-10 cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 shrink-0"
+        >
+          <Plus className="h-4 w-4 mr-2 shrink-0" />
           Nouvelle tâche
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
-          <div className="text-sm text-slate-600">Total</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-blue-600">{stats.todo}</div>
-          <div className="text-sm text-slate-600">À faire</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-orange-600">{stats.inProgress}</div>
-          <div className="text-sm text-slate-600">En cours</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.done}</div>
-          <div className="text-sm text-slate-600">Terminées</div>
-        </div>
-      </div>
-
-      {/* Filters and Sort */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-slate-600" />
-          <Select value={filter} onValueChange={(value) => setFilter(value as FilterType)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrer" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes</SelectItem>
-              <SelectItem value="todo">À faire</SelectItem>
-              <SelectItem value="in-progress">En cours</SelectItem>
-              <SelectItem value="done">Terminées</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Filtres compacts (une ligne, style Blitzit) */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <Select value={filter} onValueChange={(value) => setFilter(value as FilterType)}>
+          <SelectTrigger className="w-[160px] h-9 text-sm">
+            <SelectValue placeholder="Filtrer" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes</SelectItem>
+            <SelectItem value="todo">À faire</SelectItem>
+            <SelectItem value="in-progress">En cours</SelectItem>
+            <SelectItem value="done">Terminées</SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* Filtre par tag */}
         <Popover open={isTagFilterOpen} onOpenChange={setIsTagFilterOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 cursor-pointer">
+              <Filter className="h-3.5 w-3.5 shrink-0" />
               Tags
               {selectedTagIds.length > 0 && (
                 <span className="ml-1 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
@@ -376,21 +357,18 @@ export default function TasksPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <ArrowUpDown className="h-4 w-4 text-slate-600" />
-          <Select value={sort} onValueChange={(value) => setSort(value as SortType)}>
-            <SelectTrigger className="w-[180px]">
+        <Select value={sort} onValueChange={(value) => setSort(value as SortType)}>
+          <SelectTrigger className="w-[160px] h-9 text-sm">
               <SelectValue placeholder="Trier" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date-desc">Date (récent)</SelectItem>
-              <SelectItem value="date-asc">Date (ancien)</SelectItem>
-              <SelectItem value="priority-desc">Priorité (haute)</SelectItem>
-              <SelectItem value="priority-asc">Priorité (basse)</SelectItem>
-              <SelectItem value="title-asc">Titre (A-Z)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <SelectContent>
+            <SelectItem value="date-desc">Date (récent)</SelectItem>
+            <SelectItem value="date-asc">Date (ancien)</SelectItem>
+            <SelectItem value="priority-desc">Priorité (haute)</SelectItem>
+            <SelectItem value="priority-asc">Priorité (basse)</SelectItem>
+            <SelectItem value="title-asc">Titre (A-Z)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Task List */}
