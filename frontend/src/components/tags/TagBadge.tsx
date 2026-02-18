@@ -50,7 +50,7 @@ export function TagBadge({
             onRemove(tag.id);
           }}
           className={cn(
-            'rounded-full p-0.5 transition-colors hover:bg-black/10',
+            'rounded-full p-0.5 transition-colors duration-200 hover:bg-black/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1',
             variant === 'outline' && 'hover:bg-black/5'
           )}
           aria-label={`Supprimer le tag ${tag.name}`}
