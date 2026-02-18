@@ -49,71 +49,71 @@
 ### Phase 2 : Setup Electron
 
 #### 2.1 Configuration Electron de Base
-- [ ] Installer `electron` et `electron-builder` (devDependencies)
-- [ ] Créer `electron/main.js` (processus principal)
-- [ ] Créer `electron/preload.js` (bridge sécurisé)
-- [ ] Créer `electron/utils/database.js` (gestion SQLite côté Electron)
-- [ ] Créer `electron/utils/storage.js` (gestion fichiers côté Electron)
-- [ ] Configurer `package.json` avec les scripts Electron
-- [ ] Configurer `electron-builder` pour le packaging
-- [ ] Tester le lancement de l'application Electron
+- [x] Installer `electron` et `electron-builder` (devDependencies)
+- [x] Créer `electron/main.js` (processus principal)
+- [x] Créer `electron/preload.js` (bridge sécurisé)
+- [x] Créer `electron/utils/database.js` (gestion SQLite côté Electron)
+- [x] Créer `electron/utils/storage.js` (gestion fichiers côté Electron)
+- [x] Configurer `package.json` avec les scripts Electron
+- [x] Configurer `electron-builder` pour le packaging
+- [x] Tester le lancement de l'application Electron
 
 #### 2.2 Intégration Backend dans Electron
-- [ ] Démarrer le serveur Express dans le processus principal Electron
-- [ ] Configurer le port dynamique pour éviter les conflits
-- [ ] Tester l'API locale depuis Electron
-- [ ] Gérer l'arrêt propre du serveur à la fermeture de l'app
+- [x] Démarrer le serveur Express dans le processus principal Electron
+- [x] Configurer le port dynamique pour éviter les conflits
+- [x] Tester l'API locale depuis Electron
+- [x] Gérer l'arrêt propre du serveur à la fermeture de l'app
 
 ### Phase 3 : Frontend MVP
 
 #### 3.1 Setup Frontend de Base
-- [ ] Créer le dossier `frontend/` avec Next.js ou React + Vite
-- [ ] Installer les dépendances : `shadcn/ui`, `formik`, `yup`, `lucide-react`
-- [ ] Configurer Tailwind CSS
-- [ ] Configurer shadcn/ui (initialiser)
-- [ ] Créer la structure de dossiers frontend
-- [ ] Configurer le routing
+- [x] Créer le dossier `frontend/` avec Next.js ou React + Vite
+- [x] Installer les dépendances : `shadcn/ui`, `formik`, `yup`, `lucide-react`
+- [x] Configurer Tailwind CSS
+- [x] Configurer shadcn/ui (initialiser)
+- [x] Créer la structure de dossiers frontend
+- [x] Configurer le routing
 
 #### 3.2 Authentification Frontend
-- [ ] Créer la page de connexion (`/login`)
-- [ ] Créer la page d'inscription (`/register`)
-- [ ] Créer le composant de formulaire avec Formik + Yup
-- [ ] Implémenter la gestion du token JWT (localStorage)
-- [ ] Créer un contexte d'authentification
-- [ ] Créer un middleware de protection des routes
+- [x] Créer la page de connexion (`/login`)
+- [x] Créer la page d'inscription (`/register`)
+- [x] Créer le composant de formulaire avec Formik + Yup
+- [x] Implémenter la gestion du token JWT (localStorage)
+- [x] Créer un contexte d'authentification
+- [x] Créer un middleware de protection des routes
 - [ ] Tester le flux d'authentification complet
 
 #### 3.3 Interface Principale (Layout)
-- [ ] Créer le composant `Header` (barre supérieure)
-- [ ] Créer le composant `Sidebar` (menu latéral)
-- [ ] Créer le layout principal avec Header + Sidebar + Content
-- [ ] Ajouter la navigation entre les pages
+- [x] Créer le composant `Header` (barre supérieure)
+- [x] Créer le composant `Sidebar` (menu latéral)
+- [x] Créer le layout principal avec Header + Sidebar + Content
+- [x] Ajouter la navigation entre les pages
 - [ ] Implémenter le mode sombre/clair (optionnel pour MVP)
 
 #### 3.4 Vue Liste des Tâches (MVP)
-- [ ] Créer la page principale `/tasks`
-- [ ] Créer le composant `TaskList` (liste des tâches)
-- [ ] Créer le composant `TaskCard` (carte de tâche)
-- [ ] Implémenter l'affichage des tâches (GET /api/tasks)
-- [ ] Ajouter les filtres basiques (toutes, en cours, terminées)
-- [ ] Implémenter le tri (par date, priorité)
+- [x] Créer la page principale `/tasks`
+- [x] Créer le composant `TaskList` (liste des tâches)
+- [x] Créer le composant `TaskCard` (carte de tâche)
+- [x] Implémenter l'affichage des tâches (GET /api/tasks)
+- [x] Ajouter les filtres basiques (toutes, en cours, terminées)
+- [x] Implémenter le tri (par date, priorité)
 
 #### 3.5 CRUD Tâches Frontend
-- [ ] Créer le formulaire de création de tâche (modal ou page)
-- [ ] Créer le formulaire d'édition de tâche
-- [ ] Implémenter la création (POST /api/tasks)
-- [ ] Implémenter la mise à jour (PUT /api/tasks/:id)
-- [ ] Implémenter la suppression (DELETE /api/tasks/:id)
-- [ ] Implémenter le changement de statut (rapide)
-- [ ] Ajouter la validation avec Formik + Yup
-- [ ] Gérer les erreurs et les messages de succès
+- [x] Créer le formulaire de création de tâche (modal ou page)
+- [x] Créer le formulaire d'édition de tâche
+- [x] Implémenter la création (POST /api/tasks)
+- [x] Implémenter la mise à jour (PUT /api/tasks/:id)
+- [x] Implémenter la suppression (DELETE /api/tasks/:id)
+- [x] Implémenter le changement de statut (rapide)
+- [x] Ajouter la validation avec Formik + Yup
+- [x] Gérer les erreurs et les messages de succès
 
 #### 3.6 Profil Utilisateur (MVP)
-- [ ] Créer la page `/profile`
-- [ ] Afficher les informations utilisateur
-- [ ] Permettre la modification du nom
-- [ ] Permettre le changement d'avatar (upload local)
-- [ ] Tester l'upload d'avatar
+- [x] Créer la page `/profile`
+- [x] Afficher les informations utilisateur
+- [x] Permettre la modification du nom
+- [x] Permettre le changement d'avatar (upload local)
+- [x] Tester l'upload d'avatar
 
 ### Phase 4 : Tests et Finalisation MVP
 
@@ -138,14 +138,14 @@
 ### Phase 5 : Fonctionnalités Avancées des Tâches
 
 #### 5.1 Sous-tâches (Checklist)
-- [ ] Ajouter le champ `subtasks` (JSON) à la table `tasks`
-- [ ] Créer une migration pour `subtasks`
-- [ ] Mettre à jour le modèle Task
-- [ ] Créer l'endpoint API pour gérer les sous-tâches
-- [ ] Créer le composant `SubtaskList` dans le frontend
-- [ ] Implémenter l'ajout/suppression de sous-tâches
-- [ ] Implémenter le toggle (cocher/décocher)
-- [ ] Afficher la progression (X/Y sous-tâches complétées)
+- [x] Ajouter le champ `subtasks` (JSON) à la table `tasks`
+- [x] Créer une migration pour `subtasks`
+- [x] Mettre à jour le modèle Task
+- [x] Créer l'endpoint API pour gérer les sous-tâches
+- [x] Créer le composant `SubtaskList` dans le frontend
+- [x] Implémenter l'ajout/suppression de sous-tâches
+- [x] Implémenter le toggle (cocher/décocher)
+- [x] Afficher la progression (X/Y sous-tâches complétées)
 
 #### 5.2 Tags et Catégorisation
 - [ ] Créer la table `tags` (id, userId, name, color)
@@ -464,4 +464,6 @@
 ---
 
 **Dernière mise à jour** : 2025-01-16
+
+**Phase 3.6 terminée** : Profil Utilisateur avec upload d'avatar et modification du nom
 
