@@ -49,16 +49,27 @@ export default function KanbanPage() {
     reminderDate?: string;
     repeatPattern?: RepeatPattern;
     tagIds?: number[];
+    estimatedMinutes?: number | null;
+    spentMinutes?: number;
   }) => {
     try {
       if (editingTask) {
-        await tasksAPI.update(editingTask.id, { ...values, tagIds: values.tagIds });
+        await tasksAPI.update(editingTask.id, {
+          ...values,
+          tagIds: values.tagIds,
+          estimatedMinutes: values.estimatedMinutes,
+          spentMinutes: values.spentMinutes,
+        });
         toast({
           title: 'Tâche mise à jour',
           description: 'La tâche a été mise à jour avec succès.',
         });
       } else {
-        await tasksAPI.create({ ...values, tagIds: values.tagIds });
+        await tasksAPI.create({
+          ...values,
+          tagIds: values.tagIds,
+          estimatedMinutes: values.estimatedMinutes,
+        });
         toast({
           title: 'Tâche créée',
           description: 'La tâche a été créée avec succès.',
@@ -86,31 +97,33 @@ export default function KanbanPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* En-tête */}
-      <div className="flex items-center justify-between p-6 border-b">
-        <div>
-          <h1 className="text-2xl font-bold">Vue Kanban</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Organisez vos tâches par statut avec le drag & drop
-          </p>
-        </div>
-        <Button onClick={() => {
-          setEditingTask(null);
-          setIsFormOpen(true);
-        }}>
+    <div className="flex flex-col h-full bg-slate-900 min-h-0">
+      {/* En-tête style Kanban pro */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 shrink-0">
+        <h1 className="text-xl font-bold text-white tracking-tight">Kanban</h1>
+        <Button
+          onClick={() => {
+            setEditingTask(null);
+            setIsFormOpen(true);
+          }}
+          className="bg-slate-700 hover:bg-slate-600 text-white border border-slate-600"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nouvelle tâche
         </Button>
       </div>
 
-      {/* Tableau Kanban */}
-      <div className="flex-1 overflow-hidden p-6">
+      {/* Tableau Kanban — fond type "muted dark" */}
+      <div className="flex-1 overflow-hidden p-4 md:p-6 bg-slate-900/95">
         <KanbanBoard
           tasks={tasks}
           onTaskClick={handleTaskClick}
           onTaskDelete={handleTaskDelete}
           onTasksChange={mutate}
+          onAddCard={() => {
+            setEditingTask(null);
+            setIsFormOpen(true);
+          }}
         />
       </div>
 

@@ -23,6 +23,7 @@ interface KanbanBoardProps {
   onTaskClick: (task: Task) => void;
   onTaskDelete: (taskId: number) => void;
   onTasksChange: () => void;
+  onAddCard?: () => void;
 }
 
 const columns = [
@@ -36,6 +37,7 @@ export function KanbanBoard({
   onTaskClick,
   onTaskDelete,
   onTasksChange,
+  onAddCard,
 }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const { toast } = useToast();
@@ -110,7 +112,7 @@ export function KanbanBoard({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 h-full overflow-x-auto pb-4">
+      <div className="flex gap-4 h-full overflow-x-auto pb-4 min-h-0">
         {columns.map((column) => (
           <SortableContext
             key={column.id}
@@ -121,9 +123,12 @@ export function KanbanBoard({
             <KanbanColumn
               id={column.id}
               title={column.title}
+              status={column.status}
               tasks={tasksByColumn[column.id] || []}
               onTaskClick={onTaskClick}
               onTaskDelete={onTaskDelete}
+              onAddCard={onAddCard}
+              isDoneColumn={column.status === 'done'}
             />
           </SortableContext>
         ))}
@@ -131,11 +136,12 @@ export function KanbanBoard({
 
       <DragOverlay>
         {activeTask ? (
-          <div className="opacity-90 rotate-2">
+          <div className="opacity-95 rotate-1 shadow-xl">
             <KanbanCard
               task={activeTask}
               onClick={() => {}}
               onDelete={() => {}}
+              isDone={activeTask.status === 'done'}
             />
           </div>
         ) : null}
