@@ -23,8 +23,6 @@ import Image from 'next/image';
 import {
   CheckSquare,
   Calendar,
-  User,
-  Inbox,
   ChevronRight,
   Plus,
   Check,
@@ -33,44 +31,18 @@ import {
   LayoutGrid,
 } from 'lucide-react';
 
+/** Navigation type Blitzit: Today en premier, puis vues */
 const mainNavigation = [
-  { name: 'Tout', href: '/tasks', icon: CheckSquare, count: 189 },
-  { name: "Aujourd'hui", href: '/tasks?filter=today', icon: CheckSquare, count: 9 },
-  { name: 'Demain', href: '/tasks?filter=tomorrow', icon: CheckSquare, count: 6 },
+  { name: "Aujourd'hui", href: '/tasks', icon: CheckSquare, count: null },
+  { name: 'Tâches', href: '/tasks', icon: CheckSquare, count: null },
   { name: 'Kanban', href: '/kanban', icon: LayoutGrid, count: null },
   { name: 'Calendrier', href: '/calendar', icon: Calendar, count: null },
   { name: 'Tags', href: '/tags', icon: Tag, count: null },
-  { name: 'Assigné à moi', href: '/tasks?filter=assigned', icon: User, count: 12 },
-  { name: 'Boîte de réception', href: '/inbox', icon: Inbox, count: 36 },
 ];
 
+/** Listes (type Blitzit: simplifié, listes utilisateur à venir) */
 const folders = [
-  {
-    name: 'Personnel',
-    items: [],
-    collapsed: true,
-  },
-  {
-    name: 'Travail',
-    items: [
-      { name: 'Équipe Design', count: 24 },
-      { name: 'Équipe Produit', count: 18 },
-      { name: 'Toutes les tâches', count: 42 },
-    ],
-    collapsed: false,
-  },
-  {
-    name: 'Voyage',
-    items: [
-      { name: 'Voyage d\'affaires à Paris', count: null },
-    ],
-    collapsed: true,
-  },
-  {
-    name: 'Liste fermée',
-    items: [],
-    collapsed: true,
-  },
+  { name: 'Listes', items: [], collapsed: true },
 ];
 
 export function Sidebar() {
@@ -119,11 +91,11 @@ export function Sidebar() {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        'text-white/80 hover:bg-white/10 hover:text-white',
+                        'text-white/80 hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar',
                         isActive && 'bg-white/20 text-white'
                       )}
                     >
-                      <Link href={item.href} className="flex items-center w-full min-w-0">
+                      <Link href={item.href} className="flex items-center w-full min-w-0 min-h-11">
                         <Icon className="h-6 w-6 shrink-0" />
                         <span className="truncate">{item.name}</span>
                         {item.count !== null && (
@@ -152,7 +124,7 @@ export function Sidebar() {
                   <SidebarMenuItem key={folder.name}>
                     <SidebarMenuButton
                       onClick={() => toggleFolder(folder.name)}
-                      className="text-white/80 hover:bg-white/10 hover:text-white"
+                      className="text-white/80 hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar min-h-11"
                     >
                       <div className="flex items-center gap-2 w-full min-w-0">
                         <ChevronRight
@@ -194,8 +166,8 @@ export function Sidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="text-white hover:bg-white/10">
-                  <Plus className="h-6 w-6 mr-2" />
+                <SidebarMenuButton className="text-white hover:bg-white/10 cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar min-h-11">
+                  <Plus className="h-5 w-5 shrink-0" />
                   <span>Ajouter une liste</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
