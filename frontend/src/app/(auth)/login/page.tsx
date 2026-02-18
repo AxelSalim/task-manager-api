@@ -70,7 +70,7 @@ export default function LoginPage() {
 
           {/* Titre */}
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900">Connexion</h2>
+            <h2 className="text-4xl font-bold text-slate-900">Connexion</h2>
             <p className="text-slate-600 mt-2">Connectez-vous à votre compte Spark</p>
           </div>
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <Form className="space-y-4">
               {/* Champ email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-700 text-sm font-medium">
+                <Label htmlFor="email" className="text-sm font-medium text-slate-700">
                   Email
                 </Label>
                 <div className="relative">
@@ -129,9 +129,17 @@ export default function LoginPage() {
 
               {/* Champ mot de passe */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-700 text-sm font-medium">
-                  Mot de passe
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium text-slate-700">
+                    Mot de passe
+                  </Label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-base text-slate-600 hover:text-slate-800 transition-colors"
+                  >
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Field
@@ -139,7 +147,7 @@ export default function LoginPage() {
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    className="h-11 bg-slate-50 border-slate-200 text-slate-900 pl-10 pr-10 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
+                    className="h-11 border-slate-200 text-slate-900 pl-10 pr-10 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
                     autoComplete="off"
                   />
                   <button
@@ -189,15 +197,6 @@ export default function LoginPage() {
 
           {/* Lien vers l'inscription */}
           <div className="text-center">
-            {/* Lien mot de passe oublié */}
-            <div className="text-center mb-2">
-              <Link
-                href="/forgot-password"
-                className="text-sm text-slate-600 hover:text-slate-800 transition-colors"
-              >
-                Mot de passe oublié ?
-              </Link>
-            </div>
             <span className="text-sm text-slate-600">
               Pas encore de compte ?&nbsp;
             </span>
