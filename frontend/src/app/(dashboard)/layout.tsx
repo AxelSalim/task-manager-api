@@ -11,11 +11,11 @@ export default function DashboardLayout({
   return (
     <ProtectedRoute>
       <SidebarProvider>
-        <div className="h-screen bg-white flex w-full overflow-hidden">
+        <div className="h-screen flex w-full overflow-hidden bg-slate-50">
           <Sidebar />
-          <SidebarInset className="h-screen overflow-y-auto">
+          <SidebarInset className="h-screen overflow-y-auto bg-slate-50">
             <Header />
-            <main className="p-6">
+            <main className="p-6 max-w-5xl mx-auto">
               {children}
             </main>
           </SidebarInset>
