@@ -5,13 +5,11 @@ import { useTasks } from '@/hooks/useTasks';
 import { Task } from '@/types/task';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { TaskForm } from '@/components/tasks/TaskForm';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { tasksAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { RepeatPattern } from '@/components/tasks/RepeatSelector';
 
-export default function KanbanPage() {
+function KanbanPage() {
   const { tasks, isLoading, mutate } = useTasks();
   const { toast } = useToast();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -98,23 +96,8 @@ export default function KanbanPage() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* En-tête style Kanban pro */}
-      <div className="flex items-center justify-between py-4 shrink-0">
-        <h1 className="text-xl font-bold tracking-tight">Kanban</h1>
-        <Button
-          onClick={() => {
-            setEditingTask(null);
-            setIsFormOpen(true);
-          }}
-          className="bg-primary hover:bg-primary/90 border border-primary text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvelle tâche
-        </Button>
-      </div>
-
-      {/* Tableau Kanban — fond couleur primaire */}
-      <div className="flex-1 overflow-hidden rounded-xl bg-primary/15">
+      {/* Tableau Kanban */}
+      <div className="flex-1 overflow-hidden">
         <KanbanBoard
           tasks={tasks}
           onTaskClick={handleTaskClick}
@@ -142,3 +125,5 @@ export default function KanbanPage() {
     </div>
   );
 }
+
+export default KanbanPage;

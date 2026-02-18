@@ -42,7 +42,7 @@ export function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col h-full min-w-[280px] max-w-[320px] rounded-xl overflow-hidden',
+        'flex flex-col h-full w-[300px] shrink-0 rounded-sm overflow-hidden',
         'bg-primary border border-primary/80 transition-colors',
         isOver && 'ring-2 ring-primary ring-offset-2 ring-offset-primary/20',
         className
@@ -54,9 +54,6 @@ export function KanbanColumn({
           {title}
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-primary-foreground/80 bg-primary-foreground/20 px-2 py-0.5 rounded">
-            {tasks.length}
-          </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
