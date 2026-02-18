@@ -129,7 +129,7 @@ export default function RegisterPage() {
               <Form className="space-y-3">
                 {/* Champ nom */}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-slate-700 text-sm font-medium">
+                  <Label htmlFor="name" className="text-sm font-medium text-slate-700">
                     Nom
                   </Label>
                   <div className="relative">
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                       id="name"
                       name="name"
                       type="text"
-                      className="h-11 bg-slate-50 border-slate-200 text-slate-900 pl-10 pr-4 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
+                      className="h-11 border-slate-200 text-slate-900 pl-10 pr-4 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
                       autoComplete="off"
                     />
                   </div>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
 
                 {/* Champ email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-700 text-sm font-medium">
+                  <Label htmlFor="email" className="text-sm font-medium text-slate-700">
                     Email
                   </Label>
                   <div className="relative">
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                       id="email"
                       name="email"
                       type="email"
-                      className="h-11 bg-slate-50 border-slate-200 text-slate-900 pl-10 pr-4 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
+                      className="h-11 border-slate-200 text-slate-900 pl-10 pr-4 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
                       autoComplete="off"
                     />
                   </div>
@@ -175,7 +175,7 @@ export default function RegisterPage() {
 
                 {/* Champ mot de passe */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-slate-700 text-sm font-medium">
+                  <Label htmlFor="password" className="text-sm font-medium text-slate-700">
                     Mot de passe
                   </Label>
                   <div className="relative">
@@ -185,7 +185,7 @@ export default function RegisterPage() {
                       id="password"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
-                      className="h-11 bg-slate-50 border-slate-200 text-slate-900 pl-10 pr-10 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
+                      className="h-11 border-slate-200 text-slate-900 pl-10 pr-10 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
                       autoComplete="off"
                     />
                     <button
@@ -210,7 +210,7 @@ export default function RegisterPage() {
 
                 {/* Champ confirmation mot de passe */}
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-slate-700 text-sm font-medium">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
                     Confirmer le mot de passe
                   </Label>
                   <div className="relative">
@@ -220,7 +220,7 @@ export default function RegisterPage() {
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
-                      className="h-11 bg-slate-50 border-slate-200 text-slate-900 pl-10 pr-10 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
+                      className="h-11 border-slate-200 text-slate-900 pl-10 pr-10 rounded-sm focus:bg-white focus:border-primary focus:outline-none focus-visible:ring-0 focus-visible:ring-transparent transition-all text-sm"
                       autoComplete="off"
                     />
                     <button
