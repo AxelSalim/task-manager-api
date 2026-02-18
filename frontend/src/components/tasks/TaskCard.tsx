@@ -4,7 +4,7 @@ import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Calendar, Flag, MoreVertical, Trash2, Edit, Bell, Clock } from 'lucide-react';
+import { Calendar, Flag, MoreVertical, Trash2, Edit, Bell } from 'lucide-react';
 import { SubtaskList } from './SubtaskList';
 import { TagBadge } from '@/components/tags/TagBadge';
 import { MarkdownPreview } from '@/components/markdown/MarkdownPreview';
@@ -34,16 +34,9 @@ interface TaskCardProps {
 
 const priorityColors = {
   low: 'bg-blue-100 text-blue-700 border-blue-200',
-  normal: 'bg-gray-100 text-gray-700 border-gray-200',
+  normal: 'bg-slate-100 text-slate-700 border-slate-200',
   high: 'bg-orange-100 text-orange-700 border-orange-200',
   urgent: 'bg-red-100 text-red-700 border-red-200',
-};
-
-const priorityIcons = {
-  low: '🔵',
-  normal: '⚪',
-  high: '🟠',
-  urgent: '🔴',
 };
 
 export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }: TaskCardProps) {
@@ -72,133 +65,110 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }:
     }
   };
 
+  const hasTime = task.estimatedMinutes != null || (task.spentMinutes ?? 0) > 0;
+
   return (
-    <div
+    <article
       className={cn(
-        'group bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all',
-        isCompleted && 'opacity-60'
+        'group bg-white border border-slate-200/80 rounded-xl px-4 py-3 hover:shadow-sm hover:border-slate-200 transition-all duration-200',
+        isCompleted && 'opacity-75'
       )}
+      aria-label={task.title}
     >
-      <div className="flex items-start gap-3">
+      {/* Ligne principale type Blitzit: checkbox + titre + Est/Done à droite */}
+      <div className="flex items-center gap-3">
         <Checkbox
           checked={isCompleted}
           onCheckedChange={handleToggle}
-          className="mt-1"
+          className="shrink-0 cursor-pointer"
+          aria-label={isCompleted ? 'Marquer comme à faire' : 'Marquer comme terminée'}
         />
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h3
-              className={cn(
-                'font-medium text-slate-900 flex-1',
-                isCompleted && 'line-through text-slate-500'
-              )}
-            >
-              {task.title}
-            </h3>
-            
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
+          <h3
+            className={cn(
+              'font-medium text-slate-900 truncate',
+              isCompleted && 'line-through text-slate-500'
+            )}
+          >
+            {task.title}
+          </h3>
+          <div className="flex items-center gap-2 shrink-0">
+            {hasTime && (
+              <span className="text-xs font-medium text-slate-500 tabular-nums">
+                {task.estimatedMinutes != null && (
+                  <span>Est: {formatMinutes(task.estimatedMinutes)}</span>
+                )}
+                {(task.estimatedMinutes != null && (task.spentMinutes ?? 0) > 0) && ' · '}
+                {(task.spentMinutes ?? 0) > 0 && (
+                  <span className="text-slate-700">Fait: {formatMinutes(task.spentMinutes ?? 0)}</span>
+                )}
+              </span>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-9 w-9 min-h-9 min-w-9 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus:opacity-100"
+                  aria-label="Options de la tâche"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleEdit}>
-                  <Edit className="h-4 w-4 mr-2" />
+              <DropdownMenuContent align="end" className="min-w-[10rem]">
+                <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
+                  <Edit className="h-4 w-4 mr-2 shrink-0" />
                   Modifier
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                <DropdownMenuItem onClick={handleDelete} className="text-red-600 cursor-pointer focus:bg-red-50">
+                  <Trash2 className="h-4 w-4 mr-2 shrink-0" />
                   Supprimer
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
+      </div>
 
+      {(task.description || (task.tags && task.tags.length > 0) || dueDate || reminderDate || (priority && priority !== 'normal') || (task.subtasks && task.subtasks.length > 0)) && (
+        <div className="ml-8 mt-2 pt-2 border-t border-slate-100 space-y-2">
           {task.description && (
-            <div
-              className={cn(
-                'text-sm text-slate-600 mt-1',
-                isCompleted && 'opacity-60'
-              )}
-            >
+            <div className={cn('text-sm text-slate-600 line-clamp-2', isCompleted && 'opacity-70')}>
               <MarkdownPreview content={task.description} className="text-sm" />
             </div>
           )}
-
-          {/* Tags */}
           {task.tags && task.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-1.5">
               {task.tags.map(tag => (
                 <TagBadge key={tag.id} tag={tag} size="sm" />
               ))}
             </div>
           )}
-
-          <div className="flex items-center gap-3 mt-3 flex-wrap">
-            {priority && (
-              <div
-                className={cn(
-                  'inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border',
-                  priorityColors[priority]
-                )}
-              >
+          <div className="flex items-center gap-3 flex-wrap text-xs text-slate-500">
+            {priority && priority !== 'normal' && (
+              <span className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-medium', priorityColors[priority])}>
                 <Flag className="h-3 w-3" />
                 {priority === 'low' && 'Basse'}
-                {priority === 'normal' && 'Normale'}
                 {priority === 'high' && 'Haute'}
                 {priority === 'urgent' && 'Urgente'}
-              </div>
+              </span>
             )}
-
             {dueDate && (
-              <div
-                className={cn(
-                  'inline-flex items-center gap-1 text-xs',
-                  isOverdue ? 'text-red-600 font-medium' : 'text-slate-600'
-                )}
-              >
+              <span className={cn('inline-flex items-center gap-1', isOverdue && 'text-red-600 font-medium')}>
                 <Calendar className="h-3 w-3" />
-                {format(dueDate, 'd MMM yyyy', { locale: fr })}
-                {isOverdue && ' (En retard)'}
-              </div>
+                {format(dueDate, 'd MMM', { locale: fr })}
+                {isOverdue && ' (retard)'}
+              </span>
             )}
-
             {reminderDate && (
-              <div
-                className={cn(
-                  'inline-flex items-center gap-1 text-xs',
-                  isReminderPassed ? 'text-orange-600 font-medium' : 'text-slate-600'
-                )}
-              >
+              <span className={cn('inline-flex items-center gap-1', isReminderPassed && 'text-amber-600')}>
                 <Bell className="h-3 w-3" />
-                {format(reminderDate, 'd MMM yyyy HH:mm', { locale: fr })}
-              </div>
-            )}
-
-            {/* Est / Done (type Blitzit) */}
-            {(task.estimatedMinutes != null || (task.spentMinutes ?? 0) > 0) && (
-              <div className="inline-flex items-center gap-1 text-xs text-slate-600">
-                <Clock className="h-3 w-3" />
-                {task.estimatedMinutes != null && (
-                  <span>Est: {formatMinutes(task.estimatedMinutes)}</span>
-                )}
-                {(task.estimatedMinutes != null && (task.spentMinutes ?? 0) > 0) && <span> · </span>}
-                {(task.spentMinutes ?? 0) > 0 && (
-                  <span>Fait: {formatMinutes(task.spentMinutes ?? 0)}</span>
-                )}
-              </div>
+                {format(reminderDate, 'd MMM HH:mm', { locale: fr })}
+              </span>
             )}
           </div>
-
-          {/* Sous-tâches */}
           {task.subtasks && task.subtasks.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-slate-200">
+            <div className="mt-2">
               <SubtaskList
                 subtasks={task.subtasks}
                 taskId={task.id}
@@ -211,8 +181,9 @@ export function TaskCard({ task, onToggle, onEdit, onDelete, onUpdateSubtasks }:
             </div>
           )}
         </div>
-      </div>
-    </div>
+      )}
+    </article>
   );
 }
+
 
