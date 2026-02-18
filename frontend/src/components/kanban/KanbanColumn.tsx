@@ -4,7 +4,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { Task } from '@/types/task';
 import { KanbanCard } from './KanbanCard';
 import { cn } from '@/lib/utils';
-import { Plus, MoreVertical } from 'lucide-react';
+import { Plus, MoreVertical, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -62,7 +62,7 @@ export function KanbanColumn({
                 className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/20 cursor-pointer"
                 aria-label="Options de la colonne"
               >
-                <MoreVertical className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-primary border-primary/80">
