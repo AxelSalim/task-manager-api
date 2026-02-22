@@ -78,7 +78,7 @@ export function KanbanColumn({
       </div>
 
       {/* Liste des cartes */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+      <div className="kanban-column-scroll flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
         {tasks.length === 0 ? (
           onAddCard ? (
             <Button
