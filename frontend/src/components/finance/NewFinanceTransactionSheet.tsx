@@ -112,7 +112,7 @@ export function NewFinanceTransactionSheet({
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="flex flex-col sm:max-w-md rounded-none border-l p-0 gap-0">
+      <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <SheetHeader className="shrink-0 border-b px-5 py-4 pr-12">
             <SheetTitle className="text-lg">Nouvelle transaction</SheetTitle>
@@ -141,7 +141,7 @@ export function NewFinanceTransactionSheet({
                     setCategoryId('none');
                   }}
                 >
-                  <SelectTrigger id="tx-type" className="rounded-sm">
+                  <SelectTrigger id="tx-type" className="rounded-sm w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -155,9 +155,9 @@ export function NewFinanceTransactionSheet({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="tx-category">Catégorie (optionnel)</Label>
+                <Label htmlFor="tx-category">Catégorie</Label>
                 <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger id="tx-category" className="rounded-sm">
+                  <SelectTrigger id="tx-category" className="rounded-sm w-full">
                     <SelectValue placeholder="Aucune" />
                   </SelectTrigger>
                   <SelectContent>
