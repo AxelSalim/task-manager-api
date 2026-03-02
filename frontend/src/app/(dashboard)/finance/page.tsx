@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { NewFinanceCategorySheet } from '@/components/finance/NewFinanceCategorySheet';
 import { NewFinanceTransactionSheet } from '@/components/finance/NewFinanceTransactionSheet';
+import { FinanceMonthChart } from '@/components/finance/FinanceMonthChart';
 import { RealVsBudgetDataTable } from '@/components/finance/RealVsBudgetDataTable';
 import { TransactionsDataTable } from '@/components/finance/TransactionsDataTable';
 import {
@@ -23,7 +25,7 @@ import {
   type FinanceTransactionDto,
   type FinanceTransactionType,
 } from '@/lib/api';
-import { Loader2, LayoutDashboard, List, PiggyBank } from 'lucide-react';
+import { Download, Loader2, LayoutDashboard, List, PiggyBank } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -45,6 +47,8 @@ function FinancePage() {
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [budgetLoading, setBudgetLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<FinanceTransactionDto | null>(null);
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
@@ -160,6 +164,28 @@ function FinancePage() {
 
   const monthLabel = format(new Date(year, month - 1), 'MMMM yyyy', { locale: fr });
 
+  const exportToCsv = () => {
+    const headers = ['Date', 'Type', 'Catégorie', 'Montant', 'Commentaire'];
+    const rows = transactions.map((t) => [
+      t.date,
+      TYPE_LABELS[t.type],
+      t.category?.name ?? '',
+      String(t.amount),
+      (t.comment ?? '').replace(/"/g, '""'),
+    ]);
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map((r) => r.map((c) => `"${c}"`).join(';')),
+    ].join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions-${year}-${String(month).padStart(2, '0')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const monthOptions = (() => {
     const items: ReactNode[] = [];
     const now = new Date();
@@ -218,6 +244,22 @@ function FinancePage() {
             onCreated={() => {
               loadData();
               loadDashboard();
+            }}
+          />
+          <NewFinanceTransactionSheet
+            open={editSheetOpen}
+            onOpenChange={(open) => {
+              setEditSheetOpen(open);
+              if (!open) setTransactionToEdit(null);
+            }}
+            transaction={transactionToEdit}
+            categories={categories}
+            typeLabels={TYPE_LABELS}
+            onUpdated={() => {
+              loadData();
+              loadDashboard();
+              setEditSheetOpen(false);
+              setTransactionToEdit(null);
             }}
           />
         </div>
@@ -299,6 +341,11 @@ function FinancePage() {
                   </CardContent>
                 </Card>
               </div>
+              <FinanceMonthChart
+                totalRevenus={dashboard.totalRevenus}
+                totalDepenses={dashboard.totalDepenses}
+                monthLabel={monthLabel}
+              />
               {dashboard.realVsBudget.length > 0 && (
                 <Card className="rounded-sm border shadow-none">
                   <CardHeader className="py-3 px-4 border-b">
@@ -344,10 +391,20 @@ function FinancePage() {
           </div>
 
           <Card className="rounded-sm border shadow-none">
-            <CardHeader className="py-3 px-4 border-b">
+            <CardHeader className="py-3 px-4 border-b flex flex-row items-center justify-between gap-2">
               <CardTitle className="text-base font-semibold">
                 Transactions — {monthLabel}
               </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-sm shrink-0"
+                onClick={exportToCsv}
+                disabled={transactions.length === 0}
+              >
+                <Download className="h-4 w-4 mr-1.5" />
+                Exporter CSV
+              </Button>
             </CardHeader>
             <CardContent className="p-4">
               {loading ? (
@@ -359,6 +416,10 @@ function FinancePage() {
                   data={transactions}
                   typeLabels={TYPE_LABELS}
                   onDelete={handleDelete}
+                  onEdit={(tx) => {
+                    setTransactionToEdit(tx);
+                    setEditSheetOpen(true);
+                  }}
                 />
               )}
             </CardContent>
