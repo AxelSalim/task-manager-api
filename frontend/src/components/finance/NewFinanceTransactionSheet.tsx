@@ -22,6 +22,7 @@ import {
 import {
   financeAPI,
   type FinanceCategoryDto,
+  type FinanceTransactionDto,
   type FinanceTransactionType,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +34,10 @@ type NewFinanceTransactionSheetProps = {
   onOpenChange: (open: boolean) => void;
   categories: FinanceCategoryDto[];
   typeLabels: Record<FinanceTransactionType, string>;
+  /** En mode édition : transaction à modifier (pas de trigger affiché) */
+  transaction?: FinanceTransactionDto | null;
   onCreated?: () => void;
+  onUpdated?: () => void;
 };
 
 export function NewFinanceTransactionSheet({
@@ -41,13 +45,16 @@ export function NewFinanceTransactionSheet({
   onOpenChange,
   categories,
   typeLabels,
+  transaction,
   onCreated,
+  onUpdated,
 }: NewFinanceTransactionSheetProps) {
   const { toast } = useToast();
   const typeOptions = useMemo(
     () => Object.keys(typeLabels) as FinanceTransactionType[],
     [typeLabels]
   );
+  const isEdit = Boolean(transaction);
 
   const [saving, setSaving] = useState(false);
   const [date, setDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
@@ -59,13 +66,25 @@ export function NewFinanceTransactionSheet({
   useEffect(() => {
     if (!open) {
       setSaving(false);
-      setDate(format(new Date(), 'yyyy-MM-dd'));
-      setType(typeOptions[0] ?? 'depenses');
-      setCategoryId('none');
-      setAmount('');
-      setComment('');
+      if (!transaction) {
+        setDate(format(new Date(), 'yyyy-MM-dd'));
+        setType(typeOptions[0] ?? 'depenses');
+        setCategoryId('none');
+        setAmount('');
+        setComment('');
+      }
     }
-  }, [open, typeOptions]);
+  }, [open, typeOptions, transaction]);
+
+  useEffect(() => {
+    if (open && transaction) {
+      setDate(transaction.date);
+      setType(transaction.type);
+      setCategoryId(transaction.categoryId ? String(transaction.categoryId) : 'none');
+      setAmount(String(transaction.amount));
+      setComment(transaction.comment ?? '');
+    }
+  }, [open, transaction]);
 
   const categoriesByType = useMemo(
     () => categories.filter((c) => c.type === type),
@@ -82,16 +101,23 @@ export function NewFinanceTransactionSheet({
 
     setSaving(true);
     try {
-      await financeAPI.createTransaction({
+      const payload = {
         date,
         type,
         categoryId: categoryId === 'none' ? null : parseInt(categoryId, 10),
         amount: num,
         comment: comment.trim() ? comment.trim() : null,
-      });
-      toast({ title: 'Transaction ajoutée' });
+      };
+      if (transaction) {
+        await financeAPI.updateTransaction(transaction.id, payload);
+        toast({ title: 'Transaction modifiée' });
+        onUpdated?.();
+      } else {
+        await financeAPI.createTransaction(payload);
+        toast({ title: 'Transaction ajoutée' });
+        onCreated?.();
+      }
       onOpenChange(false);
-      onCreated?.();
     } catch (error: unknown) {
       toast({
         title: 'Erreur',
@@ -105,17 +131,21 @@ export function NewFinanceTransactionSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <Button className="rounded-sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Ajouter une transaction
-        </Button>
-      </SheetTrigger>
+      {!transaction && (
+        <SheetTrigger asChild>
+          <Button className="rounded-sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter une transaction
+          </Button>
+        </SheetTrigger>
+      )}
 
       <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <SheetHeader className="shrink-0 border-b px-5 py-4 pr-12">
-            <SheetTitle className="text-lg">Nouvelle transaction</SheetTitle>
+            <SheetTitle className="text-lg">
+              {isEdit ? 'Modifier la transaction' : 'Nouvelle transaction'}
+            </SheetTitle>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-5 py-5">
