@@ -86,7 +86,7 @@ export function NewFinanceCategorySheet({
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="flex flex-col sm:max-w-sm rounded-none border-l p-0 gap-0">
+      <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <SheetHeader className="shrink-0 border-b px-5 py-4 pr-12">
             <SheetTitle className="text-lg">Nouvelle catégorie</SheetTitle>
@@ -106,10 +106,10 @@ export function NewFinanceCategorySheet({
                 />
               </div>
 
-              <div className="grid gap-2">
+              <div className="grid gap-2 w-full">
                 <Label htmlFor="new-cat-type">Type</Label>
                 <Select value={type} onValueChange={(v) => setType(v as FinanceTransactionType)}>
-                  <SelectTrigger id="new-cat-type" className="rounded-sm">
+                  <SelectTrigger id="new-cat-type" className="rounded-sm w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
