@@ -537,5 +537,63 @@ export const financeAPI = {
   deleteTransaction: async (id: number) => {
     return apiRequest<null>(`/api/finance/transactions/${id}`, { method: 'DELETE' });
   },
+
+  getBudget: async (params?: { year?: number; month?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.year != null) search.set('year', String(params.year));
+    if (params?.month != null) search.set('month', String(params.month));
+    const q = search.toString() ? `?${search.toString()}` : '';
+    return apiRequest<FinanceBudgetEntryDto[]>(`/api/finance/budget${q}`);
+  },
+
+  putBudget: async (
+    entries: Array<{ categoryId: number; year: number; month: number; amount: number }>
+  ) => {
+    return apiRequest<FinanceBudgetEntryDto[]>(`/api/finance/budget`, {
+      method: 'PUT',
+      body: JSON.stringify(entries),
+    });
+  },
+
+  getDashboard: async (params?: { year?: number; month?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.year != null) search.set('year', String(params.year));
+    if (params?.month != null) search.set('month', String(params.month));
+    const q = search.toString() ? `?${search.toString()}` : '';
+    return apiRequest<FinanceDashboardDto>(`/api/finance/dashboard${q}`);
+  },
 };
+
+export interface FinanceBudgetEntryDto {
+  id: number;
+  userId: number;
+  categoryId: number;
+  category: { id: number; name: string; type: string } | null;
+  year: number;
+  month: number;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinanceDashboardDto {
+  year: number;
+  month: number;
+  totalsByType: Record<string, number>;
+  budgetByType: Record<string, number>;
+  totalRevenus: number;
+  totalDepenses: number;
+  solde: number;
+  budgetRevenus: number;
+  budgetDepenses: number;
+  budgetSolde: number;
+  realVsBudget: Array<{
+    categoryId: number;
+    categoryName: string;
+    categoryType: string;
+    budget: number;
+    real: number;
+    diff: number;
+  }>;
+}
 
