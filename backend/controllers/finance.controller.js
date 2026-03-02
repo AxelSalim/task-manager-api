@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { FinanceCategory, FinanceTransaction } = require('../models');
+const { FinanceCategory, FinanceTransaction, FinanceBudgetEntry } = require('../models');
 const { sendSuccess, HTTP_ERRORS } = require('../utils/responseHandler');
 
 const TYPES = ['revenus', 'factures', 'depenses', 'epargnes', 'credits'];
@@ -264,6 +264,144 @@ const financeController = {
     } catch (err) {
       console.error('❌ deleteTransaction:', err);
       return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la suppression');
+    }
+  },
+
+  // --- Budget ---
+  async getBudget(req, res) {
+    try {
+      const { year, month } = req.query;
+      const where = { userId: req.user.id };
+      if (year) where.year = parseInt(year, 10);
+      if (month) where.month = parseInt(month, 10);
+      const entries = await FinanceBudgetEntry.findAll({
+        where,
+        include: [{ model: FinanceCategory, as: 'category', attributes: ['id', 'name', 'type'] }],
+        order: [
+          ['year', 'ASC'],
+          ['month', 'ASC'],
+          ['categoryId', 'ASC'],
+        ],
+      });
+      const data = entries.map((e) => ({
+        id: e.id,
+        userId: e.userId,
+        categoryId: e.categoryId,
+        category: e.category ? { id: e.category.id, name: e.category.name, type: e.category.type } : null,
+        year: e.year,
+        month: e.month,
+        amount: e.amount,
+        createdAt: e.createdAt,
+        updatedAt: e.updatedAt,
+      }));
+      return sendSuccess(res, 200, data, 'Budget récupéré');
+    } catch (err) {
+      console.error('❌ getBudget:', err);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération du budget');
+    }
+  },
+
+  async putBudget(req, res) {
+    try {
+      const userId = req.user.id;
+      const body = Array.isArray(req.body) ? req.body : [req.body];
+      const results = [];
+      for (const row of body) {
+        const { categoryId, year, month, amount } = row;
+        if (!categoryId || year == null || month == null) continue;
+        const cat = await FinanceCategory.findOne({ where: { id: categoryId, userId } });
+        if (!cat) continue;
+        const numAmount = parseFloat(amount);
+        const [entry] = await FinanceBudgetEntry.findOrCreate({
+          where: { userId, categoryId, year: parseInt(year, 10), month: parseInt(month, 10) },
+          defaults: { userId, categoryId, year: parseInt(year, 10), month: parseInt(month, 10), amount: Number.isNaN(numAmount) ? 0 : numAmount },
+        });
+        if (!entry.isNewRecord) {
+          entry.amount = Number.isNaN(numAmount) ? 0 : numAmount;
+          await entry.save();
+        }
+        results.push({
+          id: entry.id,
+          categoryId: entry.categoryId,
+          year: entry.year,
+          month: entry.month,
+          amount: entry.amount,
+        });
+      }
+      return sendSuccess(res, 200, results, 'Budget mis à jour');
+    } catch (err) {
+      console.error('❌ putBudget:', err);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la mise à jour du budget');
+    }
+  },
+
+  // --- Dashboard (agrégats + réel vs budget) ---
+  async getDashboard(req, res) {
+    try {
+      const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+      const month = parseInt(req.query.month, 10) || new Date().getMonth() + 1;
+      if (month < 1 || month > 12) {
+        return HTTP_ERRORS.BAD_REQUEST(res, 'month doit être entre 1 et 12');
+      }
+      const start = `${year}-${String(month).padStart(2, '0')}-01`;
+      const lastDay = new Date(year, month, 0).getDate();
+      const end = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+      const transactions = await FinanceTransaction.findAll({
+        where: { userId: req.user.id, date: { [Op.between]: [start, end] } },
+        attributes: ['type', 'amount', 'categoryId'],
+      });
+      const totalsByType = { revenus: 0, factures: 0, depenses: 0, epargnes: 0, credits: 0 };
+      for (const t of transactions) {
+        if (totalsByType[t.type] != null) {
+          totalsByType[t.type] += Number(t.amount);
+        }
+      }
+
+      const budgetEntries = await FinanceBudgetEntry.findAll({
+        where: { userId: req.user.id, year, month },
+        include: [{ model: FinanceCategory, as: 'category', attributes: ['id', 'name', 'type'] }],
+      });
+      const budgetByType = { revenus: 0, factures: 0, depenses: 0, epargnes: 0, credits: 0 };
+      const realVsBudget = [];
+      for (const b of budgetEntries) {
+        const t = b.category?.type;
+        if (t && budgetByType[t] != null) budgetByType[t] += Number(b.amount);
+        const real = transactions
+          .filter((tr) => tr.categoryId === b.categoryId)
+          .reduce((s, tr) => s + Number(tr.amount), 0);
+        realVsBudget.push({
+          categoryId: b.categoryId,
+          categoryName: b.category?.name,
+          categoryType: b.category?.type,
+          budget: Number(b.amount),
+          real,
+          diff: Number(b.amount) - real,
+        });
+      }
+
+      const totalRevenus = totalsByType.revenus;
+      const totalDepenses = totalsByType.factures + totalsByType.depenses + totalsByType.epargnes + totalsByType.credits;
+      const solde = totalRevenus - totalDepenses;
+      const budgetRevenus = budgetByType.revenus;
+      const budgetDepenses = budgetByType.factures + budgetByType.depenses + budgetByType.epargnes + budgetByType.credits;
+
+      return sendSuccess(res, 200, {
+        year,
+        month,
+        totalsByType,
+        budgetByType,
+        totalRevenus,
+        totalDepenses,
+        solde,
+        budgetRevenus,
+        budgetDepenses,
+        budgetSolde: budgetRevenus - budgetDepenses,
+        realVsBudget,
+      }, 'Dashboard récupéré');
+    } catch (err) {
+      console.error('❌ getDashboard:', err);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération du dashboard');
     }
   },
 };
