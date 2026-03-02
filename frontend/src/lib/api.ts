@@ -185,6 +185,27 @@ export const authAPI = {
   getMe: async () => {
     return apiRequest<{ id: number; name: string; email: string; avatar: string | null }>('/api/users/me');
   },
+
+  forgotPassword: async (email: string) => {
+    return apiRequest<{ message: string }>('/api/users/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  verifyOTP: async (email: string, otp: string) => {
+    return apiRequest<{ message: string; reset_token: string }>('/api/users/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  },
+
+  resetPassword: async (resetToken: string, newPassword: string) => {
+    return apiRequest<{ message: string }>('/api/users/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ reset_token: resetToken, new_password: newPassword }),
+    });
+  },
 };
 
 /**
