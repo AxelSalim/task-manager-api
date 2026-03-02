@@ -16,4 +16,9 @@ router.post('/transactions', financeController.createTransaction);
 router.put('/transactions/:id', financeController.updateTransaction);
 router.delete('/transactions/:id', financeController.deleteTransaction);
 
+router.get('/budget', financeController.getBudget);
+router.put('/budget', financeController.putBudget);
+
+router.get('/dashboard', financeController.getDashboard);
+
 module.exports = router;
