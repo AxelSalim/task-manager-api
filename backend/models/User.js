@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Tag, { foreignKey: "userId", as: "tags" });
       User.hasMany(models.FinanceCategory, { foreignKey: "userId", as: "financeCategories" });
       User.hasMany(models.FinanceTransaction, { foreignKey: "userId", as: "financeTransactions" });
+      User.hasMany(models.FinanceBudgetEntry, { foreignKey: "userId", as: "financeBudgetEntries" });
     }
   }
   User.init({
