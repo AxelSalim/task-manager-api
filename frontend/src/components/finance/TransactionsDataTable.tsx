@@ -27,7 +27,7 @@ import {
 import type { FinanceTransactionDto, FinanceTransactionType } from '@/lib/api';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const TYPE_LABELS: Record<FinanceTransactionType, string> = {
   revenus: 'Revenus',
@@ -41,10 +41,12 @@ export function TransactionsDataTable({
   data,
   typeLabels,
   onDelete,
+  onEdit,
 }: {
   data: FinanceTransactionDto[];
   typeLabels: Record<FinanceTransactionType, string>;
   onDelete: (id: number) => void;
+  onEdit?: (tx: FinanceTransactionDto) => void;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -105,18 +107,32 @@ export function TransactionsDataTable({
         id: 'actions',
         enableHiding: false,
         cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-sm"
-            onClick={() => onDelete(row.original.id)}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          <div className="flex items-center gap-0.5">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-sm"
+                onClick={() => onEdit(row.original)}
+                aria-label="Modifier"
+              >
+                <Pencil className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-sm"
+              onClick={() => onDelete(row.original.id)}
+              aria-label="Supprimer"
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
         ),
       },
     ],
-    [typeLabels, onDelete]
+    [typeLabels, onDelete, onEdit]
   );
 
   const table = useReactTable({
