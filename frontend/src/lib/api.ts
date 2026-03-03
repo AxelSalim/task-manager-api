@@ -562,6 +562,11 @@ export const financeAPI = {
     const q = search.toString() ? `?${search.toString()}` : '';
     return apiRequest<FinanceDashboardDto>(`/api/finance/dashboard${q}`);
   },
+
+  getDashboardEvolution: async (count?: number) => {
+    const q = count != null ? `?count=${count}` : '';
+    return apiRequest<FinanceEvolutionMonthDto[]>(`/api/finance/dashboard/evolution${q}`);
+  },
 };
 
 export interface FinanceBudgetEntryDto {
@@ -595,5 +600,13 @@ export interface FinanceDashboardDto {
     real: number;
     diff: number;
   }>;
+}
+
+export interface FinanceEvolutionMonthDto {
+  year: number;
+  month: number;
+  totalRevenus: number;
+  totalDepenses: number;
+  totalsByType: Record<string, number>;
 }
 
