@@ -14,7 +14,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { NewFinanceCategorySheet } from '@/components/finance/NewFinanceCategorySheet';
 import { NewFinanceTransactionSheet } from '@/components/finance/NewFinanceTransactionSheet';
+import { FinanceByTypeChart } from '@/components/finance/FinanceByTypeChart';
+import { FinanceEvolutionLineChart } from '@/components/finance/FinanceEvolutionLineChart';
 import { FinanceMonthChart } from '@/components/finance/FinanceMonthChart';
+import { FinanceTypePieChart } from '@/components/finance/FinanceTypePieChart';
 import { RealVsBudgetDataTable } from '@/components/finance/RealVsBudgetDataTable';
 import { TransactionsDataTable } from '@/components/finance/TransactionsDataTable';
 import {
@@ -22,6 +25,7 @@ import {
   type FinanceBudgetEntryDto,
   type FinanceCategoryDto,
   type FinanceDashboardDto,
+  type FinanceEvolutionMonthDto,
   type FinanceTransactionDto,
   type FinanceTransactionType,
 } from '@/lib/api';
@@ -45,6 +49,8 @@ function FinancePage() {
   const [dashboard, setDashboard] = useState<FinanceDashboardDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [evolutionData, setEvolutionData] = useState<FinanceEvolutionMonthDto[]>([]);
+  const [evolutionLoading, setEvolutionLoading] = useState(false);
   const [budgetLoading, setBudgetLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
@@ -108,6 +114,23 @@ function FinancePage() {
     }
   }, [month, toast, year]);
 
+  const loadEvolution = useCallback(async () => {
+    setEvolutionLoading(true);
+    try {
+      const data = await financeAPI.getDashboardEvolution(6);
+      setEvolutionData(data);
+    } catch (error: unknown) {
+      toast({
+        title: 'Erreur',
+        description:
+          error instanceof Error ? error.message : 'Impossible de charger l\'évolution',
+        variant: 'destructive',
+      });
+    } finally {
+      setEvolutionLoading(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -119,6 +142,10 @@ function FinancePage() {
   useEffect(() => {
     loadBudget();
   }, [loadBudget]);
+
+  useEffect(() => {
+    loadEvolution();
+  }, [loadEvolution]);
 
   const handleDelete = async (id: number) => {
     if (!confirm('Supprimer cette transaction ?')) return;
@@ -341,11 +368,30 @@ function FinancePage() {
                   </CardContent>
                 </Card>
               </div>
-              <FinanceMonthChart
-                totalRevenus={dashboard.totalRevenus}
-                totalDepenses={dashboard.totalDepenses}
-                monthLabel={monthLabel}
-              />
+              <div className="grid gap-4 md:grid-cols-2">
+                <FinanceMonthChart
+                  totalRevenus={dashboard.totalRevenus}
+                  totalDepenses={dashboard.totalDepenses}
+                  monthLabel={monthLabel}
+                />
+                <FinanceByTypeChart
+                  totalsByType={dashboard.totalsByType}
+                  monthLabel={monthLabel}
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {evolutionLoading ? (
+                  <Card className="rounded-sm border shadow-none flex items-center justify-center min-h-[280px]">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </Card>
+                ) : (
+                  <FinanceEvolutionLineChart data={evolutionData} />
+                )}
+                <FinanceTypePieChart
+                  totalsByType={dashboard.totalsByType}
+                  monthLabel={monthLabel}
+                />
+              </div>
               {dashboard.realVsBudget.length > 0 && (
                 <Card className="rounded-sm border shadow-none">
                   <CardHeader className="py-3 px-4 border-b">
