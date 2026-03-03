@@ -404,6 +404,47 @@ const financeController = {
       return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération du dashboard');
     }
   },
+
+  // --- Évolution sur N mois (pour graphique en courbe) ---
+  async getDashboardEvolution(req, res) {
+    try {
+      const count = Math.min(Math.max(parseInt(req.query.count, 10) || 6, 3), 24);
+      const ref = new Date();
+      const months = [];
+      for (let i = count - 1; i >= 0; i--) {
+        const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
+        months.push({ year: d.getFullYear(), month: d.getMonth() + 1 });
+      }
+
+      const results = [];
+      for (const { year, month } of months) {
+        const start = `${year}-${String(month).padStart(2, '0')}-01`;
+        const lastDay = new Date(year, month, 0).getDate();
+        const end = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        const transactions = await FinanceTransaction.findAll({
+          where: { userId: req.user.id, date: { [Op.between]: [start, end] } },
+          attributes: ['type', 'amount'],
+        });
+        const totalsByType = { revenus: 0, factures: 0, depenses: 0, epargnes: 0, credits: 0 };
+        for (const t of transactions) {
+          if (totalsByType[t.type] != null) totalsByType[t.type] += Number(t.amount);
+        }
+        const totalRevenus = totalsByType.revenus;
+        const totalDepenses = totalsByType.factures + totalsByType.depenses + totalsByType.epargnes + totalsByType.credits;
+        results.push({
+          year,
+          month,
+          totalRevenus,
+          totalDepenses,
+          totalsByType: { ...totalsByType },
+        });
+      }
+      return sendSuccess(res, 200, results, 'Évolution récupérée');
+    } catch (err) {
+      console.error('❌ getDashboardEvolution:', err);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération de l\'évolution');
+    }
+  },
 };
 
 module.exports = financeController;
