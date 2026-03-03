@@ -20,5 +20,6 @@ router.get('/budget', financeController.getBudget);
 router.put('/budget', financeController.putBudget);
 
 router.get('/dashboard', financeController.getDashboard);
+router.get('/dashboard/evolution', financeController.getDashboardEvolution);
 
 module.exports = router;
