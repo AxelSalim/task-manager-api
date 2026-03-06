@@ -86,17 +86,41 @@ export default function CalendarPage() {
     [getTasksForDate]
   );
 
-  const goToPreviousMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
+  const goToPrevious = () => {
+    if (view === 'week') {
+      setCurrentDate(new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000));
+    } else {
+      setCurrentDate(new Date(year, month - 1, 1));
+    }
   };
 
-  const goToNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
+  const goToNext = () => {
+    if (view === 'week') {
+      setCurrentDate(new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000));
+    } else {
+      setCurrentDate(new Date(year, month + 1, 1));
+    }
   };
 
   const goToToday = () => {
     setCurrentDate(new Date());
   };
+
+  // Début de la semaine (dimanche) pour la vue semaine
+  const getWeekStart = (date: Date) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const weekStart = getWeekStart(currentDate);
+  const weekDays: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    weekDays.push(d);
+  }
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
@@ -111,12 +135,17 @@ export default function CalendarPage() {
   const today = new Date();
   const isToday = (date: Date) => isSameDay(date, today);
 
+  const weekTitle =
+    view === 'week'
+      ? `Semaine du ${weekStart.getDate()} ${monthNames[weekStart.getMonth()]} ${weekStart.getFullYear()}`
+      : `${monthNames[month]}, ${year}`;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-900">
-            {monthNames[month]}, {year}
+            {weekTitle}
           </h1>
           <div className="flex items-center gap-2">
             <Button
@@ -139,13 +168,13 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={goToPreviousMonth}>
+          <Button variant="ghost" size="icon" onClick={goToPrevious}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" onClick={goToToday}>
             AUJOURD&apos;HUI
           </Button>
-          <Button variant="ghost" size="icon" onClick={goToNextMonth}>
+          <Button variant="ghost" size="icon" onClick={goToNext}>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon">
@@ -167,117 +196,170 @@ export default function CalendarPage() {
         </div>
 
         <div className="grid grid-cols-7">
-          {daysBefore.map(({ date, dayNum }) => {
-            const dayEvents = getEventsForDay(date);
-            return (
-              <button
-                key={`prev-${dayNum}`}
-                type="button"
-                onClick={() => handleDayClick(date)}
-                className={cn(
-                  'min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50 text-left hover:bg-slate-100 transition-colors cursor-pointer'
-                )}
-              >
-                <span className="text-sm text-slate-400">{dayNum}</span>
-                <div className="space-y-1 mt-1">
-                  {dayEvents.slice(0, 3).map((event) => (
-                    <div
-                      key={event.id}
-                      className={cn(
-                        'text-xs px-2 py-1 rounded truncate',
-                        event.color,
-                        'text-slate-800'
-                      )}
-                    >
-                      {event.title}
-                    </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <div className="text-xs text-slate-500 px-2">
-                      +{dayEvents.length - 3} de plus
-                    </div>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-
-          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((dayNum) => {
-            const date = new Date(year, month, dayNum);
-            const dayEvents = getEventsForDay(date);
-            return (
-              <button
-                key={dayNum}
-                type="button"
-                onClick={() => handleDayClick(date)}
-                className={cn(
-                  'min-h-[120px] border-r border-b border-slate-200 p-2 text-left hover:bg-slate-100 transition-colors cursor-pointer',
-                  isToday(date) && 'bg-blue-50'
-                )}
-              >
-                <div
+          {view === 'week' ? (
+            weekDays.map((date) => {
+              const dayEvents = getEventsForDay(date);
+              const isOtherMonth = date.getMonth() !== month;
+              return (
+                <button
+                  key={date.toISOString()}
+                  type="button"
+                  onClick={() => handleDayClick(date)}
                   className={cn(
-                    'text-sm font-medium mb-1',
-                    isToday(date) ? 'text-primary' : 'text-slate-900'
+                    'min-h-[200px] border-r border-b border-slate-200 p-2 text-left hover:bg-slate-50 transition-colors cursor-pointer',
+                    isToday(date) && 'bg-blue-50',
+                    isOtherMonth && 'bg-slate-50/50'
                   )}
                 >
-                  {dayNum}
-                </div>
-                <div className="space-y-1">
-                  {dayEvents.slice(0, 3).map((event) => (
-                    <div
-                      key={event.id}
-                      className={cn(
-                        'text-xs px-2 py-1 rounded truncate',
-                        event.color,
-                        'text-slate-800'
+                  <div
+                    className={cn(
+                      'text-sm font-medium mb-1',
+                      isToday(date) ? 'text-primary' : 'text-slate-900',
+                      isOtherMonth && 'text-slate-400'
+                    )}
+                  >
+                    {date.getDate()}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground uppercase mb-2">
+                    {monthNames[date.getMonth()].slice(0, 3)}
+                  </div>
+                  <div className="space-y-1">
+                    {dayEvents.slice(0, 5).map((event) => (
+                      <div
+                        key={event.id}
+                        className={cn(
+                          'text-xs px-2 py-1 rounded truncate',
+                          event.color,
+                          'text-slate-800'
+                        )}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+                    {dayEvents.length > 5 && (
+                      <div className="text-xs text-slate-500 px-2">
+                        +{dayEvents.length - 5} de plus
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            <>
+              {daysBefore.map(({ date, dayNum }) => {
+                const dayEvents = getEventsForDay(date);
+                return (
+                  <button
+                    key={`prev-${dayNum}`}
+                    type="button"
+                    onClick={() => handleDayClick(date)}
+                    className={cn(
+                      'min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50 text-left hover:bg-slate-100 transition-colors cursor-pointer'
+                    )}
+                  >
+                    <span className="text-sm text-slate-400">{dayNum}</span>
+                    <div className="space-y-1 mt-1">
+                      {dayEvents.slice(0, 3).map((event) => (
+                        <div
+                          key={event.id}
+                          className={cn(
+                            'text-xs px-2 py-1 rounded truncate',
+                            event.color,
+                            'text-slate-800'
+                          )}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <div className="text-xs text-slate-500 px-2">
+                          +{dayEvents.length - 3} de plus
+                        </div>
                       )}
-                    >
-                      {event.title}
                     </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <div className="text-xs text-slate-500 px-2">
-                      +{dayEvents.length - 3} de plus
-                    </div>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+                  </button>
+                );
+              })}
 
-          {daysAfter.map(({ date, dayNum }) => {
-            const dayEvents = getEventsForDay(date);
-            return (
-              <button
-                key={`next-${dayNum}`}
-                type="button"
-                onClick={() => handleDayClick(date)}
-                className="min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50 text-left hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <span className="text-sm text-slate-400">{dayNum}</span>
-                <div className="space-y-1 mt-1">
-                  {dayEvents.slice(0, 3).map((event) => (
+              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((dayNum) => {
+                const date = new Date(year, month, dayNum);
+                const dayEvents = getEventsForDay(date);
+                return (
+                  <button
+                    key={dayNum}
+                    type="button"
+                    onClick={() => handleDayClick(date)}
+                    className={cn(
+                      'min-h-[120px] border-r border-b border-slate-200 p-2 text-left hover:bg-slate-100 transition-colors cursor-pointer',
+                      isToday(date) && 'bg-blue-50'
+                    )}
+                  >
                     <div
-                      key={event.id}
                       className={cn(
-                        'text-xs px-2 py-1 rounded truncate',
-                        event.color,
-                        'text-slate-800'
+                        'text-sm font-medium mb-1',
+                        isToday(date) ? 'text-primary' : 'text-slate-900'
                       )}
                     >
-                      {event.title}
+                      {dayNum}
                     </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <div className="text-xs text-slate-500 px-2">
-                      +{dayEvents.length - 3} de plus
+                    <div className="space-y-1">
+                      {dayEvents.slice(0, 3).map((event) => (
+                        <div
+                          key={event.id}
+                          className={cn(
+                            'text-xs px-2 py-1 rounded truncate',
+                            event.color,
+                            'text-slate-800'
+                          )}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <div className="text-xs text-slate-500 px-2">
+                          +{dayEvents.length - 3} de plus
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+                  </button>
+                );
+              })}
+
+              {daysAfter.map(({ date, dayNum }) => {
+                const dayEvents = getEventsForDay(date);
+                return (
+                  <button
+                    key={`next-${dayNum}`}
+                    type="button"
+                    onClick={() => handleDayClick(date)}
+                    className="min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50 text-left hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    <span className="text-sm text-slate-400">{dayNum}</span>
+                    <div className="space-y-1 mt-1">
+                      {dayEvents.slice(0, 3).map((event) => (
+                        <div
+                          key={event.id}
+                          className={cn(
+                            'text-xs px-2 py-1 rounded truncate',
+                            event.color,
+                            'text-slate-800'
+                          )}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <div className="text-xs text-slate-500 px-2">
+                          +{dayEvents.length - 3} de plus
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
 
