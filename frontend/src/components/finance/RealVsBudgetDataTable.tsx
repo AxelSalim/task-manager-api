@@ -6,12 +6,22 @@ import {
   type SortingState,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   Table,
   TableBody,
@@ -20,6 +30,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+
+const PAGE_SIZE = 10;
+
+function getPageNumbers(currentPage: number, totalPages: number): (number | 'ellipsis')[] {
+  if (totalPages <= 1) return totalPages === 1 ? [1] : [];
+  const numbers = [...new Set([1, currentPage, currentPage - 1, currentPage + 1, totalPages])]
+    .filter((p) => p >= 1 && p <= totalPages)
+    .sort((a, b) => a - b);
+  const result: (number | 'ellipsis')[] = [];
+  for (let i = 0; i < numbers.length; i++) {
+    result.push(numbers[i]!);
+    if (i < numbers.length - 1 && numbers[i + 1]! - numbers[i]! > 1) result.push('ellipsis');
+  }
+  return result;
+}
 
 export type RealVsBudgetRow = {
   categoryId: number;
@@ -91,12 +116,18 @@ export function RealVsBudgetDataTable({ data }: { data: RealVsBudgetRow[] }) {
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: { pagination: { pageSize: PAGE_SIZE } },
     state: { sorting },
   });
 
+  const pageCount = table.getPageCount();
+  const pageIndex = table.getState().pagination.pageIndex;
+  const pageNumbers = getPageNumbers(pageIndex + 1, pageCount);
+
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       <div className="rounded-sm border">
         <Table>
           <TableHeader>
@@ -132,6 +163,45 @@ export function RealVsBudgetDataTable({ data }: { data: RealVsBudgetRow[] }) {
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex items-center justify-between gap-2 py-2">
+        <div className="text-sm text-muted-foreground">
+          {table.getCoreRowModel().rows.length} ligne(s)
+        </div>
+        {pageCount > 1 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                />
+              </PaginationItem>
+              {pageNumbers.map((page, i) =>
+                page === 'ellipsis' ? (
+                  <PaginationItem key={`ellipsis-${i}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={pageIndex + 1 === page}
+                      onClick={() => table.setPageIndex(page - 1)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </div>
   );
