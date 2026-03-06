@@ -315,38 +315,40 @@ function FinancePage() {
             </div>
           ) : dashboard ? (
             <>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
                 <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-4 px-4">
+                  <CardHeader className="pb-1 pt-2 px-4">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       Revenus (réel)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="px-4 pb-4">
+                  <CardContent className="px-4">
                     <span className="text-xl font-semibold text-green-600">
                       {dashboard.totalRevenus.toLocaleString('fr-FR')} CFA
                     </span>
                   </CardContent>
                 </Card>
+
                 <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-4 px-4">
+                  <CardHeader className="pb-1 pt-2 px-4">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       Dépenses (réel)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="px-4 pb-4">
+                  <CardContent className="px-4">
                     <span className="text-xl font-semibold text-red-600">
                       {dashboard.totalDepenses.toLocaleString('fr-FR')} CFA
                     </span>
                   </CardContent>
                 </Card>
+
                 <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-4 px-4">
+                  <CardHeader className="pb-1 pt-2 px-4">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       Solde (réel)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="px-4 pb-4">
+                  <CardContent className="px-4">
                     <span
                       className={`text-xl font-semibold ${dashboard.solde >= 0 ? 'text-green-600' : 'text-red-600'}`}
                     >
@@ -354,15 +356,28 @@ function FinancePage() {
                     </span>
                   </CardContent>
                 </Card>
+
                 <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-4 px-4">
+                  <CardHeader className="pb-1 pt-2 px-4">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Budget prévu
+                      Budget prévu (Revenus)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="px-4 pb-4">
+                  <CardContent className="px-4">
                     <span className="text-xl font-semibold text-muted-foreground">
-                      Revenus: {dashboard.budgetRevenus.toLocaleString('fr-FR')} · Dépenses:{' '}
+                      {dashboard.budgetRevenus.toLocaleString('fr-FR')} CFA
+                    </span>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-sm border shadow-none">
+                  <CardHeader className="pb-1 pt-2 px-4">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Budget prévu (Dépenses)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4">
+                    <span className="text-xl font-semibold text-muted-foreground">
                       {dashboard.budgetDepenses.toLocaleString('fr-FR')} CFA
                     </span>
                   </CardContent>
@@ -411,7 +426,7 @@ function FinancePage() {
         <TabsContent value="transactions" className="mt-4 space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
             <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 pt-4 px-4">
+              <CardHeader className="pb-1 pt-2 px-4">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Revenus (mois)
                 </CardTitle>
