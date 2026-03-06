@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { financeAPI, type FinanceTransactionType } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 
 type NewFinanceCategorySheetProps = {
   open: boolean;
@@ -82,6 +82,7 @@ export function NewFinanceCategorySheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <Button variant="outline" className="rounded-sm">
+          <Plus className="h-4 w-4 mr-2" />
           Nouvelle catégorie
         </Button>
       </SheetTrigger>
