@@ -46,7 +46,7 @@ const STATUS_CONFIG: Record<
   done: {
     label: 'Terminée',
     icon: CheckCircle2,
-    className: 'text-green-600 border-green-200 bg-green-50',
+    className: 'text-primary border-primary/30 bg-primary/10',
   },
 };
 
@@ -82,7 +82,7 @@ function TaskCard({ task }: { task: CalendarDayTask }) {
       className={cn(
         'rounded-sm border bg-card text-card-foreground overflow-hidden',
         'border-l-4',
-        task.status === 'done' && 'border-l-green-500',
+        task.status === 'done' && 'border-l-primary',
         task.status === 'in-progress' && 'border-l-blue-500',
         task.status === 'todo' && 'border-l-muted-foreground/40'
       )}
@@ -158,7 +158,7 @@ export function CalendarDaySheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="flex flex-col w-full sm:max-w-md rounded-none border-l p-0 gap-0"
+        className="flex flex-col w-full sm:max-w-lg rounded-none border-l p-0 gap-0"
       >
         <SheetHeader className="shrink-0 border-b bg-muted/20 px-5 py-3">
           <SheetTitle className="text-base font-semibold text-foreground">
