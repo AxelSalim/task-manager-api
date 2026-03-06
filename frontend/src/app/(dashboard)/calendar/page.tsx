@@ -2,30 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { CalendarDaySheet, type CalendarDayTask } from '@/components/calendar/CalendarDaySheet';
 import { ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tasksAPI } from '@/lib/api';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-
-type TaskItem = {
-  id: number;
-  title: string;
-  description: string | null;
-  status: string;
-  priority: string;
-  dueDate: string | null;
-  reminderDate: string | null;
-  tags?: Array<{ id: number; name: string; color: string }>;
-};
 
 function isSameDay(a: Date, b: Date): boolean {
   return (
@@ -35,23 +17,10 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  todo: 'À faire',
-  'in-progress': 'En cours',
-  done: 'Terminée',
-};
-
-const PRIORITY_LABELS: Record<string, string> = {
-  low: 'Basse',
-  normal: 'Normale',
-  high: 'Haute',
-  urgent: 'Urgente',
-};
-
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'week' | 'month'>('month');
-  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [tasks, setTasks] = useState<CalendarDayTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -63,7 +32,7 @@ export default function CalendarPage() {
     setLoading(true);
     try {
       const data = await tasksAPI.getAll();
-      setTasks(data as TaskItem[]);
+      setTasks(data as CalendarDayTask[]);
     } catch {
       setTasks([]);
     } finally {
@@ -311,59 +280,13 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="flex flex-col sm:max-w-md rounded-none border-l">
-          <SheetHeader className="border-b pb-4">
-            <SheetTitle>
-              {selectedDate
-                ? format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })
-                : 'Jour'}
-            </SheetTitle>
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto py-4">
-            {selectedDate && (
-              <>
-                {loading ? (
-                  <p className="text-sm text-muted-foreground">Chargement…</p>
-                ) : (
-                  <>
-                    {getTasksForDate(selectedDate).length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        Aucune tâche prévue ce jour.
-                      </p>
-                    ) : (
-                      <ul className="space-y-3">
-                        {getTasksForDate(selectedDate).map((task) => (
-                          <li
-                            key={task.id}
-                            className="rounded-sm border bg-card p-3 text-card-foreground shadow-sm"
-                          >
-                            <p className="font-medium">{task.title}</p>
-                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                              <span>
-                                {STATUS_LABELS[task.status] ?? task.status}
-                              </span>
-                              <span>·</span>
-                              <span>
-                                {PRIORITY_LABELS[task.priority] ?? task.priority}
-                              </span>
-                            </div>
-                            {task.description && (
-                              <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                                {task.description}
-                              </p>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
+      <CalendarDaySheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        selectedDate={selectedDate}
+        tasks={selectedDate ? getTasksForDate(selectedDate) : []}
+        loading={loading}
+      />
     </div>
   );
 }
