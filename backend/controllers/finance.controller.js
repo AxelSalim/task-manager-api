@@ -104,6 +104,7 @@ const financeController = {
   },
 
   // --- Transactions ---
+  // Filtre par mois : du 1er au dernier jour du mois (start = YYYY-MM-01, end = YYYY-MM-dernierJour)
   async getTransactions(req, res) {
     try {
       const { year, month, type, categoryId } = req.query;
@@ -336,6 +337,7 @@ const financeController = {
   },
 
   // --- Dashboard (agrégats + réel vs budget) ---
+  // Toujours du 1er au dernier jour du mois (start = YYYY-MM-01, end = YYYY-MM-dernierJour)
   async getDashboard(req, res) {
     try {
       const year = parseInt(req.query.year, 10) || new Date().getFullYear();
@@ -406,14 +408,25 @@ const financeController = {
   },
 
   // --- Évolution sur N mois (pour graphique en courbe) ---
+  // Chaque mois : du 1er au dernier jour (start = YYYY-MM-01, end = YYYY-MM-dernierJour).
+  // Si year+month fournis : les N mois se terminent au mois sélectionné ; sinon N derniers mois depuis aujourd'hui.
   async getDashboardEvolution(req, res) {
     try {
       const count = Math.min(Math.max(parseInt(req.query.count, 10) || 6, 3), 24);
-      const ref = new Date();
+      const refYear = parseInt(req.query.year, 10);
+      const refMonth = parseInt(req.query.month, 10);
       const months = [];
-      for (let i = count - 1; i >= 0; i--) {
-        const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
-        months.push({ year: d.getFullYear(), month: d.getMonth() + 1 });
+      if (!isNaN(refYear) && !isNaN(refMonth) && refMonth >= 1 && refMonth <= 12) {
+        for (let i = count - 1; i >= 0; i--) {
+          const d = new Date(refYear, refMonth - 1 - i, 1);
+          months.push({ year: d.getFullYear(), month: d.getMonth() + 1 });
+        }
+      } else {
+        const ref = new Date();
+        for (let i = count - 1; i >= 0; i--) {
+          const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
+          months.push({ year: d.getFullYear(), month: d.getMonth() + 1 });
+        }
       }
 
       const results = [];
