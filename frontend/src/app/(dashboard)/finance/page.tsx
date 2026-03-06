@@ -62,7 +62,6 @@ function FinancePage() {
   const [budgetEntries, setBudgetEntries] = useState<FinanceBudgetEntryDto[]>([]);
   const [dashboard, setDashboard] = useState<FinanceDashboardDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [dashboardLoading, setDashboardLoading] = useState(false);
   const [evolutionData, setEvolutionData] = useState<FinanceEvolutionMonthDto[]>([]);
   const [evolutionLoading, setEvolutionLoading] = useState(false);
   const [budgetLoading, setBudgetLoading] = useState(true);
@@ -97,7 +96,6 @@ function FinancePage() {
   }, [month, toast, year]);
 
   const loadDashboard = useCallback(async () => {
-    setDashboardLoading(true);
     try {
       const data = await financeAPI.getDashboard({ year, month });
       setDashboard(data);
@@ -107,8 +105,6 @@ function FinancePage() {
         description: error instanceof Error ? error.message : 'Impossible de charger le dashboard',
         variant: 'destructive',
       });
-    } finally {
-      setDashboardLoading(false);
     }
   }, [month, toast, year]);
 
@@ -330,126 +326,125 @@ function FinancePage() {
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-4 space-y-4">
-          {dashboardLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : dashboard ? (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Données du {periodLabel} (mois sélectionné).
-              </p>
-              <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
-                <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-2 px-4">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Revenus (réel)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-4">
-                    <span className="text-xl font-semibold text-green-600">
-                      {dashboard.totalRevenus.toLocaleString('fr-FR')} CFA
-                    </span>
-                  </CardContent>
-                </Card>
-
-                <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-2 px-4">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Dépenses (réel)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-4">
-                    <span className="text-xl font-semibold text-red-600">
-                      {dashboard.totalDepenses.toLocaleString('fr-FR')} CFA
-                    </span>
-                  </CardContent>
-                </Card>
-
-                <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-2 px-4">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Solde (réel)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-4">
-                    <span
-                      className={`text-xl font-semibold ${dashboard.solde >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                    >
-                      {dashboard.solde.toLocaleString('fr-FR')} CFA
-                    </span>
-                  </CardContent>
-                </Card>
-
-                <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-2 px-4">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Budget prévu (Revenus)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-4">
-                    <span className="text-xl font-semibold text-muted-foreground">
-                      {dashboard.budgetRevenus.toLocaleString('fr-FR')} CFA
-                    </span>
-                  </CardContent>
-                </Card>
-
-                <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="pb-1 pt-2 px-4">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Budget prévu (Dépenses)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-4">
-                    <span className="text-xl font-semibold text-muted-foreground">
-                      {dashboard.budgetDepenses.toLocaleString('fr-FR')} CFA
-                    </span>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FinanceMonthChart
-                  totalRevenus={dashboard.totalRevenus}
-                  totalDepenses={dashboard.totalDepenses}
-                  monthLabel={monthLabel}
-                />
-                <FinanceByTypeChart
-                  totalsByType={dashboard.totalsByType}
-                  monthLabel={monthLabel}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {evolutionLoading ? (
-                  <Card className="rounded-sm border shadow-none flex items-center justify-center min-h-[280px]">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          {(() => {
+            const displayDashboard = dashboard ?? DEFAULT_DASHBOARD;
+            return (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Données du {periodLabel} (mois sélectionné).
+                </p>
+                <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 pt-2 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Revenus (réel)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-green-600">
+                        {displayDashboard.totalRevenus.toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
                   </Card>
-                ) : (
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground px-1">
-                      6 mois jusqu&apos;à {monthLabel} (données du 1er au dernier jour de chaque mois).
-                    </p>
-                    <FinanceEvolutionLineChart data={evolutionData} />
-                  </div>
+
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 pt-2 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Dépenses (réel)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-red-600">
+                        {displayDashboard.totalDepenses.toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 pt-2 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Solde (réel)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span
+                        className={`text-xl font-semibold ${displayDashboard.solde >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      >
+                        {displayDashboard.solde.toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 pt-2 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Budget prévu (Revenus)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-muted-foreground">
+                        {displayDashboard.budgetRevenus.toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 pt-2 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Budget prévu (Dépenses)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-muted-foreground">
+                        {displayDashboard.budgetDepenses.toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FinanceMonthChart
+                    totalRevenus={displayDashboard.totalRevenus}
+                    totalDepenses={displayDashboard.totalDepenses}
+                    monthLabel={monthLabel}
+                  />
+                  <FinanceByTypeChart
+                    totalsByType={displayDashboard.totalsByType}
+                    monthLabel={monthLabel}
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {evolutionLoading ? (
+                    <Card className="rounded-sm border shadow-none flex items-center justify-center min-h-[280px]">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </Card>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground px-1">
+                        6 mois jusqu&apos;à {monthLabel} (données du 1er au dernier jour de chaque mois).
+                      </p>
+                      <FinanceEvolutionLineChart data={evolutionData} />
+                    </div>
+                  )}
+                  <FinanceTypePieChart
+                    totalsByType={displayDashboard.totalsByType}
+                    monthLabel={monthLabel}
+                  />
+                </div>
+                {displayDashboard.realVsBudget.length > 0 && (
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="py-3 px-4 border-b">
+                      <CardTitle className="text-base font-semibold">
+                        Réel vs Budget — {monthLabel}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <RealVsBudgetDataTable data={displayDashboard.realVsBudget} />
+                    </CardContent>
+                  </Card>
                 )}
-                <FinanceTypePieChart
-                  totalsByType={dashboard.totalsByType}
-                  monthLabel={monthLabel}
-                />
-              </div>
-              {dashboard.realVsBudget.length > 0 && (
-                <Card className="rounded-sm border shadow-none">
-                  <CardHeader className="py-3 px-4 border-b">
-                    <CardTitle className="text-base font-semibold">
-                      Réel vs Budget — {monthLabel}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <RealVsBudgetDataTable data={dashboard.realVsBudget} />
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          ) : null}
+              </>
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="transactions" className="mt-4 space-y-4">
