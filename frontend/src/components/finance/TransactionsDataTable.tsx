@@ -27,7 +27,7 @@ import {
 import type { FinanceTransactionDto, FinanceTransactionType } from '@/lib/api';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Pencil, Trash2 } from 'lucide-react';
+import { SquarePen, Trash2 } from 'lucide-react';
 
 const TYPE_LABELS: Record<FinanceTransactionType, string> = {
   revenus: 'Revenus',
@@ -116,7 +116,7 @@ export function TransactionsDataTable({
                 onClick={() => onEdit(row.original)}
                 aria-label="Modifier"
               >
-                <Pencil className="h-4 w-4 text-muted-foreground" />
+                <SquarePen className="h-4 w-4 text-muted-foreground" />
               </Button>
             )}
             <Button
