@@ -117,7 +117,11 @@ function FinancePage() {
   const loadEvolution = useCallback(async () => {
     setEvolutionLoading(true);
     try {
-      const data = await financeAPI.getDashboardEvolution(6);
+      const data = await financeAPI.getDashboardEvolution({
+        count: 6,
+        year,
+        month,
+      });
       setEvolutionData(data);
     } catch (error: unknown) {
       toast({
@@ -129,7 +133,7 @@ function FinancePage() {
     } finally {
       setEvolutionLoading(false);
     }
-  }, [toast]);
+  }, [month, toast, year]);
 
   useEffect(() => {
     loadData();
