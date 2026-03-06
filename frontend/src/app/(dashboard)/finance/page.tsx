@@ -453,7 +453,7 @@ function FinancePage() {
           </div>
 
           <Card className="rounded-sm border shadow-none">
-            <CardHeader className="py-3 px-4 border-b flex flex-row items-center justify-between gap-2">
+            <CardHeader className="px-4 border-b flex flex-row items-center justify-between gap-2">
               <CardTitle className="text-base font-semibold">
                 Transactions — {monthLabel}
               </CardTitle>
