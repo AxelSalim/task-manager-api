@@ -36,6 +36,8 @@ type NewFinanceTransactionSheetProps = {
   typeLabels: Record<FinanceTransactionType, string>;
   /** En mode édition : transaction à modifier (pas de trigger affiché) */
   transaction?: FinanceTransactionDto | null;
+  /** Afficher le bouton "Ajouter une transaction" (false pour l'instance édition) */
+  showTrigger?: boolean;
   onCreated?: () => void;
   onUpdated?: () => void;
 };
@@ -46,6 +48,7 @@ export function NewFinanceTransactionSheet({
   categories,
   typeLabels,
   transaction,
+  showTrigger = true,
   onCreated,
   onUpdated,
 }: NewFinanceTransactionSheetProps) {
@@ -131,7 +134,7 @@ export function NewFinanceTransactionSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {!transaction && (
+      {showTrigger && !transaction && (
         <SheetTrigger asChild>
           <Button className="rounded-sm">
             <Plus className="h-4 w-4 mr-2" />
