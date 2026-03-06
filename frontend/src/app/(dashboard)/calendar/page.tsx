@@ -1,52 +1,120 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tasksAPI } from '@/lib/api';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
-// Exemple d'événements (à remplacer par les vraies données)
-const events = [
-  { date: 2, title: 'Courses Walmart', color: 'bg-blue-200', time: '10:00', recurring: true },
-  { date: 2, title: 'Jour de la marmotte', color: 'bg-purple-200' },
-  { date: 3, title: 'Match de basket avec Davi', color: 'bg-orange-200' },
-  { date: 3, title: 'Mettre à jour les directives', color: 'bg-purple-200' },
-  { date: 6, title: 'Material Design', color: 'bg-blue-200' },
-  { date: 6, title: 'Plan BBQ 12:30', color: 'bg-orange-200', time: '12:30' },
-  { date: 6, title: 'Jogging', color: 'bg-blue-200' },
-  { date: 14, title: 'Acheter des billets 16:30', color: 'bg-orange-200', time: '16:30' },
-  { date: 14, title: 'Brainstorming', color: 'bg-purple-200' },
-  { date: 14, title: 'Saint-Valentin', color: 'bg-blue-200' },
-];
+type TaskItem = {
+  id: number;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  dueDate: string | null;
+  reminderDate: string | null;
+  tags?: Array<{ id: number; name: string; color: string }>;
+};
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  todo: 'À faire',
+  'in-progress': 'En cours',
+  done: 'Terminée',
+};
+
+const PRIORITY_LABELS: Record<string, string> = {
+  low: 'Basse',
+  normal: 'Normale',
+  high: 'Haute',
+  urgent: 'Urgente',
+};
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'week' | 'month'>('month');
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+
+  const loadTasks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await tasksAPI.getAll();
+      setTasks(data as TaskItem[]);
+    } catch {
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
   const daysInMonth = lastDayOfMonth.getDate();
   const startingDayOfWeek = firstDayOfMonth.getDay();
 
-  // Jours du mois précédent pour compléter la grille
   const prevMonthLastDay = new Date(year, month, 0).getDate();
-  const daysBefore = [];
+  const daysBefore: { date: Date; dayNum: number }[] = [];
   for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-    daysBefore.push(prevMonthLastDay - i);
+    const d = prevMonthLastDay - i;
+    daysBefore.push({ date: new Date(year, month - 1, d), dayNum: d });
   }
 
-  // Jours du mois suivant pour compléter la grille
   const totalCells = daysBefore.length + daysInMonth;
-  const remainingCells = 42 - totalCells; // 6 semaines * 7 jours
-  const daysAfter = [];
+  const remainingCells = 42 - totalCells;
+  const daysAfter: { date: Date; dayNum: number }[] = [];
   for (let i = 1; i <= remainingCells; i++) {
-    daysAfter.push(i);
+    daysAfter.push({ date: new Date(year, month + 1, i), dayNum: i });
   }
+
+  const getTasksForDate = useCallback(
+    (date: Date) => {
+      return tasks.filter((t) => {
+        if (!t.dueDate) return false;
+        return isSameDay(new Date(t.dueDate), date);
+      });
+    },
+    [tasks]
+  );
+
+  const getEventsForDay = useCallback(
+    (date: Date) => {
+      return getTasksForDate(date).map((t) => ({
+        id: t.id,
+        title: t.title,
+        color: t.status === 'done' ? 'bg-slate-200' : 'bg-blue-200',
+        status: t.status,
+      }));
+    },
+    [getTasksForDate]
+  );
 
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -60,27 +128,21 @@ export default function CalendarPage() {
     setCurrentDate(new Date());
   };
 
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    setSheetOpen(true);
+  };
+
   const monthNames = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  const getEventsForDay = (day: number) => {
-    return events.filter(event => event.date === day);
-  };
-
   const today = new Date();
-  const isToday = (day: number) => {
-    return (
-      day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
-    );
-  };
+  const isToday = (date: Date) => isSameDay(date, today);
 
   return (
     <div className="space-y-6">
-      {/* Header du calendrier */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-900">
@@ -111,7 +173,7 @@ export default function CalendarPage() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" onClick={goToToday}>
-            AUJOURD'HUI
+            AUJOURD&apos;HUI
           </Button>
           <Button variant="ghost" size="icon" onClick={goToNextMonth}>
             <ChevronRight className="h-4 w-4" />
@@ -122,9 +184,7 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Grille du calendrier */}
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-        {/* En-têtes des jours */}
         <div className="grid grid-cols-7 border-b border-slate-200">
           {daysOfWeek.map((day) => (
             <div
@@ -136,50 +196,30 @@ export default function CalendarPage() {
           ))}
         </div>
 
-        {/* Jours du calendrier */}
         <div className="grid grid-cols-7">
-          {/* Jours du mois précédent */}
-          {daysBefore.map((day) => (
-            <div
-              key={`prev-${day}`}
-              className="min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50"
-            >
-              <span className="text-sm text-slate-400">{day}</span>
-            </div>
-          ))}
-
-          {/* Jours du mois actuel */}
-          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-            const dayEvents = getEventsForDay(day);
+          {daysBefore.map(({ date, dayNum }) => {
+            const dayEvents = getEventsForDay(date);
             return (
-              <div
-                key={day}
+              <button
+                key={`prev-${dayNum}`}
+                type="button"
+                onClick={() => handleDayClick(date)}
                 className={cn(
-                  'min-h-[120px] border-r border-b border-slate-200 p-2',
-                  isToday(day) && 'bg-blue-50'
+                  'min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50 text-left hover:bg-slate-100 transition-colors cursor-pointer'
                 )}
               >
-                <div className={cn(
-                  'text-sm font-medium mb-1',
-                  isToday(day) ? 'text-primary' : 'text-slate-900'
-                )}>
-                  {day}
-                </div>
-                <div className="space-y-1">
-                  {dayEvents.slice(0, 3).map((event, idx) => (
+                <span className="text-sm text-slate-400">{dayNum}</span>
+                <div className="space-y-1 mt-1">
+                  {dayEvents.slice(0, 3).map((event) => (
                     <div
-                      key={idx}
+                      key={event.id}
                       className={cn(
-                        'text-xs px-2 py-1 rounded truncate flex items-center gap-1',
+                        'text-xs px-2 py-1 rounded truncate',
                         event.color,
                         'text-slate-800'
                       )}
                     >
-                      {event.recurring && (
-                        <span className="text-[10px]">🔄</span>
-                      )}
-                      {event.time && <span className="font-medium">{event.time}</span>}
-                      <span className="truncate">{event.title}</span>
+                      {event.title}
                     </div>
                   ))}
                   {dayEvents.length > 3 && (
@@ -188,22 +228,142 @@ export default function CalendarPage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </button>
             );
           })}
 
-          {/* Jours du mois suivant */}
-          {daysAfter.map((day) => (
-            <div
-              key={`next-${day}`}
-              className="min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50"
-            >
-              <span className="text-sm text-slate-400">{day}</span>
-            </div>
-          ))}
+          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((dayNum) => {
+            const date = new Date(year, month, dayNum);
+            const dayEvents = getEventsForDay(date);
+            return (
+              <button
+                key={dayNum}
+                type="button"
+                onClick={() => handleDayClick(date)}
+                className={cn(
+                  'min-h-[120px] border-r border-b border-slate-200 p-2 text-left hover:bg-slate-100 transition-colors cursor-pointer',
+                  isToday(date) && 'bg-blue-50'
+                )}
+              >
+                <div
+                  className={cn(
+                    'text-sm font-medium mb-1',
+                    isToday(date) ? 'text-primary' : 'text-slate-900'
+                  )}
+                >
+                  {dayNum}
+                </div>
+                <div className="space-y-1">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <div
+                      key={event.id}
+                      className={cn(
+                        'text-xs px-2 py-1 rounded truncate',
+                        event.color,
+                        'text-slate-800'
+                      )}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                  {dayEvents.length > 3 && (
+                    <div className="text-xs text-slate-500 px-2">
+                      +{dayEvents.length - 3} de plus
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+
+          {daysAfter.map(({ date, dayNum }) => {
+            const dayEvents = getEventsForDay(date);
+            return (
+              <button
+                key={`next-${dayNum}`}
+                type="button"
+                onClick={() => handleDayClick(date)}
+                className="min-h-[120px] border-r border-b border-slate-200 p-2 bg-slate-50 text-left hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <span className="text-sm text-slate-400">{dayNum}</span>
+                <div className="space-y-1 mt-1">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <div
+                      key={event.id}
+                      className={cn(
+                        'text-xs px-2 py-1 rounded truncate',
+                        event.color,
+                        'text-slate-800'
+                      )}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                  {dayEvents.length > 3 && (
+                    <div className="text-xs text-slate-500 px-2">
+                      +{dayEvents.length - 3} de plus
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="flex flex-col sm:max-w-md rounded-none border-l">
+          <SheetHeader className="border-b pb-4">
+            <SheetTitle>
+              {selectedDate
+                ? format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })
+                : 'Jour'}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto py-4">
+            {selectedDate && (
+              <>
+                {loading ? (
+                  <p className="text-sm text-muted-foreground">Chargement…</p>
+                ) : (
+                  <>
+                    {getTasksForDate(selectedDate).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        Aucune tâche prévue ce jour.
+                      </p>
+                    ) : (
+                      <ul className="space-y-3">
+                        {getTasksForDate(selectedDate).map((task) => (
+                          <li
+                            key={task.id}
+                            className="rounded-sm border bg-card p-3 text-card-foreground shadow-sm"
+                          >
+                            <p className="font-medium">{task.title}</p>
+                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                              <span>
+                                {STATUS_LABELS[task.status] ?? task.status}
+                              </span>
+                              <span>·</span>
+                              <span>
+                                {PRIORITY_LABELS[task.priority] ?? task.priority}
+                              </span>
+                            </div>
+                            {task.description && (
+                              <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                                {task.description}
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
-
