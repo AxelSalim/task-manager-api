@@ -8,6 +8,14 @@ import {
 } from '@/components/ui/sheet';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import {
+  CheckCircle2,
+  Circle,
+  ClipboardList,
+  Flag,
+  Loader2,
+} from 'lucide-react';
 
 export type CalendarDayTask = {
   id: number;
@@ -21,17 +29,32 @@ export type CalendarDayTask = {
   tags?: Array<{ id: number; name: string; color: string }>;
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  todo: 'À faire',
-  'in-progress': 'En cours',
-  done: 'Terminée',
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; icon: typeof Circle; className: string }
+> = {
+  todo: {
+    label: 'À faire',
+    icon: Circle,
+    className: 'text-muted-foreground border-muted-foreground/30',
+  },
+  'in-progress': {
+    label: 'En cours',
+    icon: Loader2,
+    className: 'text-blue-600 border-blue-200 bg-blue-50',
+  },
+  done: {
+    label: 'Terminée',
+    icon: CheckCircle2,
+    className: 'text-green-600 border-green-200 bg-green-50',
+  },
 };
 
-const PRIORITY_LABELS: Record<string, string> = {
-  low: 'Basse',
-  normal: 'Normale',
-  high: 'Haute',
-  urgent: 'Urgente',
+const PRIORITY_CONFIG: Record<string, { label: string; className: string }> = {
+  low: { label: 'Basse', className: 'text-muted-foreground bg-muted/50' },
+  normal: { label: 'Normale', className: 'text-foreground bg-muted/40' },
+  high: { label: 'Haute', className: 'text-amber-700 bg-amber-100' },
+  urgent: { label: 'Urgente', className: 'text-red-700 bg-red-100' },
 };
 
 type CalendarDaySheetProps = {
@@ -42,6 +65,82 @@ type CalendarDaySheetProps = {
   loading?: boolean;
 };
 
+function TaskCard({ task }: { task: CalendarDayTask }) {
+  const status = STATUS_CONFIG[task.status] ?? {
+    label: task.status,
+    icon: Circle,
+    className: 'text-muted-foreground border-muted-foreground/30',
+  };
+  const priority = PRIORITY_CONFIG[task.priority] ?? {
+    label: task.priority,
+    className: 'bg-muted/40',
+  };
+  const StatusIcon = status.icon;
+
+  return (
+    <article
+      className={cn(
+        'rounded-sm border bg-card text-card-foreground overflow-hidden',
+        'border-l-4',
+        task.status === 'done' && 'border-l-green-500',
+        task.status === 'in-progress' && 'border-l-blue-500',
+        task.status === 'todo' && 'border-l-muted-foreground/40'
+      )}
+    >
+      <div className="p-4">
+        <h3 className="font-medium text-sm leading-snug text-foreground">
+          {task.title}
+        </h3>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium',
+              status.className
+            )}
+          >
+            {task.status === 'in-progress' ? (
+              <StatusIcon className="h-3 w-3 animate-spin" />
+            ) : (
+              <StatusIcon className="h-3 w-3 shrink-0" />
+            )}
+            {status.label}
+          </span>
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium',
+              priority.className
+            )}
+          >
+            <Flag className="h-3 w-3 shrink-0" />
+            {priority.label}
+          </span>
+        </div>
+        {task.description && (
+          <p className="mt-3 text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+            {task.description}
+          </p>
+        )}
+        {task.tags && task.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {task.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="rounded px-1.5 py-0.5 text-[10px] font-medium opacity-90"
+                style={{
+                  backgroundColor: tag.color ? `${tag.color}20` : 'var(--muted)',
+                  color: tag.color || 'var(--muted-foreground)',
+                }}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 export function CalendarDaySheet({
   open,
   onOpenChange,
@@ -49,57 +148,52 @@ export function CalendarDaySheet({
   tasks,
   loading = false,
 }: CalendarDaySheetProps) {
+  const dayLabel = selectedDate
+    ? format(selectedDate, 'EEEE d MMMM yyyy', { locale: fr })
+    : '';
+  const capitalizedDayLabel =
+    dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="flex flex-col sm:max-w-lg rounded-none border-l"
+        className="flex flex-col w-full sm:max-w-md rounded-none border-l p-0 gap-0"
       >
-        <SheetHeader className="border-b pb-3">
-          <SheetTitle>
-            {selectedDate
-              ? format(selectedDate, 'EEEE d MMMM yyyy', { locale: fr })
-              : 'Jour'}
+        <SheetHeader className="shrink-0 border-b bg-muted/20 px-5 py-3">
+          <SheetTitle className="text-base font-semibold text-foreground">
+            {selectedDate ? capitalizedDayLabel : 'Jour'}
           </SheetTitle>
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto py-4">
+
+        <div className="flex-1 overflow-y-auto px-5 py-4">
           {selectedDate && (
             <>
               {loading ? (
-                <p className="text-sm text-muted-foreground">Chargement…</p>
+                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : tasks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  <div className="rounded-full bg-muted/50 p-4 mb-3">
+                    <ClipboardList className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">
+                    Aucune tâche ce jour
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-[220px]">
+                    Les tâches avec une date d’échéance ou de création ce jour
+                    apparaîtront ici.
+                  </p>
+                </div>
               ) : (
-                <>
-                  {tasks.length === 0 ? (
-                    <p className="text-sm text-center text-muted-foreground">
-                      Aucune tâche prévue ce jour.
-                    </p>
-                  ) : (
-                    <ul className="space-y-3">
-                      {tasks.map((task) => (
-                        <li
-                          key={task.id}
-                          className="rounded-sm border bg-card p-3 text-card-foreground shadow-sm"
-                        >
-                          <p className="font-medium">{task.title}</p>
-                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                            <span>
-                              {STATUS_LABELS[task.status] ?? task.status}
-                            </span>
-                            <span>·</span>
-                            <span>
-                              {PRIORITY_LABELS[task.priority] ?? task.priority}
-                            </span>
-                          </div>
-                          {task.description && (
-                            <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                              {task.description}
-                            </p>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
+                <ul className="space-y-3">
+                  {tasks.map((task) => (
+                    <li key={task.id}>
+                      <TaskCard task={task} />
+                    </li>
+                  ))}
+                </ul>
               )}
             </>
           )}
