@@ -563,8 +563,12 @@ export const financeAPI = {
     return apiRequest<FinanceDashboardDto>(`/api/finance/dashboard${q}`);
   },
 
-  getDashboardEvolution: async (count?: number) => {
-    const q = count != null ? `?count=${count}` : '';
+  getDashboardEvolution: async (params?: { count?: number; year?: number; month?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.count != null) search.set('count', String(params.count));
+    if (params?.year != null) search.set('year', String(params.year));
+    if (params?.month != null) search.set('month', String(params.month));
+    const q = search.toString() ? `?${search.toString()}` : '';
     return apiRequest<FinanceEvolutionMonthDto[]>(`/api/finance/dashboard/evolution${q}`);
   },
 };
