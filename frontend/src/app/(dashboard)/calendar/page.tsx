@@ -66,8 +66,9 @@ export default function CalendarPage() {
   const getTasksForDate = useCallback(
     (date: Date) => {
       return tasks.filter((t) => {
-        if (!t.dueDate) return false;
-        return isSameDay(new Date(t.dueDate), date);
+        const taskDate = t.dueDate ? t.dueDate : t.createdAt;
+        if (!taskDate) return false;
+        return isSameDay(new Date(taskDate), date);
       });
     },
     [tasks]
