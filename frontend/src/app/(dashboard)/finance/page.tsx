@@ -11,13 +11,13 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
 import { NewFinanceCategorySheet } from '@/components/finance/NewFinanceCategorySheet';
 import { NewFinanceTransactionSheet } from '@/components/finance/NewFinanceTransactionSheet';
 import { FinanceByTypeChart } from '@/components/finance/FinanceByTypeChart';
 import { FinanceEvolutionLineChart } from '@/components/finance/FinanceEvolutionLineChart';
 import { FinanceMonthChart } from '@/components/finance/FinanceMonthChart';
 import { FinanceTypePieChart } from '@/components/finance/FinanceTypePieChart';
+import { BudgetTable } from '@/components/finance/BudgetTable';
 import { RealVsBudgetDataTable } from '@/components/finance/RealVsBudgetDataTable';
 import { TransactionsDataTable } from '@/components/finance/TransactionsDataTable';
 import {
@@ -495,33 +495,32 @@ function FinancePage() {
             </div>
           ) : (
             <Card className="rounded-sm border shadow-none">
-              <CardHeader className="py-3 px-4 border-b">
-                <CardTitle className="text-base font-semibold">
-                  Budget par catégorie — {monthLabel}
+              <CardHeader className="px-5 border-b bg-muted/20">
+                <CardTitle className="text-lg font-semibold">
+                  Budget par catégorie
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4">
+              <CardContent className="p-0">
                 {categoriesForBudget.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">
-                    Créez des catégories pour définir un budget.
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <p className="text-muted-foreground text-sm">
+                      Créez des catégories pour définir un budget.
+                    </p>
+                    <p className="text-muted-foreground/80 text-xs mt-1">
+                      Utilisez le bouton « Nouvelle catégorie » ci-dessus.
+                    </p>
+                  </div>
                 ) : (
-                  <div className="space-y-3">
-                    {categoriesForBudget.map((cat) => {
-                      const entry = budgetByCategory.get(cat.id);
-                      const key = `${cat.id}-${year}-${month}`;
-                      const saving = budgetSaving[key];
-                      return (
-                        <BudgetRow
-                          key={cat.id}
-                          category={cat}
-                          entry={entry}
-                          typeLabels={TYPE_LABELS}
-                          onSave={(amount) => handleBudgetChange(cat.id, amount)}
-                          saving={!!saving}
-                        />
-                      );
-                    })}
+                  <div className="rounded-sm overflow-hidden border-t-0">
+                    <BudgetTable
+                      categories={categoriesForBudget}
+                      budgetByCategory={budgetByCategory}
+                      typeLabels={TYPE_LABELS}
+                      onSave={handleBudgetChange}
+                      getSaving={(categoryId) =>
+                        !!budgetSaving[`${categoryId}-${year}-${month}`]
+                      }
+                    />
                   </div>
                 )}
               </CardContent>
@@ -529,58 +528,6 @@ function FinancePage() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-function BudgetRow({
-  category,
-  entry,
-  typeLabels,
-  onSave,
-  saving,
-}: {
-  category: FinanceCategoryDto;
-  entry?: FinanceBudgetEntryDto;
-  typeLabels: Record<FinanceTransactionType, string>;
-  onSave: (amount: number) => void;
-  saving: boolean;
-}) {
-  const [dirtyValue, setDirtyValue] = useState<string | null>(null);
-  const displayValue =
-    dirtyValue !== null ? dirtyValue : String(entry?.amount ?? 0);
-
-  const handleBlur = () => {
-    if (dirtyValue === null) return;
-    const num = parseFloat(dirtyValue.replace(/\s/g, '').replace(',', '.'));
-    if (!Number.isNaN(num) && num >= 0) {
-      onSave(num);
-      setDirtyValue(null);
-    }
-  };
-
-  return (
-    <div className="flex flex-wrap items-center gap-3 rounded-sm border bg-muted/20 p-3">
-      <div className="min-w-[140px]">
-        <span className="font-medium">{category.name}</span>
-        <span className="ml-1.5 text-xs text-muted-foreground">
-          ({typeLabels[category.type as FinanceTransactionType]})
-        </span>
-      </div>
-      <div className="flex flex-1 items-center gap-2">
-        <Input
-          type="text"
-          inputMode="decimal"
-          className="max-w-[140px] rounded-sm"
-          value={displayValue}
-          onChange={(e) => setDirtyValue(e.target.value)}
-          onBlur={handleBlur}
-          placeholder="0"
-          disabled={saving}
-        />
-        <span className="text-sm text-muted-foreground">CFA</span>
-        {saving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-      </div>
     </div>
   );
 }
