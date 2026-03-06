@@ -495,33 +495,26 @@ function FinancePage() {
             </div>
           ) : (
             <Card className="rounded-sm border shadow-none">
-              <CardHeader className="px-5 border-b bg-muted/20">
-                <CardTitle className="text-lg font-semibold">
-                  Budget par catégorie
+              <CardHeader className="px-4 border-b flex flex-row items-center justify-between gap-2">
+                <CardTitle className="text-base font-semibold">
+                  Budget — {monthLabel}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-4">
                 {categoriesForBudget.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                    <p className="text-muted-foreground text-sm">
-                      Créez des catégories pour définir un budget.
-                    </p>
-                    <p className="text-muted-foreground/80 text-xs mt-1">
-                      Utilisez le bouton « Nouvelle catégorie » ci-dessus.
-                    </p>
-                  </div>
+                  <p className="text-muted-foreground text-sm text-center py-8">
+                    Créez des catégories pour définir un budget.
+                  </p>
                 ) : (
-                  <div className="rounded-sm overflow-hidden border-t-0">
-                    <BudgetTable
-                      categories={categoriesForBudget}
-                      budgetByCategory={budgetByCategory}
-                      typeLabels={TYPE_LABELS}
-                      onSave={handleBudgetChange}
-                      getSaving={(categoryId) =>
-                        !!budgetSaving[`${categoryId}-${year}-${month}`]
-                      }
-                    />
-                  </div>
+                  <BudgetTable
+                    categories={categoriesForBudget}
+                    budgetByCategory={budgetByCategory}
+                    typeLabels={TYPE_LABELS}
+                    onSave={handleBudgetChange}
+                    getSaving={(categoryId) =>
+                      !!budgetSaving[`${categoryId}-${year}-${month}`]
+                    }
+                  />
                 )}
               </CardContent>
             </Card>
