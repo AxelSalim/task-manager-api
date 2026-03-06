@@ -42,6 +42,20 @@ const TYPE_LABELS: Record<FinanceTransactionType, string> = {
   credits: 'Crédits',
 };
 
+const DEFAULT_DASHBOARD: FinanceDashboardDto = {
+  year: 0,
+  month: 0,
+  totalsByType: { revenus: 0, factures: 0, depenses: 0, epargnes: 0, credits: 0 },
+  budgetByType: { revenus: 0, factures: 0, depenses: 0, epargnes: 0, credits: 0 },
+  totalRevenus: 0,
+  totalDepenses: 0,
+  solde: 0,
+  budgetRevenus: 0,
+  budgetDepenses: 0,
+  budgetSolde: 0,
+  realVsBudget: [],
+};
+
 function FinancePage() {
   const [transactions, setTransactions] = useState<FinanceTransactionDto[]>([]);
   const [categories, setCategories] = useState<FinanceCategoryDto[]>([]);
@@ -194,6 +208,8 @@ function FinancePage() {
     .reduce((s, t) => s + t.amount, 0);
 
   const monthLabel = format(new Date(year, month - 1), 'MMMM yyyy', { locale: fr });
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+  const periodLabel = `1er au ${lastDayOfMonth} ${format(new Date(year, month - 1), 'MMMM yyyy', { locale: fr })}`;
 
   const exportToCsv = () => {
     const headers = ['Date', 'Type', 'Catégorie', 'Montant', 'Commentaire'];
@@ -320,6 +336,9 @@ function FinancePage() {
             </div>
           ) : dashboard ? (
             <>
+              <p className="text-sm text-muted-foreground">
+                Données du {periodLabel} (mois sélectionné).
+              </p>
               <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
                 <Card className="rounded-sm border shadow-none">
                   <CardHeader className="pb-1 pt-2 px-4">
@@ -405,7 +424,12 @@ function FinancePage() {
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   </Card>
                 ) : (
-                  <FinanceEvolutionLineChart data={evolutionData} />
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground px-1">
+                      6 mois jusqu&apos;à {monthLabel} (données du 1er au dernier jour de chaque mois).
+                    </p>
+                    <FinanceEvolutionLineChart data={evolutionData} />
+                  </div>
                 )}
                 <FinanceTypePieChart
                   totalsByType={dashboard.totalsByType}
