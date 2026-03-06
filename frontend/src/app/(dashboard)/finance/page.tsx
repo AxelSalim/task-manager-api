@@ -280,6 +280,7 @@ function FinancePage() {
               if (!open) setTransactionToEdit(null);
             }}
             transaction={transactionToEdit}
+            showTrigger={false}
             categories={categories}
             typeLabels={TYPE_LABELS}
             onUpdated={() => {
