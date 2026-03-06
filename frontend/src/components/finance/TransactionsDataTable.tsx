@@ -100,7 +100,9 @@ export function TransactionsDataTable({
         accessorKey: 'comment',
         header: 'Commentaire',
         cell: ({ row }) => (
-          <span className="text-muted-foreground">{row.original.comment || '—'}</span>
+          <span className="text-muted-foreground truncate block max-w-[200px]" title={row.original.comment || undefined}>
+            {row.original.comment || '—'}
+          </span>
         ),
       },
       {
