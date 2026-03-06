@@ -199,9 +199,6 @@ export function BudgetTable({
                 <TableRow
                   key={row.original.category.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className={cn(
-                    row.original.category.type === 'revenus' && 'bg-primary/5'
-                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
