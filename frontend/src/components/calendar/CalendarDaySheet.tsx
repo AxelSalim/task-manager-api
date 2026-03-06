@@ -17,6 +17,7 @@ export type CalendarDayTask = {
   priority: string;
   dueDate: string | null;
   reminderDate: string | null;
+  createdAt?: string;
   tags?: Array<{ id: number; name: string; color: string }>;
 };
 
