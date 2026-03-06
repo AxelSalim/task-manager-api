@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { CalendarDaySheet, type CalendarDayTask } from '@/components/calendar/CalendarDaySheet';
 import { ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,6 +30,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [dateMenuOpen, setDateMenuOpen] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -177,9 +184,30 @@ export default function CalendarPage() {
           <Button variant="ghost" size="icon" onClick={goToNext}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="h-4 w-4" />
-          </Button>
+          <DropdownMenu open={dateMenuOpen} onOpenChange={setDateMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Aller à une date">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="p-0 w-auto">
+              <div className="p-2 border-b bg-muted/30">
+                <p className="text-xs font-medium text-muted-foreground px-1">
+                  Aller à une date
+                </p>
+              </div>
+              <Calendar
+                mode="single"
+                selected={currentDate}
+                onSelect={(date) => {
+                  if (date) {
+                    setCurrentDate(date);
+                    setDateMenuOpen(false);
+                  }
+                }}
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
