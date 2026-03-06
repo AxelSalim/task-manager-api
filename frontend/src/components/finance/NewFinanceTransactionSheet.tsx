@@ -213,7 +213,16 @@ export function NewFinanceTransactionSheet({
                   className="rounded-sm"
                   placeholder="0"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw === '') {
+                      setAmount('');
+                      return;
+                    }
+                    const filtered = raw.replace(/[^\d,.]/g, '');
+                    const parts = filtered.split(/[,.]/);
+                    if (parts.length <= 2) setAmount(filtered);
+                  }}
                   required
                 />
               </div>
