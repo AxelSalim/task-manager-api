@@ -11,8 +11,9 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NewFinanceCategorySheet } from '@/components/finance/NewFinanceCategorySheet';
-import { NewFinanceTransactionSheet } from '@/components/finance/NewFinanceTransactionSheet';
+import { CreateFinanceCategorySheet } from '@/components/finance/CreateFinanceCategorySheet';
+import { CreateFinanceTransactionSheet } from '@/components/finance/CreateFinanceTransactionSheet';
+import { EditFinanceTransactionSheet } from '@/components/finance/EditFinanceTransactionSheet';
 import { FinanceByTypeChart } from '@/components/finance/FinanceByTypeChart';
 import { FinanceDailyChart } from '@/components/finance/FinanceDailyChart';
 import { FinanceDailyCumulativeChart } from '@/components/finance/FinanceDailyCumulativeChart';
@@ -315,7 +316,7 @@ function FinancePage() {
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle catégorie
           </Button>
-          <NewFinanceCategorySheet
+          <CreateFinanceCategorySheet
             open={categorySheetOpen}
             onOpenChange={setCategorySheetOpen}
             typeLabels={TYPE_LABELS}
@@ -332,7 +333,7 @@ function FinancePage() {
             <Plus className="h-4 w-4 mr-2" />
             Ajouter une transaction
           </Button>
-          <NewFinanceTransactionSheet
+          <CreateFinanceTransactionSheet
             open={sheetOpen}
             onOpenChange={setSheetOpen}
             categories={categories}
@@ -342,7 +343,7 @@ function FinancePage() {
               loadDashboard();
             }}
           />
-          <NewFinanceTransactionSheet
+          <EditFinanceTransactionSheet
             open={editSheetOpen}
             onOpenChange={(open) => {
               setEditSheetOpen(open);
