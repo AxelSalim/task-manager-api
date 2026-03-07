@@ -9,6 +9,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.FinanceCategory, { foreignKey: "userId", as: "financeCategories" });
       User.hasMany(models.FinanceTransaction, { foreignKey: "userId", as: "financeTransactions" });
       User.hasMany(models.FinanceBudgetEntry, { foreignKey: "userId", as: "financeBudgetEntries" });
+      User.hasMany(models.Habit, { foreignKey: "userId", as: "habits" });
+      User.hasMany(models.HabitCompletion, { foreignKey: "userId", as: "habitCompletions" });
     }
   }
   User.init({
