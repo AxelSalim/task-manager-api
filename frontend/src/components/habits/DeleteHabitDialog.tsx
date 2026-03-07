@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { habitsAPI, type HabitDto } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -51,31 +51,36 @@ export function DeleteHabitDialog({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="rounded-sm">
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete habit</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm rounded-sm">
+        <DialogHeader>
+          <DialogTitle>Supprimer l&apos;habitude</DialogTitle>
+          <DialogDescription>
             {habit
-              ? `« ${habit.name} » et toutes ses complétions seront supprimées.`
+              ? `« ${habit.name} » et toutes ses complétions seront supprimées. Cette action est irréversible.`
               : 'Cette action est irréversible.'}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-sm">Annuler</AlertDialogCancel>
-          <AlertDialogAction
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" className="rounded-sm" disabled={deleting}>
+              Annuler
+            </Button>
+          </DialogClose>
+          <Button
+            variant="destructive"
+            className="rounded-sm"
+            disabled={deleting}
             onClick={(e) => {
               e.preventDefault();
               handleConfirm();
             }}
-            disabled={deleting}
-            className="rounded-sm bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Supprimer
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
