@@ -53,14 +53,14 @@ export function FinanceDailyChart({ daily, monthLabel }: FinanceDailyChartProps)
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={false}
-                tickLine={false}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+                tickLine={{ stroke: 'hsl(var(--border))' }}
                 interval="preserveStartEnd"
               />
               <YAxis
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={false}
-                tickLine={false}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+                tickLine={{ stroke: 'hsl(var(--border))' }}
                 tickFormatter={(v) =>
                   v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)
                 }
