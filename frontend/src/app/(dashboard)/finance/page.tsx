@@ -74,6 +74,8 @@ function FinancePage() {
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
+  const [transactionFilterType, setTransactionFilterType] = useState<'' | FinanceTransactionType>('');
+  const [transactionFilterCategoryId, setTransactionFilterCategoryId] = useState<number | null>(null);
   const [budgetSaving, setBudgetSaving] = useState<Record<string, boolean>>({});
 
   const { toast } = useToast();
@@ -82,7 +84,12 @@ function FinancePage() {
     setLoading(true);
     try {
       const [txList, catList] = await Promise.all([
-        financeAPI.getTransactions({ year, month }),
+        financeAPI.getTransactions({
+          year,
+          month,
+          type: transactionFilterType || undefined,
+          categoryId: transactionFilterCategoryId ?? undefined,
+        }),
         financeAPI.getCategories(),
       ]);
       setTransactions(txList);
@@ -96,7 +103,13 @@ function FinancePage() {
     } finally {
       setLoading(false);
     }
-  }, [month, toast, year]);
+  }, [
+    month,
+    toast,
+    year,
+    transactionFilterType,
+    transactionFilterCategoryId,
+  ]);
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -530,8 +543,16 @@ function FinancePage() {
                 </div>
               ) : (
                 <TransactionsDataTable
+                  key={`${transactionFilterType}-${transactionFilterCategoryId}`}
                   data={transactions}
                   typeLabels={TYPE_LABELS}
+                  categories={categories}
+                  filterType={transactionFilterType}
+                  filterCategoryId={transactionFilterCategoryId}
+                  onFilterChange={({ type, categoryId }) => {
+                    if (type !== undefined) setTransactionFilterType(type);
+                    if (categoryId !== undefined) setTransactionFilterCategoryId(categoryId);
+                  }}
                   onDelete={handleDelete}
                   onEdit={(tx) => {
                     setTransactionToEdit(tx);
