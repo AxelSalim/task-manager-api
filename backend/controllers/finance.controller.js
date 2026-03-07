@@ -494,6 +494,42 @@ const financeController = {
       return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération de l\'évolution');
     }
   },
+
+  // --- Résumé annuel (totaux sur l'année) ---
+  async getDashboardYear(req, res) {
+    try {
+      const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+      if (isNaN(year)) {
+        return HTTP_ERRORS.BAD_REQUEST(res, 'year invalide');
+      }
+      const start = `${year}-01-01`;
+      const end = `${year}-12-31`;
+      const transactions = await FinanceTransaction.findAll({
+        where: { userId: req.user.id, date: { [Op.between]: [start, end] } },
+        attributes: ['type', 'amount'],
+      });
+      const totalsByType = { revenus: 0, factures: 0, depenses: 0, epargnes: 0, credits: 0 };
+      for (const t of transactions) {
+        if (totalsByType[t.type] != null) {
+          totalsByType[t.type] += Number(t.amount);
+        }
+      }
+      const totalRevenus = totalsByType.revenus;
+      const totalDepenses =
+        totalsByType.factures + totalsByType.depenses + totalsByType.epargnes + totalsByType.credits;
+      const solde = totalRevenus - totalDepenses;
+      return sendSuccess(res, 200, {
+        year,
+        totalRevenus,
+        totalDepenses,
+        solde,
+        totalsByType,
+      }, 'Résumé annuel récupéré');
+    } catch (err) {
+      console.error('❌ getDashboardYear:', err);
+      return HTTP_ERRORS.INTERNAL_SERVER_ERROR(res, 'Erreur lors de la récupération du résumé annuel');
+    }
+  },
 };
 
 module.exports = financeController;
