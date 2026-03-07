@@ -47,7 +47,8 @@ export function FinanceDailyChart({ daily, monthLabel }: FinanceDailyChartProps)
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                vertical={false}
+                vertical
+                horizontal
                 stroke="hsl(var(--border))"
               />
               <XAxis
