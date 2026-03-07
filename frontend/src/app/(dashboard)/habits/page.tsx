@@ -327,26 +327,26 @@ export default function HabitsPage() {
               </tbody>
               {habits.length > 0 && (
                 <tfoot>
-                  <tr className="border-t bg-muted/30">
-                    <td className="py-2 pr-4 text-sm text-muted-foreground">% du jour</td>
+                  <tr className="border-t-2 border-border bg-muted/40">
+                    <td className="py-3 pr-4 pl-1 text-sm font-medium text-muted-foreground">% du jour</td>
                     {percentByDay.map((p, i) => (
-                      <td key={i} className="py-1 px-1 text-center text-sm text-muted-foreground">
+                      <td key={i} className="py-3 px-1 text-center text-sm tabular-nums text-muted-foreground">
                         {p}%
                       </td>
                     ))}
                   </tr>
-                  <tr className="bg-muted/30">
-                    <td className="py-1 pr-4 text-sm text-muted-foreground">Complétées</td>
+                  <tr className="bg-muted/40">
+                    <td className="py-2 pr-4 pl-1 text-sm font-medium text-muted-foreground">Complétées</td>
                     {completedByDay.map((n, i) => (
-                      <td key={i} className="py-1 px-1 text-center text-sm text-muted-foreground">
+                      <td key={i} className="py-2 px-1 text-center text-sm tabular-nums text-muted-foreground">
                         {n}
                       </td>
                     ))}
                   </tr>
-                  <tr className="bg-muted/30">
-                    <td className="py-1 pr-4 text-sm text-muted-foreground">Total</td>
+                  <tr className="bg-muted/40">
+                    <td className="py-2 pr-4 pl-1 text-sm font-medium text-muted-foreground">Total</td>
                     {weekDays.map((_, i) => (
-                      <td key={i} className="py-1 px-1 text-center text-sm text-muted-foreground">
+                      <td key={i} className="py-2 px-1 text-center text-sm tabular-nums text-muted-foreground">
                         {totalHabits}
                       </td>
                     ))}
