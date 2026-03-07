@@ -10,7 +10,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet';
 import {
   Select,
@@ -80,13 +79,6 @@ export function NewFinanceCategorySheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="rounded-sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvelle catégorie
-        </Button>
-      </SheetTrigger>
-
       <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <SheetHeader className="shrink-0 border-b px-5 py-4 pr-12">
