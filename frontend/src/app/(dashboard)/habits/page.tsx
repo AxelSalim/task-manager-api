@@ -4,15 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +19,7 @@ import { addDays, startOfWeek, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { habitsAPI, type HabitDto } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { HabitFormSheet } from '@/components/habits/HabitFormSheet';
 
 const DAY_LABELS: [string, string][] = [
   ['Lun', 'Lundi'],
@@ -53,8 +45,6 @@ export default function HabitsPage() {
   const [completionPending, setCompletionPending] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<HabitDto | null>(null);
-  const [habitName, setHabitName] = useState('');
-  const [savingHabit, setSavingHabit] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [habitToDelete, setHabitToDelete] = useState<HabitDto | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -166,41 +156,12 @@ export default function HabitsPage() {
 
   const openCreateSheet = () => {
     setEditingHabit(null);
-    setHabitName('');
     setSheetOpen(true);
   };
 
   const openEditSheet = (habit: HabitDto) => {
     setEditingHabit(habit);
-    setHabitName(habit.name);
     setSheetOpen(true);
-  };
-
-  const handleSaveHabit = async () => {
-    const name = habitName.trim();
-    if (!name) return;
-    setSavingHabit(true);
-    try {
-      if (editingHabit) {
-        await habitsAPI.update(editingHabit.id, { name });
-        toast({ title: 'Habitude modifiée' });
-      } else {
-        await habitsAPI.create({ name });
-        toast({ title: 'Habitude créée' });
-      }
-      setSheetOpen(false);
-      setEditingHabit(null);
-      setHabitName('');
-      loadHabits();
-    } catch (error: unknown) {
-      toast({
-        title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Impossible de sauvegarder',
-        variant: 'destructive',
-      });
-    } finally {
-      setSavingHabit(false);
-    }
   };
 
   const openDeleteDialog = (habit: HabitDto) => {
@@ -424,50 +385,12 @@ export default function HabitsPage() {
         </CardContent>
       </Card>
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
-          <SheetHeader className="shrink-0 border-b px-5 py-3">
-            <SheetTitle className="text-lg">
-              {editingHabit ? 'Modifier l\'habitude' : 'Nouvelle habitude'}
-            </SheetTitle>
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto px-5 py-5">
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="habit-name">Nom</Label>
-                <Input
-                  id="habit-name"
-                  className="rounded-sm"
-                  value={habitName}
-                  onChange={(e) => setHabitName(e.target.value)}
-                  placeholder="Ex. 10 min de lecture"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveHabit()}
-                />
-              </div>
-            </div>
-          </div>
-          <SheetFooter className="shrink-0 flex flex-col gap-2 border-t bg-muted/30 px-5 py-4 rounded-sm">
-            <Button
-              className="rounded-sm w-full"
-              onClick={handleSaveHabit}
-              disabled={!habitName.trim() || savingHabit}
-            >
-              {savingHabit ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : null}
-              Enregistrer
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="rounded-sm w-full"
-              onClick={() => setSheetOpen(false)}
-            >
-              Annuler
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+      <HabitFormSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        habit={editingHabit}
+        onSaved={loadHabits}
+      />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="rounded-sm">
