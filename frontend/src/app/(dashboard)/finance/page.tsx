@@ -442,9 +442,6 @@ function FinancePage() {
                     </Card>
                   ) : (
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground px-1">
-                        6 mois jusqu&apos;à {monthLabel} (données du 1er au dernier jour de chaque mois).
-                      </p>
                       <FinanceEvolutionLineChart data={evolutionData} />
                     </div>
                   )}
