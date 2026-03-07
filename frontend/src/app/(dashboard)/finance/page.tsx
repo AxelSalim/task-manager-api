@@ -31,7 +31,7 @@ import {
   type FinanceTransactionDto,
   type FinanceTransactionType,
 } from '@/lib/api';
-import { Download, Loader2, LayoutDashboard, List, PiggyBank } from 'lucide-react';
+import { Download, Loader2, LayoutDashboard, List, PiggyBank, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -273,6 +273,14 @@ function FinancePage() {
               {monthOptions}
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            className="rounded-sm"
+            onClick={() => setCategorySheetOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvelle catégorie
+          </Button>
           <NewFinanceCategorySheet
             open={categorySheetOpen}
             onOpenChange={setCategorySheetOpen}
