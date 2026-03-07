@@ -82,7 +82,7 @@ export function CreateFinanceCategorySheet({
       <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <SheetHeader className="shrink-0 border-b px-5 py-3">
-            <SheetTitle className="text-lg">Create category</SheetTitle>
+            <SheetTitle className="text-lg">Ajouter une catégorie</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-5 py-5">
             <div className="grid gap-4">
