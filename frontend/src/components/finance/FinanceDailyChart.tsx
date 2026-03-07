@@ -3,7 +3,6 @@
 import {
   Bar,
   BarChart,
-  CartesianGrid,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -45,23 +44,17 @@ export function FinanceDailyChart({ daily, monthLabel }: FinanceDailyChartProps)
               data={data}
               margin={{ top: 12, right: 12, left: 0, bottom: 0 }}
             >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical
-                horizontal
-                stroke="hsl(var(--border))"
-              />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                axisLine={false}
+                tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                axisLine={false}
+                tickLine={false}
                 tickFormatter={(v) =>
                   v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)
                 }
