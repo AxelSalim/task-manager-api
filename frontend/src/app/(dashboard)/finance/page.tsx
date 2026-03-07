@@ -283,7 +283,7 @@ function FinancePage() {
               setMonth(m);
             }}
           >
-            <SelectTrigger className="w-[200px] rounded-sm">
+            <SelectTrigger className="w-[200px] rounded-sm bg-background">
               <SelectValue />
             </SelectTrigger>
             <SelectContent position="popper" sideOffset={4}>
