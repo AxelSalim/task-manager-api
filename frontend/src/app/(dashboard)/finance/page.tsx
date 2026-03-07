@@ -76,6 +76,8 @@ function FinancePage() {
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [transactionFilterType, setTransactionFilterType] = useState<'' | FinanceTransactionType>('');
   const [transactionFilterCategoryId, setTransactionFilterCategoryId] = useState<number | null>(null);
+  const [transactionFilterDateFrom, setTransactionFilterDateFrom] = useState<string>('');
+  const [transactionFilterDateTo, setTransactionFilterDateTo] = useState<string>('');
   const [budgetSaving, setBudgetSaving] = useState<Record<string, boolean>>({});
 
   const { toast } = useToast();
@@ -109,6 +111,8 @@ function FinancePage() {
     year,
     transactionFilterType,
     transactionFilterCategoryId,
+    transactionFilterDateFrom,
+    transactionFilterDateTo,
   ]);
 
   const loadDashboard = useCallback(async () => {
@@ -538,16 +542,20 @@ function FinancePage() {
             </CardHeader>
             <CardContent className="p-4">
               <TransactionsDataTable
-                key={`${transactionFilterType}-${transactionFilterCategoryId}`}
+                key={`${transactionFilterType}-${transactionFilterCategoryId}-${transactionFilterDateFrom}-${transactionFilterDateTo}`}
                 data={transactions}
                 loading={loading}
                 typeLabels={TYPE_LABELS}
                 categories={categories}
                 filterType={transactionFilterType}
                 filterCategoryId={transactionFilterCategoryId}
-                onFilterChange={({ type, categoryId }) => {
+                filterDateFrom={transactionFilterDateFrom}
+                filterDateTo={transactionFilterDateTo}
+                onFilterChange={({ type, categoryId, dateFrom, dateTo }) => {
                   if (type !== undefined) setTransactionFilterType(type);
                   if (categoryId !== undefined) setTransactionFilterCategoryId(categoryId);
+                  if (dateFrom !== undefined) setTransactionFilterDateFrom(dateFrom);
+                  if (dateTo !== undefined) setTransactionFilterDateTo(dateTo);
                 }}
                 onDelete={handleDelete}
                 onEdit={(tx) => {
