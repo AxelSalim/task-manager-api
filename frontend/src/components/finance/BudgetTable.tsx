@@ -303,11 +303,11 @@ function BudgetAmountCell({
   };
 
   return (
-    <div className="flex items-center justify-end gap-2">
+    <div className="flex items-center justify-start gap-2">
       <Input
         type="text"
         inputMode="decimal"
-        className="max-w-[160px] rounded-sm text-right h-9"
+        className="max-w-[160px] rounded-sm text-left h-9"
         value={displayValue}
         onChange={handleAmountChange}
         onBlur={handleBlur}
