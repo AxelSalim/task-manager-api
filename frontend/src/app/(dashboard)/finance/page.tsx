@@ -238,13 +238,6 @@ function FinancePage() {
     }
   };
 
-  const totalIn = transactions
-    .filter((t) => t.type === 'revenus')
-    .reduce((s, t) => s + t.amount, 0);
-  const totalOut = transactions
-    .filter((t) => t.type !== 'revenus')
-    .reduce((s, t) => s + t.amount, 0);
-
   const monthLabel = format(new Date(year, month - 1), 'MMMM yyyy', { locale: fr });
   const lastDayOfMonth = new Date(year, month, 0).getDate();
   const periodLabel = `1er au ${lastDayOfMonth} ${format(new Date(year, month - 1), 'MMMM yyyy', { locale: fr })}`;
@@ -466,6 +459,72 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                 </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Revenus (mois)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-green-600">
+                        {displayDashboard.totalRevenus.toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Dépenses (mois)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-red-600">
+                        {displayDashboard.totalDepenses.toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Revenus ({year})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-green-600">
+                        {(yearSummary?.totalRevenus ?? 0).toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Dépenses ({year})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span className="text-xl font-semibold text-red-600">
+                        {(yearSummary?.totalDepenses ?? 0).toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-sm border shadow-none">
+                    <CardHeader className="pb-1 px-4">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Solde ({year})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4">
+                      <span
+                        className={`text-xl font-semibold ${(yearSummary?.solde ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      >
+                        {(yearSummary?.solde ?? 0).toLocaleString('fr-FR')} CFA
+                      </span>
+                    </CardContent>
+                  </Card>
+                </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <FinanceMonthChart
                     totalRevenus={displayDashboard.totalRevenus}
@@ -520,73 +579,6 @@ function FinancePage() {
         </TabsContent>
 
         <TabsContent value="transactions" className="mt-4 space-y-4">
-          <div className="grid gap-3 md:grid-cols-2">
-            <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 px-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Revenus (mois)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4">
-                <span className="text-xl font-semibold text-green-600">
-                  {totalIn.toLocaleString('fr-FR')} CFA
-                </span>
-              </CardContent>
-            </Card>
-            <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 px-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Dépenses (mois)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4">
-                <span className="text-xl font-semibold text-red-600">
-                  {totalOut.toLocaleString('fr-FR')} CFA
-                </span>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 px-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Revenus ({year})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4">
-                <span className="text-xl font-semibold text-green-600">
-                  {(yearSummary?.totalRevenus ?? 0).toLocaleString('fr-FR')} CFA
-                </span>
-              </CardContent>
-            </Card>
-            <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 px-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Dépenses ({year})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4">
-                <span className="text-xl font-semibold text-red-600">
-                  {(yearSummary?.totalDepenses ?? 0).toLocaleString('fr-FR')} CFA
-                </span>
-              </CardContent>
-            </Card>
-            <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 px-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Solde ({year})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4">
-                <span
-                  className={`text-xl font-semibold ${(yearSummary?.solde ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {(yearSummary?.solde ?? 0).toLocaleString('fr-FR')} CFA
-                </span>
-              </CardContent>
-            </Card>
-          </div>
-
           <Card className="rounded-sm border shadow-none">
             <CardHeader className="px-4 border-b flex flex-row items-center justify-between gap-2">
               <CardTitle className="text-base font-semibold">
