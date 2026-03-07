@@ -391,6 +391,7 @@ function FinancePage() {
                   }));
             return (
               <>
+                {/* Mois sélectionné : réel puis budget */}
                 <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="pb-1 pt-2 px-4">
@@ -404,7 +405,6 @@ function FinancePage() {
                       </span>
                     </CardContent>
                   </Card>
-
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -417,7 +417,6 @@ function FinancePage() {
                       </span>
                     </CardContent>
                   </Card>
-
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -432,7 +431,6 @@ function FinancePage() {
                       </span>
                     </CardContent>
                   </Card>
-
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -445,7 +443,6 @@ function FinancePage() {
                       </span>
                     </CardContent>
                   </Card>
-
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -459,31 +456,8 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                 </div>
-                <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
-                  <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Revenus du mois — {monthLabel}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4">
-                      <span className="text-xl font-semibold text-green-600">
-                        {displayDashboard.totalRevenus.toLocaleString('fr-FR')} CFA
-                      </span>
-                    </CardContent>
-                  </Card>
-                  <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Dépenses du mois — {monthLabel}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4">
-                      <span className="text-xl font-semibold text-red-600">
-                        {displayDashboard.totalDepenses.toLocaleString('fr-FR')} CFA
-                      </span>
-                    </CardContent>
-                  </Card>
+                {/* Année : cumul */}
+                <div className="grid gap-1 md:grid-cols-3">
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
