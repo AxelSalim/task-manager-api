@@ -343,9 +343,6 @@ function FinancePage() {
                   }));
             return (
               <>
-                <p className="text-sm text-muted-foreground">
-                  Données du {periodLabel} (mois sélectionné).
-                </p>
                 <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="pb-1 pt-2 px-4">
