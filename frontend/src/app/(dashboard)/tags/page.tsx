@@ -4,42 +4,22 @@ import { useState, useEffect } from 'react';
 import { Tag } from '@/types/tag';
 import { tagsAPI } from '@/lib/api';
 import { TagBadge } from '@/components/tags/TagBadge';
+import { CreateTagDialog } from '@/components/tags/CreateTagDialog';
+import { EditTagDialog } from '@/components/tags/EditTagDialog';
+import { DeleteTagDialog } from '@/components/tags/DeleteTagDialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function TagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTagId, setDeleteTagId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    color: '#3b82f6',
-  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -63,87 +43,16 @@ export default function TagsPage() {
     }
   };
 
-  const handleCreate = () => {
-    setEditingTag(null);
-    setFormData({ name: '', color: '#3b82f6' });
-    setIsDialogOpen(true);
-  };
+  const handleCreate = () => setCreateDialogOpen(true);
 
   const handleEdit = (tag: Tag) => {
     setEditingTag(tag);
-    setFormData({ name: tag.name, color: tag.color });
-    setIsDialogOpen(true);
+    setEditDialogOpen(true);
   };
 
   const handleDelete = (tagId: number) => {
     setDeleteTagId(tagId);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleSubmit = async () => {
-    if (!formData.name.trim()) {
-      toast({
-        title: 'Erreur',
-        description: 'Le nom du tag est obligatoire',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      if (editingTag) {
-        await tagsAPI.update(editingTag.id, {
-          name: formData.name.trim(),
-          color: formData.color,
-        });
-        toast({
-          title: 'Succès',
-          description: 'Tag modifié avec succès',
-        });
-        loadTags();
-        setIsDialogOpen(false);
-      } else {
-        await tagsAPI.create({
-          name: formData.name.trim(),
-          color: formData.color,
-        });
-        toast({
-          title: 'Succès',
-          description: 'Tag créé avec succès',
-        });
-        loadTags();
-        setIsDialogOpen(false);
-      }
-    } catch (error: unknown) {
-      console.error('Erreur lors de la sauvegarde du tag:', error);
-      toast({
-        title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Impossible de sauvegarder le tag',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteTagId) return;
-
-    try {
-      await tagsAPI.delete(deleteTagId);
-      toast({
-        title: 'Succès',
-        description: 'Tag supprimé avec succès',
-      });
-      loadTags();
-      setIsDeleteDialogOpen(false);
-      setDeleteTagId(null);
-    } catch (error: unknown) {
-      console.error('Erreur lors de la suppression du tag:', error);
-      toast({
-        title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Impossible de supprimer le tag',
-        variant: 'destructive',
-      });
-    }
+    setDeleteDialogOpen(true);
   };
 
   if (isLoading) {
@@ -220,90 +129,26 @@ export default function TagsPage() {
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingTag ? 'Modifier le tag' : 'Nouveau tag'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingTag
-                ? 'Modifiez les informations du tag ci-dessous.'
-                : 'Remplissez les informations pour créer un nouveau tag.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom du tag *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ex: Urgent, Personnel, Travail..."
-                maxLength={50}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="color">Couleur</Label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  id="color"
-                  value={formData.color}
-                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="h-10 w-20 rounded-md border cursor-pointer"
-                />
-                <div className="flex-1">
-                  <Input
-                    value={formData.color}
-                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                    placeholder="#3b82f6"
-                    pattern="^#[0-9A-F]{6}$"
-                    maxLength={7}
-                  />
-                </div>
-                <div
-                  className="h-10 w-10 rounded-md border"
-                  style={{ backgroundColor: formData.color }}
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button onClick={handleSubmit}>
-              {editingTag ? 'Enregistrer' : 'Créer'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer le tag ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Le tag sera supprimé de toutes les tâches qui l&apos;utilisent.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <CreateTagDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onCreated={loadTags}
+      />
+      <EditTagDialog
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          setEditDialogOpen(open);
+          if (!open) setEditingTag(null);
+        }}
+        tag={editingTag}
+        onSaved={loadTags}
+      />
+      <DeleteTagDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        tagId={deleteTagId}
+        onDeleted={loadTags}
+      />
     </div>
   );
 }
