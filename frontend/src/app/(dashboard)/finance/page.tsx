@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NewFinanceCategorySheet } from '@/components/finance/NewFinanceCategorySheet';
 import { NewFinanceTransactionSheet } from '@/components/finance/NewFinanceTransactionSheet';
 import { FinanceByTypeChart } from '@/components/finance/FinanceByTypeChart';
+import { FinanceDailyChart } from '@/components/finance/FinanceDailyChart';
+import { FinanceDailyCumulativeChart } from '@/components/finance/FinanceDailyCumulativeChart';
 import { FinanceEvolutionLineChart } from '@/components/finance/FinanceEvolutionLineChart';
 import { FinanceMonthChart } from '@/components/finance/FinanceMonthChart';
 import { FinanceTypePieChart } from '@/components/finance/FinanceTypePieChart';
@@ -54,6 +56,7 @@ const DEFAULT_DASHBOARD: FinanceDashboardDto = {
   budgetDepenses: 0,
   budgetSolde: 0,
   realVsBudget: [],
+  daily: [],
 };
 
 function FinancePage() {
@@ -328,6 +331,16 @@ function FinancePage() {
         <TabsContent value="dashboard" className="mt-4 space-y-4">
           {(() => {
             const displayDashboard = dashboard ?? DEFAULT_DASHBOARD;
+            const effectiveDaily =
+              displayDashboard.daily.length > 0
+                ? displayDashboard.daily
+                : Array.from({ length: lastDayOfMonth }, (_, i) => ({
+                    date: `${year}-${String(month).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`,
+                    day: i + 1,
+                    totalRevenus: 0,
+                    totalDepenses: 0,
+                    solde: 0,
+                  }));
             return (
               <>
                 <p className="text-sm text-muted-foreground">
@@ -409,6 +422,16 @@ function FinancePage() {
                   />
                   <FinanceByTypeChart
                     totalsByType={displayDashboard.totalsByType}
+                    monthLabel={monthLabel}
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FinanceDailyChart
+                    daily={effectiveDaily}
+                    monthLabel={monthLabel}
+                  />
+                  <FinanceDailyCumulativeChart
+                    daily={effectiveDaily}
                     monthLabel={monthLabel}
                   />
                 </div>
