@@ -459,9 +459,9 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 px-4">
+                    <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Revenus (mois)
                       </CardTitle>
@@ -473,7 +473,7 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 px-4">
+                    <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Dépenses (mois)
                       </CardTitle>
@@ -484,10 +484,8 @@ function FinancePage() {
                       </span>
                     </CardContent>
                   </Card>
-                </div>
-                <div className="grid gap-3 md:grid-cols-3">
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 px-4">
+                    <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Revenus ({year})
                       </CardTitle>
@@ -499,7 +497,7 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 px-4">
+                    <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Dépenses ({year})
                       </CardTitle>
@@ -511,7 +509,7 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 px-4">
+                    <CardHeader className="pb-1 pt-2 px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Solde ({year})
                       </CardTitle>
