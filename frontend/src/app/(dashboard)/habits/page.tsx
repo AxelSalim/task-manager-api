@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Loader2, SquarePen, Trash2 } from 'lucide-react';
+import { Plus, Loader2, SquarePen, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { addDays, startOfWeek, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { habitsAPI, type HabitDto } from '@/lib/api';
@@ -233,8 +233,40 @@ export default function HabitsPage() {
       </div>
 
       <Card className="rounded-sm border shadow-none">
-        <CardHeader className="px-4 border-b flex flex-row items-center justify-between gap-2">
-          <CardTitle className="text-base font-semibold">Semaine — {weekLabel}</CardTitle>
+        <CardHeader className="px-4 py-3 border-b">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-base font-semibold truncate min-w-0">
+              Semaine — {weekLabel}
+            </CardTitle>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 rounded-sm"
+                onClick={goPrevWeek}
+                aria-label="Semaine précédente"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-sm px-3 font-medium"
+                onClick={goToday}
+              >
+                Cette semaine
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 rounded-sm"
+                onClick={goNextWeek}
+                aria-label="Semaine suivante"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-4 overflow-x-auto">
           <div className="min-w-[400px]">
