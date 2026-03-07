@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  CartesianGrid,
   Legend,
   Line,
   LineChart,
@@ -38,17 +37,16 @@ export function FinanceEvolutionLineChart({ data }: FinanceEvolutionLineChartPro
         <div className="h-[260px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical horizontal stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                axisLine={false}
+                tickLine={false}
               />
               <YAxis
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                axisLine={false}
+                tickLine={false}
                 tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
               />
               <Tooltip
