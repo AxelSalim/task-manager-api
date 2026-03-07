@@ -394,9 +394,9 @@ function FinancePage() {
                 {/* Mois sélectionné : réel puis budget */}
                 <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-5">
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Revenus réels — {monthLabel}
+                        Revenus réels
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4">
@@ -406,9 +406,9 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Dépenses réelles — {monthLabel}
+                        Dépenses réelles
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4">
@@ -418,9 +418,9 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Solde réel — {monthLabel}
+                        Solde réel
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4">
@@ -432,9 +432,9 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Budget prévu Revenus — {monthLabel}
+                        Budget prévu Revenus
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4">
@@ -444,9 +444,9 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Budget prévu Dépenses — {monthLabel}
+                        Budget prévu Dépenses
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4">
@@ -459,7 +459,7 @@ function FinancePage() {
                 {/* Année : cumul */}
                 <div className="grid gap-1 md:grid-cols-3">
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Revenus de l&apos;année {year}
                       </CardTitle>
@@ -471,7 +471,7 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Dépenses de l&apos;année {year}
                       </CardTitle>
@@ -483,7 +483,7 @@ function FinancePage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-sm border shadow-none">
-                    <CardHeader className="pb-1 pt-2 px-4">
+                    <CardHeader className="px-4">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Solde de l&apos;année {year}
                       </CardTitle>
@@ -537,7 +537,7 @@ function FinancePage() {
                   <Card className="rounded-sm border shadow-none">
                     <CardHeader className="py-3 px-4 border-b">
                       <CardTitle className="text-base font-semibold">
-                        Réel vs Budget — {monthLabel}
+                        Réel vs Budget
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
@@ -554,7 +554,7 @@ function FinancePage() {
           <Card className="rounded-sm border shadow-none">
             <CardHeader className="px-4 border-b flex flex-row items-center justify-between gap-2">
               <CardTitle className="text-base font-semibold">
-                Liste des transactions — {monthLabel}
+                Liste des transactions
               </CardTitle>
               <Button
                 variant="outline"
@@ -603,7 +603,7 @@ function FinancePage() {
             <Card className="rounded-sm border shadow-none">
               <CardHeader className="px-4 border-b flex flex-row items-center justify-between gap-2">
                 <CardTitle className="text-base font-semibold">
-                  Budget prévu — {monthLabel}
+                  Budget prévu
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
