@@ -174,17 +174,8 @@ export default function HabitsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold">Mes Habits</h1>
+        <h1 className="text-xl font-semibold">Mes habitudes</h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="rounded-sm" onClick={goPrevWeek}>
-            Semaine précédente
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-sm" onClick={goToday}>
-            Cette semaine
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-sm" onClick={goNextWeek}>
-            Semaine suivante
-          </Button>
           <Button className="rounded-sm" size="sm" onClick={openCreateSheet}>
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle habitude
