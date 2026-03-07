@@ -585,6 +585,14 @@ export interface FinanceBudgetEntryDto {
   updatedAt: string;
 }
 
+export interface FinanceDashboardDailyDto {
+  date: string;
+  day: number;
+  totalRevenus: number;
+  totalDepenses: number;
+  solde: number;
+}
+
 export interface FinanceDashboardDto {
   year: number;
   month: number;
@@ -604,6 +612,7 @@ export interface FinanceDashboardDto {
     real: number;
     diff: number;
   }>;
+  daily: FinanceDashboardDailyDto[];
 }
 
 export interface FinanceEvolutionMonthDto {
