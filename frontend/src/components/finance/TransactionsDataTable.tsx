@@ -282,7 +282,6 @@ export const TransactionsDataTable: React.FC<TransactionsDataTableProps> = ({
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                   <span className="inline-flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Chargement…
                   </span>
                 </TableCell>
               </TableRow>
