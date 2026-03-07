@@ -3,11 +3,9 @@
 import * as React from 'react';
 import {
   type ColumnDef,
-  type ColumnFiltersState,
   type SortingState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -15,7 +13,6 @@ import {
 import { ArrowUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Pagination,
   PaginationContent,
@@ -74,21 +71,26 @@ const TYPE_OPTIONS: { value: '' | FinanceTransactionType; label: string }[] = [
   ...(Object.entries(TYPE_LABELS) as [FinanceTransactionType, string][]).map(([value, label]) => ({ value, label })),
 ];
 
-type DateRangeFilter = { from?: string; to?: string };
-
 export function TransactionsDataTable({
   data,
   typeLabels,
+  categories,
+  filterType,
+  filterCategoryId,
+  onFilterChange,
   onDelete,
   onEdit,
 }: {
   data: FinanceTransactionDto[];
   typeLabels: Record<FinanceTransactionType, string>;
+  categories: { id: number; name: string; type: string }[];
+  filterType: '' | FinanceTransactionType;
+  filterCategoryId: number | null;
+  onFilterChange: (p: { type?: '' | FinanceTransactionType; categoryId?: number | null }) => void;
   onDelete: (id: number) => void;
   onEdit?: (tx: FinanceTransactionDto) => void;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   const columns: ColumnDef<FinanceTransactionDto>[] = React.useMemo(
     () => [
@@ -106,23 +108,11 @@ export function TransactionsDataTable({
         ),
         cell: ({ row }) =>
           format(new Date(row.getValue<string>('date')), 'd MMM yyyy', { locale: fr }),
-        filterFn: (row, _columnId, filterValue: DateRangeFilter | undefined) => {
-          if (!filterValue?.from && !filterValue?.to) return true;
-          const rowDate = new Date(row.getValue<string>('date'));
-          const dateOnly = rowDate.toISOString().slice(0, 10);
-          if (filterValue.from && dateOnly < filterValue.from) return false;
-          if (filterValue.to && dateOnly > filterValue.to) return false;
-          return true;
-        },
       },
       {
         accessorKey: 'type',
         header: 'Type',
         cell: ({ row }) => typeLabels[row.getValue<FinanceTransactionType>('type')] ?? row.getValue('type'),
-        filterFn: (row, _columnId, filterValue: string) => {
-          if (!filterValue) return true;
-          return row.getValue<FinanceTransactionType>('type') === filterValue;
-        },
       },
       {
         id: 'category',
@@ -192,16 +182,11 @@ export function TransactionsDataTable({
     data,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     initialState: { pagination: { pageSize: PAGE_SIZE } },
-    state: {
-      sorting,
-      columnFilters,
-    },
+    state: { sorting },
   });
 
   const pageCount = table.getPageCount();
@@ -212,8 +197,10 @@ export function TransactionsDataTable({
     <div className="w-full space-y-4">
       <div className="flex flex-wrap items-center gap-3 py-2">
         <Select
-          value={(table.getColumn('type')?.getFilterValue() as string) ?? 'all'}
-          onValueChange={(value) => table.getColumn('type')?.setFilterValue(value === 'all' ? undefined : value)}
+          value={filterType || 'all'}
+          onValueChange={(value) =>
+            onFilterChange({ type: (value === 'all' ? '' : value) as '' | FinanceTransactionType })
+          }
         >
           <SelectTrigger className="w-[180px] rounded-sm">
             <SelectValue placeholder="Type" />
@@ -226,35 +213,24 @@ export function TransactionsDataTable({
             ))}
           </SelectContent>
         </Select>
-        <div className="flex items-center gap-2">
-          <Input
-            type="date"
-            className="w-[140px] rounded-sm"
-            value={((table.getColumn('date')?.getFilterValue() as DateRangeFilter)?.from) ?? ''}
-            onChange={(e) => {
-              const from = e.target.value || undefined;
-              const current = (table.getColumn('date')?.getFilterValue() as DateRangeFilter) ?? {};
-              table.getColumn('date')?.setFilterValue({ ...current, from });
-            }}
-          />
-          <span className="text-muted-foreground text-sm">→</span>
-          <Input
-            type="date"
-            className="w-[140px] rounded-sm"
-            value={((table.getColumn('date')?.getFilterValue() as DateRangeFilter)?.to) ?? ''}
-            onChange={(e) => {
-              const to = e.target.value || undefined;
-              const current = (table.getColumn('date')?.getFilterValue() as DateRangeFilter) ?? {};
-              table.getColumn('date')?.setFilterValue({ ...current, to });
-            }}
-          />
-        </div>
-        <Input
-          placeholder="Filtrer par catégorie..."
-          value={(table.getColumn('category')?.getFilterValue() as string) ?? ''}
-          onChange={(e) => table.getColumn('category')?.setFilterValue(e.target.value)}
-          className="max-w-sm rounded-sm"
-        />
+        <Select
+          value={filterCategoryId != null ? String(filterCategoryId) : 'all'}
+          onValueChange={(value) =>
+            onFilterChange({ categoryId: value === 'all' ? null : Number(value) })
+          }
+        >
+          <SelectTrigger className="w-[220px] rounded-sm">
+            <SelectValue placeholder="Catégorie" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les catégories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={String(cat.id)}>
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="rounded-sm border">
         <Table>
@@ -294,7 +270,7 @@ export function TransactionsDataTable({
       </div>
       <div className="flex items-center justify-between gap-2 py-2">
         <div className="text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} ligne(s)
+          {table.getRowModel().rows.length} ligne(s)
         </div>
         {pageCount > 1 && (
           <Pagination>
