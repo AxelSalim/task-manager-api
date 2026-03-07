@@ -580,6 +580,13 @@ export const financeAPI = {
     const q = search.toString() ? `?${search.toString()}` : '';
     return apiRequest<FinanceEvolutionMonthDto[]>(`/api/finance/dashboard/evolution${q}`);
   },
+
+  getDashboardYear: async (params?: { year?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.year != null) search.set('year', String(params.year));
+    const q = search.toString() ? `?${search.toString()}` : '';
+    return apiRequest<FinanceDashboardYearDto>(`/api/finance/dashboard/year${q}`);
+  },
 };
 
 export interface FinanceBudgetEntryDto {
@@ -629,6 +636,14 @@ export interface FinanceEvolutionMonthDto {
   month: number;
   totalRevenus: number;
   totalDepenses: number;
+  totalsByType: Record<string, number>;
+}
+
+export interface FinanceDashboardYearDto {
+  year: number;
+  totalRevenus: number;
+  totalDepenses: number;
+  solde: number;
   totalsByType: Record<string, number>;
 }
 
