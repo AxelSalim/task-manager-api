@@ -61,7 +61,7 @@ export function DeleteHabitDialog({
               : 'Cette action est irréversible.'}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="sm:justify-between">
           <DialogClose asChild>
             <Button variant="outline" className="rounded-sm" disabled={deleting}>
               Annuler
