@@ -107,11 +107,22 @@ const financeController = {
   // Filtre par mois : du 1er au dernier jour du mois (start = YYYY-MM-01, end = YYYY-MM-dernierJour)
   async getTransactions(req, res) {
     try {
-      const { year, month, type, categoryId } = req.query;
+      const { year, month, type, categoryId, dateFrom, dateTo } = req.query;
       const where = { userId: req.user.id };
       if (type && TYPES.includes(type)) where.type = type;
       if (categoryId) where.categoryId = categoryId;
-      if (year || month) {
+      // Filtre par plage de dates (prioritaire si fourni)
+      if (dateFrom || dateTo) {
+        const from = dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(dateFrom) ? dateFrom : null;
+        const to = dateTo && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) ? dateTo : null;
+        if (from && to) {
+          where.date = { [Op.between]: [from, to] };
+        } else if (from) {
+          where.date = { [Op.gte]: from };
+        } else if (to) {
+          where.date = { [Op.lte]: to };
+        }
+      } else if (year || month) {
         const y = year ? parseInt(year, 10) : new Date().getFullYear();
         const m = month ? parseInt(month, 10) : null;
         if (!isNaN(y)) {
