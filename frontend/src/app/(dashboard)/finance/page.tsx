@@ -499,24 +499,24 @@ function FinancePage() {
         <TabsContent value="transactions" className="mt-4 space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
             <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 pt-2 px-4">
+              <CardHeader className="pb-1 px-4">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Revenus (mois)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="px-4 pb-4">
+              <CardContent className="px-4">
                 <span className="text-xl font-semibold text-green-600">
                   {totalIn.toLocaleString('fr-FR')} CFA
                 </span>
               </CardContent>
             </Card>
             <Card className="rounded-sm border shadow-none">
-              <CardHeader className="pb-1 pt-4 px-4">
+              <CardHeader className="pb-1 px-4">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Dépenses (mois)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="px-4 pb-4">
+              <CardContent className="px-4">
                 <span className="text-xl font-semibold text-red-600">
                   {totalOut.toLocaleString('fr-FR')} CFA
                 </span>
