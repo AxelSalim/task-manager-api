@@ -7,14 +7,23 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Plus, Loader2 } from 'lucide-react';
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Plus, Loader2, SquarePen, Trash2 } from 'lucide-react';
 import { addDays, startOfWeek, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { habitsAPI, type HabitDto } from '@/lib/api';
@@ -42,9 +51,13 @@ export default function HabitsPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [loading, setLoading] = useState(true);
   const [completionPending, setCompletionPending] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [newHabitName, setNewHabitName] = useState('');
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<HabitDto | null>(null);
+  const [habitName, setHabitName] = useState('');
   const [savingHabit, setSavingHabit] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [habitToDelete, setHabitToDelete] = useState<HabitDto | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
@@ -58,12 +71,14 @@ export default function HabitsPage() {
     try {
       const list = await habitsAPI.getAll();
       setHabits(list);
+      return true;
     } catch (error: unknown) {
       toast({
         title: 'Erreur',
         description: error instanceof Error ? error.message : 'Impossible de charger les habitudes',
         variant: 'destructive',
       });
+      return false;
     }
   }, [toast]);
 
@@ -81,13 +96,23 @@ export default function HabitsPage() {
   }, [fromTo, toast]);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    loadHabits().finally(() => setLoading(false));
+    (async () => {
+      const ok = await loadHabits();
+      if (cancelled) return;
+      setLoading(false);
+      if (ok) loadCompletions();
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [loadHabits]);
 
   useEffect(() => {
+    if (habits.length === 0 && !loading) return;
     loadCompletions();
-  }, [loadCompletions]);
+  }, [fromTo]);
 
   const toggleCompletion = async (habitId: number, date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -139,24 +164,68 @@ export default function HabitsPage() {
     return `${format(weekStart, 'd MMM', { locale: fr })} – ${format(end, 'd MMM yyyy', { locale: fr })}`;
   }, [weekStart]);
 
-  const handleCreateHabit = async () => {
-    const name = newHabitName.trim();
+  const openCreateSheet = () => {
+    setEditingHabit(null);
+    setHabitName('');
+    setSheetOpen(true);
+  };
+
+  const openEditSheet = (habit: HabitDto) => {
+    setEditingHabit(habit);
+    setHabitName(habit.name);
+    setSheetOpen(true);
+  };
+
+  const handleSaveHabit = async () => {
+    const name = habitName.trim();
     if (!name) return;
     setSavingHabit(true);
     try {
-      await habitsAPI.create({ name });
-      toast({ title: 'Habitude créée' });
-      setNewHabitName('');
-      setDialogOpen(false);
+      if (editingHabit) {
+        await habitsAPI.update(editingHabit.id, { name });
+        toast({ title: 'Habitude modifiée' });
+      } else {
+        await habitsAPI.create({ name });
+        toast({ title: 'Habitude créée' });
+      }
+      setSheetOpen(false);
+      setEditingHabit(null);
+      setHabitName('');
       loadHabits();
     } catch (error: unknown) {
       toast({
         title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Impossible de créer l\'habitude',
+        description: error instanceof Error ? error.message : 'Impossible de sauvegarder',
         variant: 'destructive',
       });
     } finally {
       setSavingHabit(false);
+    }
+  };
+
+  const openDeleteDialog = (habit: HabitDto) => {
+    setHabitToDelete(habit);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!habitToDelete) return;
+    setDeleting(true);
+    try {
+      await habitsAPI.delete(habitToDelete.id);
+      toast({ title: 'Habitude supprimée' });
+      setDeleteDialogOpen(false);
+      setHabitToDelete(null);
+      loadHabits();
+      loadCompletions();
+    } catch (error: unknown) {
+      toast({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Impossible de supprimer',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -182,7 +251,7 @@ export default function HabitsPage() {
           <Button variant="outline" size="sm" className="rounded-sm" onClick={goNextWeek}>
             Semaine suivante
           </Button>
-          <Button className="rounded-sm" size="sm" onClick={() => setDialogOpen(true)}>
+          <Button className="rounded-sm" size="sm" onClick={openCreateSheet}>
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle habitude
           </Button>
@@ -274,7 +343,31 @@ export default function HabitsPage() {
                 ) : (
                   habits.map((habit) => (
                     <tr key={habit.id} className="border-b last:border-0">
-                      <td className="py-2 pr-4 font-medium">{habit.name}</td>
+                      <td className="py-2 pr-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium">{habit.name}</span>
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-sm"
+                              onClick={() => openEditSheet(habit)}
+                              aria-label="Modifier"
+                            >
+                              <SquarePen className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-sm"
+                              onClick={() => openDeleteDialog(habit)}
+                              aria-label="Supprimer"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
                       {weekDays.map((day) => {
                         const key = `${habit.id}_${format(day, 'yyyy-MM-dd')}`;
                         const pending = completionPending === key;
@@ -331,44 +424,77 @@ export default function HabitsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-sm">
-          <DialogHeader>
-            <DialogTitle>Nouvelle habitude</DialogTitle>
-            <DialogDescription>
-              Donnez un nom à l&apos;habitude que vous souhaitez suivre.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="habit-name">Nom</Label>
-              <Input
-                id="habit-name"
-                className="rounded-sm"
-                value={newHabitName}
-                onChange={(e) => setNewHabitName(e.target.value)}
-                placeholder="Ex. 10 min de lecture"
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateHabit()}
-              />
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
+          <SheetHeader className="shrink-0 border-b px-5 py-3">
+            <SheetTitle className="text-lg">
+              {editingHabit ? 'Modifier l\'habitude' : 'Nouvelle habitude'}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto px-5 py-5">
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="habit-name">Nom</Label>
+                <Input
+                  id="habit-name"
+                  className="rounded-sm"
+                  value={habitName}
+                  onChange={(e) => setHabitName(e.target.value)}
+                  placeholder="Ex. 10 min de lecture"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveHabit()}
+                />
+              </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-sm">
-              Annuler
-            </Button>
+          <SheetFooter className="shrink-0 flex flex-col gap-2 border-t bg-muted/30 px-5 py-4 rounded-sm">
             <Button
-              className="rounded-sm"
-              onClick={handleCreateHabit}
-              disabled={!newHabitName.trim() || savingHabit}
+              className="rounded-sm w-full"
+              onClick={handleSaveHabit}
+              disabled={!habitName.trim() || savingHabit}
             >
               {savingHabit ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Créer
+              Enregistrer
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-sm w-full"
+              onClick={() => setSheetOpen(false)}
+            >
+              Annuler
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette habitude ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {habitToDelete
+                ? `« ${habitToDelete.name} » et toutes ses complétions seront supprimées.`
+                : 'Cette action est irréversible.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-sm">Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+              disabled={deleting}
+              className="rounded-sm bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
