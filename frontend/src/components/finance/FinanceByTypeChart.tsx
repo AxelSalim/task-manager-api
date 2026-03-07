@@ -62,7 +62,8 @@ export function FinanceByTypeChart({ totalsByType, monthLabel }: FinanceByTypeCh
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                vertical={false}
+                vertical
+                horizontal
                 stroke="hsl(var(--border))"
               />
               <XAxis
