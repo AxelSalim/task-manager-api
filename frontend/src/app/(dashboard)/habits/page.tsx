@@ -4,22 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Plus, Loader2, SquarePen, Trash2 } from 'lucide-react';
 import { addDays, startOfWeek, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { habitsAPI, type HabitDto } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { HabitFormSheet } from '@/components/habits/HabitFormSheet';
+import { CreateHabitSheet } from '@/components/habits/CreateHabitSheet';
+import { EditHabitSheet } from '@/components/habits/EditHabitSheet';
+import { DeleteHabitDialog } from '@/components/habits/DeleteHabitDialog';
 
 const DAY_LABELS: [string, string][] = [
   ['Lun', 'Lundi'],
@@ -43,11 +35,11 @@ export default function HabitsPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [loading, setLoading] = useState(true);
   const [completionPending, setCompletionPending] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<HabitDto | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [habitToDelete, setHabitToDelete] = useState<HabitDto | null>(null);
-  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
@@ -154,14 +146,11 @@ export default function HabitsPage() {
     return `${format(weekStart, 'd MMM', { locale: fr })} – ${format(end, 'd MMM yyyy', { locale: fr })}`;
   }, [weekStart]);
 
-  const openCreateSheet = () => {
-    setEditingHabit(null);
-    setSheetOpen(true);
-  };
+  const openCreateSheet = () => setCreateSheetOpen(true);
 
   const openEditSheet = (habit: HabitDto) => {
     setEditingHabit(habit);
-    setSheetOpen(true);
+    setEditSheetOpen(true);
   };
 
   const openDeleteDialog = (habit: HabitDto) => {
@@ -169,26 +158,10 @@ export default function HabitsPage() {
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!habitToDelete) return;
-    setDeleting(true);
-    try {
-      await habitsAPI.delete(habitToDelete.id);
-      toast({ title: 'Habitude supprimée' });
-      setDeleteDialogOpen(false);
-      setHabitToDelete(null);
-      loadHabits();
-      loadCompletions();
-    } catch (error: unknown) {
-      toast({
-        title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Impossible de supprimer',
-        variant: 'destructive',
-      });
-    } finally {
-      setDeleting(false);
-    }
-  };
+  const handleHabitDeleted = useCallback(() => {
+    loadHabits();
+    loadCompletions();
+  }, [loadHabits, loadCompletions]);
 
   if (loading) {
     return (
@@ -385,39 +358,23 @@ export default function HabitsPage() {
         </CardContent>
       </Card>
 
-      <HabitFormSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
+      <CreateHabitSheet
+        open={createSheetOpen}
+        onOpenChange={setCreateSheetOpen}
+        onSaved={loadHabits}
+      />
+      <EditHabitSheet
+        open={editSheetOpen}
+        onOpenChange={setEditSheetOpen}
         habit={editingHabit}
         onSaved={loadHabits}
       />
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette habitude ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {habitToDelete
-                ? `« ${habitToDelete.name} » et toutes ses complétions seront supprimées.`
-                : 'Cette action est irréversible.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-sm">Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                handleConfirmDelete();
-              }}
-              disabled={deleting}
-              className="rounded-sm bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteHabitDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        habit={habitToDelete}
+        onDeleted={handleHabitDeleted}
+      />
     </div>
   );
 }
