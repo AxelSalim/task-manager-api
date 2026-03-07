@@ -13,6 +13,7 @@ import {
 import { ArrowUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Pagination,
   PaginationContent,
@@ -78,7 +79,14 @@ export interface TransactionsDataTableProps {
   categories: { id: number; name: string; type: string }[];
   filterType: '' | FinanceTransactionType;
   filterCategoryId: number | null;
-  onFilterChange: (p: { type?: '' | FinanceTransactionType; categoryId?: number | null }) => void;
+  filterDateFrom?: string;
+  filterDateTo?: string;
+  onFilterChange: (p: {
+    type?: '' | FinanceTransactionType;
+    categoryId?: number | null;
+    dateFrom?: string;
+    dateTo?: string;
+  }) => void;
   onDelete: (id: number) => void;
   onEdit?: (tx: FinanceTransactionDto) => void;
 }
@@ -90,6 +98,8 @@ export const TransactionsDataTable: React.FC<TransactionsDataTableProps> = ({
   categories,
   filterType,
   filterCategoryId,
+  filterDateFrom = '',
+  filterDateTo = '',
   onFilterChange,
   onDelete,
   onEdit,
@@ -235,6 +245,21 @@ export const TransactionsDataTable: React.FC<TransactionsDataTableProps> = ({
             ))}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            className="w-[140px] rounded-sm"
+            value={filterDateFrom}
+            onChange={(e) => onFilterChange({ dateFrom: e.target.value || '' })}
+          />
+          <span className="text-muted-foreground text-sm">→</span>
+          <Input
+            type="date"
+            className="w-[140px] rounded-sm"
+            value={filterDateTo}
+            onChange={(e) => onFilterChange({ dateTo: e.target.value || '' })}
+          />
+        </div>
       </div>
       <div className="rounded-sm border">
         <Table>
