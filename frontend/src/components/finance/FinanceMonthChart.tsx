@@ -3,7 +3,6 @@
 import {
   Bar,
   BarChart,
-  CartesianGrid,
   Cell,
   ResponsiveContainer,
   Tooltip,
@@ -47,22 +46,16 @@ export function FinanceMonthChart({
               barCategoryGap="40%"
               barGap={8}
             >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical
-                horizontal
-                stroke="hsl(var(--border))"
-              />
               <XAxis
                 dataKey="name"
                 tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                axisLine={false}
+                tickLine={false}
               />
               <YAxis
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                axisLine={false}
+                tickLine={false}
                 tickFormatter={(v) =>
                   v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)
                 }
