@@ -10,7 +10,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet';
 import {
   Select,
@@ -26,7 +25,7 @@ import {
   type FinanceTransactionType,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 type NewFinanceTransactionSheetProps = {
@@ -34,10 +33,8 @@ type NewFinanceTransactionSheetProps = {
   onOpenChange: (open: boolean) => void;
   categories: FinanceCategoryDto[];
   typeLabels: Record<FinanceTransactionType, string>;
-  /** En mode édition : transaction à modifier (pas de trigger affiché) */
+  /** En mode édition : transaction à modifier */
   transaction?: FinanceTransactionDto | null;
-  /** Afficher le bouton "Ajouter une transaction" (false pour l'instance édition) */
-  showTrigger?: boolean;
   onCreated?: () => void;
   onUpdated?: () => void;
 };
@@ -48,7 +45,6 @@ export function NewFinanceTransactionSheet({
   categories,
   typeLabels,
   transaction,
-  showTrigger = true,
   onCreated,
   onUpdated,
 }: NewFinanceTransactionSheetProps) {
@@ -134,15 +130,6 @@ export function NewFinanceTransactionSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {showTrigger && !transaction && (
-        <SheetTrigger asChild>
-          <Button className="rounded-sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter une transaction
-          </Button>
-        </SheetTrigger>
-      )}
-
       <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <SheetHeader className="shrink-0 border-b px-5 py-4 pr-12">
