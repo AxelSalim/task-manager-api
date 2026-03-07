@@ -345,7 +345,7 @@ function FinancePage() {
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="rounded-sm bg-muted/60">
+        <TabsList className="rounded-sm bg-muted/100">
           <TabsTrigger value="dashboard" className="rounded-sm gap-1.5">
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
