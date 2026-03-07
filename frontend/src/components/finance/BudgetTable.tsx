@@ -227,7 +227,7 @@ export function BudgetTable({
         <div className="text-sm text-muted-foreground">
           {table.getFilteredRowModel().rows.length} ligne(s)
         </div>
-        {pageCount >= 1 && (
+        {pageCount > 1 && (
           <Pagination>
             <PaginationContent>
               <PaginationItem>
