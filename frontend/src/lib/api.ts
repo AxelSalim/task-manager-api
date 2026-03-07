@@ -647,3 +647,32 @@ export interface FinanceDashboardYearDto {
   totalsByType: Record<string, number>;
 }
 
+/** API Habits */
+export interface HabitDto {
+  id: number;
+  userId: number;
+  name: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const habitsAPI = {
+  getAll: () => apiRequest<HabitDto[]>('/api/habits'),
+  create: (data: { name: string; order?: number }) =>
+    apiRequest<HabitDto>('/api/habits', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: number, data: { name?: string; order?: number }) =>
+    apiRequest<HabitDto>(`/api/habits/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: number) =>
+    apiRequest<null>(`/api/habits/${id}`, { method: 'DELETE' }),
+  getCompletions: (params: { from: string; to: string }) => {
+    const q = new URLSearchParams({ from: params.from, to: params.to }).toString();
+    return apiRequest<{ habitId: number; date: string }[]>(`/api/habits/completions?${q}`);
+  },
+  setCompletion: (habitId: number, date: string, completed: boolean) =>
+    apiRequest<{ habitId: number; date: string; completed: boolean }>('/api/habits/completions', {
+      method: 'POST',
+      body: JSON.stringify({ habitId, date, completed }),
+    }),
+};
+
