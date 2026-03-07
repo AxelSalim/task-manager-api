@@ -26,6 +26,13 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -62,6 +69,13 @@ const TYPE_LABELS: Record<FinanceTransactionType, string> = {
   credits: 'Crédits',
 };
 
+const TYPE_OPTIONS: { value: '' | FinanceTransactionType; label: string }[] = [
+  { value: '', label: 'Tous les types' },
+  ...(Object.entries(TYPE_LABELS) as [FinanceTransactionType, string][]).map(([value, label]) => ({ value, label })),
+];
+
+type DateRangeFilter = { from?: string; to?: string };
+
 export function TransactionsDataTable({
   data,
   typeLabels,
@@ -92,11 +106,23 @@ export function TransactionsDataTable({
         ),
         cell: ({ row }) =>
           format(new Date(row.getValue<string>('date')), 'd MMM yyyy', { locale: fr }),
+        filterFn: (row, _columnId, filterValue: DateRangeFilter | undefined) => {
+          if (!filterValue?.from && !filterValue?.to) return true;
+          const rowDate = new Date(row.getValue<string>('date'));
+          const dateOnly = rowDate.toISOString().slice(0, 10);
+          if (filterValue.from && dateOnly < filterValue.from) return false;
+          if (filterValue.to && dateOnly > filterValue.to) return false;
+          return true;
+        },
       },
       {
         accessorKey: 'type',
         header: 'Type',
         cell: ({ row }) => typeLabels[row.getValue<FinanceTransactionType>('type')] ?? row.getValue('type'),
+        filterFn: (row, _columnId, filterValue: string) => {
+          if (!filterValue) return true;
+          return row.getValue<FinanceTransactionType>('type') === filterValue;
+        },
       },
       {
         id: 'category',
@@ -184,7 +210,45 @@ export function TransactionsDataTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center py-2">
+      <div className="flex flex-wrap items-center gap-3 py-2">
+        <Select
+          value={(table.getColumn('type')?.getFilterValue() as string) ?? 'all'}
+          onValueChange={(value) => table.getColumn('type')?.setFilterValue(value === 'all' ? undefined : value)}
+        >
+          <SelectTrigger className="w-[180px] rounded-sm">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            {TYPE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value || 'all'} value={opt.value || 'all'}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            className="w-[140px] rounded-sm"
+            value={((table.getColumn('date')?.getFilterValue() as DateRangeFilter)?.from) ?? ''}
+            onChange={(e) => {
+              const from = e.target.value || undefined;
+              const current = (table.getColumn('date')?.getFilterValue() as DateRangeFilter) ?? {};
+              table.getColumn('date')?.setFilterValue({ ...current, from });
+            }}
+          />
+          <span className="text-muted-foreground text-sm">→</span>
+          <Input
+            type="date"
+            className="w-[140px] rounded-sm"
+            value={((table.getColumn('date')?.getFilterValue() as DateRangeFilter)?.to) ?? ''}
+            onChange={(e) => {
+              const to = e.target.value || undefined;
+              const current = (table.getColumn('date')?.getFilterValue() as DateRangeFilter) ?? {};
+              table.getColumn('date')?.setFilterValue({ ...current, to });
+            }}
+          />
+        </div>
         <Input
           placeholder="Filtrer par catégorie..."
           value={(table.getColumn('category')?.getFilterValue() as string) ?? ''}
