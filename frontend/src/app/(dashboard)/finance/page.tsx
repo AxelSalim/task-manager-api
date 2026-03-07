@@ -80,6 +80,8 @@ function FinancePage() {
   const [transactionFilterDateFrom, setTransactionFilterDateFrom] = useState<string>('');
   const [transactionFilterDateTo, setTransactionFilterDateTo] = useState<string>('');
   const [yearSummary, setYearSummary] = useState<FinanceDashboardYearDto | null>(null);
+  const [budgetFilterType, setBudgetFilterType] = useState<'' | FinanceTransactionType>('');
+  const [budgetFilterCategoryId, setBudgetFilterCategoryId] = useState<number | null>(null);
   const [budgetSaving, setBudgetSaving] = useState<Record<string, boolean>>({});
 
   const { toast } = useToast();
@@ -613,9 +615,16 @@ function FinancePage() {
                   </p>
                 ) : (
                   <BudgetTable
+                    key={`${budgetFilterType}-${budgetFilterCategoryId}`}
                     categories={categoriesForBudget}
                     budgetByCategory={budgetByCategory}
                     typeLabels={TYPE_LABELS}
+                    filterType={budgetFilterType}
+                    filterCategoryId={budgetFilterCategoryId}
+                    onFilterChange={({ type, categoryId }) => {
+                      if (type !== undefined) setBudgetFilterType(type);
+                      if (categoryId !== undefined) setBudgetFilterCategoryId(categoryId);
+                    }}
                     onSave={handleBudgetChange}
                     getSaving={(categoryId) =>
                       !!budgetSaving[`${categoryId}-${year}-${month}`]
