@@ -3,11 +3,9 @@
 import * as React from 'react';
 import {
   type ColumnDef,
-  type ColumnFiltersState,
   type SortingState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -24,6 +22,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -43,6 +48,18 @@ const TYPE_ORDER: FinanceTransactionType[] = [
   'epargnes',
   'credits',
 ];
+
+function buildTypeOptions(
+  typeLabels: Record<FinanceTransactionType, string>
+): { value: '' | FinanceTransactionType; label: string }[] {
+  return [
+    { value: '', label: 'Tous les types' },
+    ...(Object.entries(typeLabels) as [FinanceTransactionType, string][]).map(([value, label]) => ({
+      value,
+      label,
+    })),
+  ];
+}
 
 function getPageNumbers(currentPage: number, totalPages: number): (number | 'ellipsis')[] {
   if (totalPages <= 1) return totalPages === 1 ? [1] : [];
@@ -66,20 +83,33 @@ export function BudgetTable({
   categories,
   budgetByCategory,
   typeLabels,
+  filterType,
+  filterCategoryId,
+  onFilterChange,
   onSave,
   getSaving,
 }: {
   categories: FinanceCategoryDto[];
   budgetByCategory: Map<number, FinanceBudgetEntryDto>;
   typeLabels: Record<FinanceTransactionType, string>;
+  filterType?: '' | FinanceTransactionType;
+  filterCategoryId?: number | null;
+  onFilterChange?: (p: {
+    type?: '' | FinanceTransactionType;
+    categoryId?: number | null;
+  }) => void;
   onSave: (categoryId: number, amount: number) => void;
   getSaving: (categoryId: number) => boolean;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+
+  const typeOptions = React.useMemo(() => buildTypeOptions(typeLabels), [typeLabels]);
 
   const data = React.useMemo<BudgetTableRow[]>(() => {
-    return [...categories]
+    let list = [...categories];
+    if (filterType) list = list.filter((c) => c.type === filterType);
+    if (filterCategoryId != null) list = list.filter((c) => c.id === filterCategoryId);
+    return list
       .sort((a, b) => {
         const orderA = TYPE_ORDER.indexOf(a.type as FinanceTransactionType);
         const orderB = TYPE_ORDER.indexOf(b.type as FinanceTransactionType);
@@ -87,7 +117,7 @@ export function BudgetTable({
         return a.name.localeCompare(b.name);
       })
       .map((cat) => ({ category: cat, entry: budgetByCategory.get(cat.id) }));
-  }, [categories, budgetByCategory]);
+  }, [categories, budgetByCategory, filterType, filterCategoryId]);
 
   const columns = React.useMemo<ColumnDef<BudgetTableRow>[]>(
     () => [
@@ -150,13 +180,11 @@ export function BudgetTable({
     data,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: { pagination: { pageSize: PAGE_SIZE } },
-    state: { sorting, columnFilters },
+    state: { sorting },
   });
 
   const pageCount = table.getPageCount();
@@ -165,15 +193,50 @@ export function BudgetTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center py-2">
-        <Input
-          placeholder="Filtrer par catégorie..."
-          value={(table.getColumn('categoryName')?.getFilterValue() as string) ?? ''}
-          onChange={(e) =>
-            table.getColumn('categoryName')?.setFilterValue(e.target.value)
-          }
-          className="max-w-sm rounded-sm"
-        />
+      <div className="flex flex-wrap items-center gap-3 py-2">
+        {onFilterChange && (
+          <>
+            <Select
+              value={filterType || 'all'}
+              onValueChange={(v) =>
+                onFilterChange({
+                  type: (v === 'all' ? '' : v) as '' | FinanceTransactionType,
+                })
+              }
+            >
+              <SelectTrigger className="w-[180px] rounded-sm">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {typeOptions.map((opt) => (
+                  <SelectItem key={opt.value || 'all'} value={opt.value || 'all'}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filterCategoryId != null ? String(filterCategoryId) : 'all'}
+              onValueChange={(v) =>
+                onFilterChange({
+                  categoryId: v === 'all' ? null : Number(v),
+                })
+              }
+            >
+              <SelectTrigger className="w-[220px] rounded-sm">
+                <SelectValue placeholder="Catégorie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les catégories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        )}
       </div>
       <div className="rounded-sm border">
         <Table>
@@ -225,7 +288,7 @@ export function BudgetTable({
       </div>
       <div className="flex items-center justify-between gap-2 py-2">
         <div className="text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} ligne(s)
+          {table.getRowModel().rows.length} ligne(s)
         </div>
         {pageCount > 1 && (
           <Pagination>
