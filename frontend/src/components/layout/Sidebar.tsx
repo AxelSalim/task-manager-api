@@ -31,16 +31,19 @@ import {
   Target,
 } from 'lucide-react';
 
-/** Navigation : Kanban, Calendrier, Suivi financier, Mes Habits */
+/** Navigation : Kanban, Calendrier, Suivi financier, Habitudes */
 const mainNavigation = [
   { name: 'Kanban', href: '/kanban', icon: LayoutGrid, count: null },
   { name: 'Calendrier', href: '/calendar', icon: Calendar, count: null },
   { name: 'Suivi financier', href: '/finance', icon: Wallet, count: null },
-  { name: 'Mes Habits', href: '/habits', icon: Target, count: null },
+  { name: 'Habitudes', href: '/habits', icon: Target, count: null },
 ];
 
+/** Élément d’une liste (folder) dans la sidebar */
+type FolderItem = { name: string; href?: string; count?: number | null };
+
 /** Listes (type Blitzit: simplifié, listes utilisateur à venir) */
-const folders = [
+const folders: { name: string; items: FolderItem[]; collapsed: boolean }[] = [
   { name: 'Listes', items: [], collapsed: true },
 ];
 
