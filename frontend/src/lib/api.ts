@@ -498,12 +498,21 @@ export const financeAPI = {
     return apiRequest<null>(`/api/finance/categories/${id}`, { method: 'DELETE' });
   },
 
-  getTransactions: async (params?: { year?: number; month?: number; type?: FinanceTransactionType; categoryId?: number }) => {
+  getTransactions: async (params?: {
+    year?: number;
+    month?: number;
+    type?: FinanceTransactionType;
+    categoryId?: number;
+    dateFrom?: string;
+    dateTo?: string;
+  }) => {
     const search = new URLSearchParams();
     if (params?.year != null) search.set('year', String(params.year));
     if (params?.month != null) search.set('month', String(params.month));
     if (params?.type) search.set('type', params.type);
     if (params?.categoryId != null) search.set('categoryId', String(params.categoryId));
+    if (params?.dateFrom) search.set('dateFrom', params.dateFrom);
+    if (params?.dateTo) search.set('dateTo', params.dateTo);
     const q = search.toString() ? `?${search.toString()}` : '';
     return apiRequest<FinanceTransactionDto[]>(`/api/finance/transactions${q}`);
   },
