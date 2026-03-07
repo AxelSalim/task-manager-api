@@ -32,6 +32,7 @@ const userRoutes = require("./routes/user.routes");
 const taskRoutes = require("./routes/task.routes");
 const tagRoutes = require("./routes/tag.routes");
 const financeRoutes = require("./routes/finance.routes");
+const habitsRoutes = require("./routes/habits.routes");
 
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -39,5 +40,6 @@ app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/tags", tagRoutes);
 app.use("/api/finance", financeRoutes);
+app.use("/api/habits", habitsRoutes);
 
 module.exports = app;
