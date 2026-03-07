@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, X } from 'lucide-react';
+import { Loader2, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tagsAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -124,7 +124,7 @@ export function TagSelector({ selectedTagIds, onSelectionChange, className }: Ta
             <div className="space-y-2">
               <Label className="text-sm font-medium">Tags disponibles</Label>
               {isLoading ? (
-                <div className="text-sm text-muted-foreground">Chargement...</div>
+                <div className="text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /></div>
               ) : tags.length === 0 ? (
                 <div className="text-sm text-muted-foreground">Aucun tag disponible</div>
               ) : (
