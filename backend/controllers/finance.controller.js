@@ -351,7 +351,7 @@ const financeController = {
 
       const transactions = await FinanceTransaction.findAll({
         where: { userId: req.user.id, date: { [Op.between]: [start, end] } },
-        attributes: ['type', 'amount', 'categoryId'],
+        attributes: ['date', 'type', 'amount', 'categoryId'],
       });
       const totalsByType = { revenus: 0, factures: 0, depenses: 0, epargnes: 0, credits: 0 };
       for (const t of transactions) {
@@ -388,6 +388,30 @@ const financeController = {
       const budgetRevenus = budgetByType.revenus;
       const budgetDepenses = budgetByType.factures + budgetByType.depenses + budgetByType.epargnes + budgetByType.credits;
 
+      // Données par jour du mois (1er au dernier jour)
+      const byDate = {};
+      for (const t of transactions) {
+        const d = String(t.date).slice(0, 10);
+        if (!byDate[d]) byDate[d] = { totalRevenus: 0, totalDepenses: 0 };
+        if (t.type === 'revenus') {
+          byDate[d].totalRevenus += Number(t.amount);
+        } else {
+          byDate[d].totalDepenses += Number(t.amount);
+        }
+      }
+      const daily = [];
+      for (let day = 1; day <= lastDay; day++) {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const row = byDate[dateStr] || { totalRevenus: 0, totalDepenses: 0 };
+        daily.push({
+          date: dateStr,
+          day,
+          totalRevenus: row.totalRevenus,
+          totalDepenses: row.totalDepenses,
+          solde: row.totalRevenus - row.totalDepenses,
+        });
+      }
+
       return sendSuccess(res, 200, {
         year,
         month,
@@ -400,6 +424,7 @@ const financeController = {
         budgetDepenses,
         budgetSolde: budgetRevenus - budgetDepenses,
         realVsBudget,
+        daily,
       }, 'Dashboard récupéré');
     } catch (err) {
       console.error('❌ getDashboard:', err);
