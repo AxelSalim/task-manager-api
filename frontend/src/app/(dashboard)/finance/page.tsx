@@ -537,29 +537,24 @@ function FinancePage() {
               </Button>
             </CardHeader>
             <CardContent className="p-4">
-              {loading ? (
-                <div className="flex items-center justify-center py-10">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <TransactionsDataTable
-                  key={`${transactionFilterType}-${transactionFilterCategoryId}`}
-                  data={transactions}
-                  typeLabels={TYPE_LABELS}
-                  categories={categories}
-                  filterType={transactionFilterType}
-                  filterCategoryId={transactionFilterCategoryId}
-                  onFilterChange={({ type, categoryId }) => {
-                    if (type !== undefined) setTransactionFilterType(type);
-                    if (categoryId !== undefined) setTransactionFilterCategoryId(categoryId);
-                  }}
-                  onDelete={handleDelete}
-                  onEdit={(tx) => {
-                    setTransactionToEdit(tx);
-                    setEditSheetOpen(true);
-                  }}
-                />
-              )}
+              <TransactionsDataTable
+                key={`${transactionFilterType}-${transactionFilterCategoryId}`}
+                data={transactions}
+                loading={loading}
+                typeLabels={TYPE_LABELS}
+                categories={categories}
+                filterType={transactionFilterType}
+                filterCategoryId={transactionFilterCategoryId}
+                onFilterChange={({ type, categoryId }) => {
+                  if (type !== undefined) setTransactionFilterType(type);
+                  if (categoryId !== undefined) setTransactionFilterCategoryId(categoryId);
+                }}
+                onDelete={handleDelete}
+                onEdit={(tx) => {
+                  setTransactionToEdit(tx);
+                  setEditSheetOpen(true);
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>
