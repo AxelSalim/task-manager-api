@@ -42,13 +42,13 @@ export function FinanceEvolutionLineChart({ data }: FinanceEvolutionLineChartPro
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
               />
               <YAxis
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
                 tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
               />
               <Tooltip
