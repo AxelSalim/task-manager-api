@@ -113,8 +113,8 @@ export function EditFinanceTransactionSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <SheetHeader className="shrink-0 border-b px-5 py-4 pr-12">
-            <SheetTitle className="text-lg">Edit transaction</SheetTitle>
+          <SheetHeader className="shrink-0 border-b px-5 py-3 pr-12">
+            <SheetTitle className="text-lg">Modifier une transaction</SheetTitle>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-5 py-5">
