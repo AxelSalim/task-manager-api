@@ -31,6 +31,8 @@ import { Separator } from '@/components/ui/separator';
 
 interface TaskFormProps {
   task?: Task | null;
+  /** Titre du dialog (ex. "Create task", "Edit task") */
+  title?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: {
@@ -54,8 +56,9 @@ const taskSchema = Yup.object().shape({
   spentMinutes: Yup.number().min(0, 'Doit être positif').integer('Nombre entier'),
 });
 
-export function TaskForm({ task, open, onOpenChange, onSubmit }: TaskFormProps) {
+export function TaskForm({ task, title: titleProp, open, onOpenChange, onSubmit }: TaskFormProps) {
   const isEditing = !!task;
+  const title = titleProp ?? (isEditing ? 'Modifier la tâche' : 'Nouvelle tâche');
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(
     task?.tags?.map(tag => tag.id) || []
   );
@@ -106,7 +109,7 @@ export function TaskForm({ task, open, onOpenChange, onSubmit }: TaskFormProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[950px] max-h-[95vh] overflow-y-auto">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-2xl font-bold">{isEditing ? 'Modifier la tâche' : 'Nouvelle tâche'}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
           <DialogDescription className="text-base mt-2">
             {isEditing
               ? 'Modifiez les informations de la tâche ci-dessous.'
