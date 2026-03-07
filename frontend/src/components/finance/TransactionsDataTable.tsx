@@ -252,7 +252,7 @@ export const TransactionsDataTable: React.FC<TransactionsDataTableProps> = ({
             value={filterDateFrom}
             onChange={(e) => onFilterChange({ dateFrom: e.target.value || '' })}
           />
-          <span className="text-muted-foreground text-sm">→</span>
+          <span className="text-muted-foreground text-sm">à</span>
           <Input
             type="date"
             className="w-[140px] rounded-sm"
