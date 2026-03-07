@@ -132,7 +132,7 @@ export function BudgetTable({
         id: 'amount',
         accessorFn: (row) => row.entry?.amount ?? 0,
         header: () => (
-          <div className="text-right font-medium">Montant budgété (CFA)</div>
+          <div className="text-left font-medium">Montant budgété (CFA)</div>
         ),
         cell: ({ row }) => (
           <BudgetAmountCell
