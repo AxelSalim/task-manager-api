@@ -290,6 +290,14 @@ function FinancePage() {
               loadBudget();
             }}
           />
+          <Button
+            variant="outline"
+            className="rounded-sm"
+            onClick={() => setSheetOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter une transaction
+          </Button>
           <NewFinanceTransactionSheet
             open={sheetOpen}
             onOpenChange={setSheetOpen}
@@ -307,7 +315,6 @@ function FinancePage() {
               if (!open) setTransactionToEdit(null);
             }}
             transaction={transactionToEdit}
-            showTrigger={false}
             categories={categories}
             typeLabels={TYPE_LABELS}
             onUpdated={() => {
