@@ -27,6 +27,7 @@ import {
   type FinanceBudgetEntryDto,
   type FinanceCategoryDto,
   type FinanceDashboardDto,
+  type FinanceDashboardYearDto,
   type FinanceEvolutionMonthDto,
   type FinanceTransactionDto,
   type FinanceTransactionType,
@@ -78,6 +79,7 @@ function FinancePage() {
   const [transactionFilterCategoryId, setTransactionFilterCategoryId] = useState<number | null>(null);
   const [transactionFilterDateFrom, setTransactionFilterDateFrom] = useState<string>('');
   const [transactionFilterDateTo, setTransactionFilterDateTo] = useState<string>('');
+  const [yearSummary, setYearSummary] = useState<FinanceDashboardYearDto | null>(null);
   const [budgetSaving, setBudgetSaving] = useState<Record<string, boolean>>({});
 
   const { toast } = useToast();
@@ -165,6 +167,21 @@ function FinancePage() {
     }
   }, [month, toast, year]);
 
+  const loadYearSummary = useCallback(async () => {
+    try {
+      const data = await financeAPI.getDashboardYear({ year });
+      setYearSummary(data);
+    } catch (error: unknown) {
+      toast({
+        title: 'Erreur',
+        description:
+          error instanceof Error ? error.message : 'Impossible de charger le résumé annuel',
+        variant: 'destructive',
+      });
+      setYearSummary(null);
+    }
+  }, [toast, year]);
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -181,6 +198,10 @@ function FinancePage() {
     loadEvolution();
   }, [loadEvolution]);
 
+  useEffect(() => {
+    loadYearSummary();
+  }, [loadYearSummary]);
+
   const handleDelete = async (id: number) => {
     if (!confirm('Supprimer cette transaction ?')) return;
     try {
@@ -188,6 +209,7 @@ function FinancePage() {
       toast({ title: 'Transaction supprimée' });
       loadData();
       loadDashboard();
+      loadYearSummary();
     } catch (error: unknown) {
       toast({
         title: 'Erreur',
@@ -337,6 +359,7 @@ function FinancePage() {
             onUpdated={() => {
               loadData();
               loadDashboard();
+              loadYearSummary();
               setEditSheetOpen(false);
               setTransactionToEdit(null);
             }}
@@ -519,6 +542,46 @@ function FinancePage() {
               <CardContent className="px-4">
                 <span className="text-xl font-semibold text-red-600">
                   {totalOut.toLocaleString('fr-FR')} CFA
+                </span>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <Card className="rounded-sm border shadow-none">
+              <CardHeader className="pb-1 px-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Revenus ({year})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4">
+                <span className="text-xl font-semibold text-green-600">
+                  {(yearSummary?.totalRevenus ?? 0).toLocaleString('fr-FR')} CFA
+                </span>
+              </CardContent>
+            </Card>
+            <Card className="rounded-sm border shadow-none">
+              <CardHeader className="pb-1 px-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Dépenses ({year})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4">
+                <span className="text-xl font-semibold text-red-600">
+                  {(yearSummary?.totalDepenses ?? 0).toLocaleString('fr-FR')} CFA
+                </span>
+              </CardContent>
+            </Card>
+            <Card className="rounded-sm border shadow-none">
+              <CardHeader className="pb-1 px-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Solde ({year})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4">
+                <span
+                  className={`text-xl font-semibold ${(yearSummary?.solde ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                >
+                  {(yearSummary?.solde ?? 0).toLocaleString('fr-FR')} CFA
                 </span>
               </CardContent>
             </Card>
