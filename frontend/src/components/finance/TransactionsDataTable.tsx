@@ -40,7 +40,7 @@ import {
 import type { FinanceTransactionDto, FinanceTransactionType } from '@/lib/api';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { SquarePen, Trash2 } from 'lucide-react';
+import { Loader2, SquarePen, Trash2 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
 
@@ -71,17 +71,9 @@ const TYPE_OPTIONS: { value: '' | FinanceTransactionType; label: string }[] = [
   ...(Object.entries(TYPE_LABELS) as [FinanceTransactionType, string][]).map(([value, label]) => ({ value, label })),
 ];
 
-export function TransactionsDataTable({
-  data,
-  typeLabels,
-  categories,
-  filterType,
-  filterCategoryId,
-  onFilterChange,
-  onDelete,
-  onEdit,
-}: {
+export interface TransactionsDataTableProps {
   data: FinanceTransactionDto[];
+  loading?: boolean;
   typeLabels: Record<FinanceTransactionType, string>;
   categories: { id: number; name: string; type: string }[];
   filterType: '' | FinanceTransactionType;
@@ -89,7 +81,19 @@ export function TransactionsDataTable({
   onFilterChange: (p: { type?: '' | FinanceTransactionType; categoryId?: number | null }) => void;
   onDelete: (id: number) => void;
   onEdit?: (tx: FinanceTransactionDto) => void;
-}) {
+}
+
+export const TransactionsDataTable: React.FC<TransactionsDataTableProps> = ({
+  data,
+  loading = false,
+  typeLabels,
+  categories,
+  filterType,
+  filterCategoryId,
+  onFilterChange,
+  onDelete,
+  onEdit,
+}) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const columns: ColumnDef<FinanceTransactionDto>[] = React.useMemo(
@@ -248,7 +252,16 @@ export function TransactionsDataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Chargement…
+                  </span>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
@@ -309,4 +322,4 @@ export function TransactionsDataTable({
       </div>
     </div>
   );
-}
+};
