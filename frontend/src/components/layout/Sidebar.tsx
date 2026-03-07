@@ -28,13 +28,15 @@ import {
   Trash2,
   LayoutGrid,
   Wallet,
+  Target,
 } from 'lucide-react';
 
-/** Navigation : Kanban, Calendrier, Suivi financier */
+/** Navigation : Kanban, Calendrier, Suivi financier, Mes Habits */
 const mainNavigation = [
   { name: 'Kanban', href: '/kanban', icon: LayoutGrid, count: null },
   { name: 'Calendrier', href: '/calendar', icon: Calendar, count: null },
   { name: 'Suivi financier', href: '/finance', icon: Wallet, count: null },
+  { name: 'Mes Habits', href: '/habits', icon: Target, count: null },
 ];
 
 /** Listes (type Blitzit: simplifié, listes utilisateur à venir) */
