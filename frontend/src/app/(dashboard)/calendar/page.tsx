@@ -15,6 +15,9 @@ import { EditTaskDialog } from '@/components/tasks/EditTaskDialog';
 import { ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tasksAPI } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
+import { RepeatPattern } from '@/components/tasks/RepeatSelector';
+import { Task } from '@/types/task';
 
 const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
@@ -111,6 +114,63 @@ export default function CalendarPage() {
   const handleDeleteTask = (task: CalendarDayTask) => {
     setTaskToDelete(task);
     setDeleteTaskDialogOpen(true);
+  };
+
+  const { toast } = useToast();
+
+  const handleCreateSubmit = async (values: {
+    title: string;
+    description?: string;
+    status: Task['status'];
+    priority: Task['priority'];
+    dueDate?: string;
+    reminderDate?: string;
+    repeatPattern?: RepeatPattern;
+    tagIds?: number[];
+    estimatedMinutes?: number | null;
+    spentMinutes?: number;
+  }) => {
+    try {
+      await tasksAPI.create({
+        ...values,
+        dueDate: selectedDate ? selectedDate.toISOString() : values.dueDate,
+        tagIds: values.tagIds,
+        estimatedMinutes: values.estimatedMinutes,
+      });
+      toast({ title: 'Tâche créée' });
+      loadTasks();
+      setCreateTaskDialogOpen(false);
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de créer la tâche', variant: 'destructive' });
+    }
+  };
+
+  const handleEditSubmit = async (values: {
+    title: string;
+    description?: string;
+    status: Task['status'];
+    priority: Task['priority'];
+    dueDate?: string;
+    reminderDate?: string;
+    repeatPattern?: RepeatPattern;
+    tagIds?: number[];
+    estimatedMinutes?: number | null;
+    spentMinutes?: number;
+  }) => {
+    if (!editingTask) return;
+    try {
+      await tasksAPI.update(editingTask.id, {
+        ...values,
+        tagIds: values.tagIds,
+        estimatedMinutes: values.estimatedMinutes,
+        spentMinutes: values.spentMinutes,
+      });
+      toast({ title: 'Tâche mise à jour' });
+      loadTasks();
+      setEditingTask(null);
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de modifier la tâche', variant: 'destructive' });
+    }
   };
 
   const goToPrevious = () => {
@@ -411,6 +471,30 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      <CreateTaskDialog
+        open={createTaskDialogOpen}
+        onOpenChange={setCreateTaskDialogOpen}
+        initialDueDate={selectedDate ?? undefined}
+        onSubmit={handleCreateSubmit}
+      />
+      <EditTaskDialog
+        open={editingTask !== null}
+        onOpenChange={(open) => { if (!open) setEditingTask(null); }}
+        task={editingTask as Task | null}
+        onSubmit={handleEditSubmit}
+      />
+      <DeleteTaskDialog
+        open={deleteTaskDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteTaskDialogOpen(open);
+          if (!open) setTaskToDelete(null);
+        }}
+        task={taskToDelete as Task | null}
+        onDeleted={() => {
+          loadTasks();
+          setTaskToDelete(null);
+        }}
+      />
       <CalendarDaySheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
