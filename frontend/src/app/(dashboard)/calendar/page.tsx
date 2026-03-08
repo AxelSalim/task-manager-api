@@ -100,6 +100,10 @@ export default function CalendarPage() {
     [getTasksForDate]
   );
 
+  const handleOpenCreateTask = () => {
+    setCreateTaskDialogOpen(true);
+  };
+
   const goToPrevious = () => {
     if (view === 'week') {
       setCurrentDate(new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000));
