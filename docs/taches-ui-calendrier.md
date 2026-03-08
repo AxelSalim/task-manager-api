@@ -43,7 +43,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **C2** — `DeleteTaskDialog.tsx` : ajouter DialogHeader, DialogTitle "Supprimer la tâche", DialogDescription
 - [x] **C3** — `DeleteTaskDialog.tsx` : ajouter DialogFooter avec DialogClose (Annuler) et Button Supprimer
 - [x] **C4** — `DeleteTaskDialog.tsx` : implémenter `handleConfirm` (appel `tasksAPI.delete`, toast, `onDeleted`, fermeture)
-- [ ] **C5** — `DeleteTaskDialog.tsx` : état `deleting` et désactiver le bouton Supprimer pendant l’appel
+- [x] **C5** — `DeleteTaskDialog.tsx` : état `deleting` et désactiver le bouton Supprimer pendant l’appel
 - [ ] **C6** — `DeleteTaskDialog.tsx` : gérer le cas `task === null` (ne pas afficher le bouton Supprimer ou retourner null)
 
 ---
