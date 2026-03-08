@@ -87,7 +87,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 
 - [x] **C32** — Création depuis le calendrier : s’assurer que le formulaire CreateTaskDialog reçoit bien `dueDate` initialisé à `selectedDate` (prop ou contexte)
 - [x] **C33** — Vérifier que `TaskForm` / `CreateTaskDialog` accepte une date initiale (sinon ajouter une prop `initialDueDate` sur CreateTaskDialog)
-- [ ] **C34** — Après suppression d’une tâche depuis le sheet, vérifier que la liste du jour se met à jour sans recharger toute la page
+- [x] **C34** — Après suppression d’une tâche depuis le sheet, vérifier que la liste du jour se met à jour sans recharger toute la page
 
 ---
 
