@@ -64,8 +64,8 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 
 - [x] **C14** — `calendar/page.tsx` : importer `CreateTaskDialog` et `EditTaskDialog` depuis `@/components/tasks`
 - [x] **C15** — `calendar/page.tsx` : importer `DeleteTaskDialog` depuis `@/components/tasks`
-- [ ] **C16** — `calendar/page.tsx` : état `createTaskDialogOpen` (boolean)
-- [ ] **C17** — `calendar/page.tsx` : état `editingTask` (CalendarDayTask | null)
+- [x] **C16** — `calendar/page.tsx` : état `createTaskDialogOpen` (boolean)
+- [x] **C17** — `calendar/page.tsx` : état `editingTask` (CalendarDayTask | null)
 - [ ] **C18** — `calendar/page.tsx` : état `taskToDelete` (CalendarDayTask | null) et `deleteTaskDialogOpen` (boolean)
 - [ ] **C19** — `calendar/page.tsx` : handler `handleOpenCreateTask` qui set `createTaskDialogOpen` à true (et garde `selectedDate`)
 - [ ] **C20** — `calendar/page.tsx` : handler `handleEditTask(task)` qui set `editingTask` et ouvre le dialog d’édition (état dédié ou réutiliser un seul dialog open)
