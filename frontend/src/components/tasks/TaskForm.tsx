@@ -31,6 +31,8 @@ import { Separator } from '@/components/ui/separator';
 
 interface TaskFormProps {
   task?: Task | null;
+  /** Date d'échéance initiale quand task est null (ex. jour sélectionné au calendrier) */
+  initialDueDate?: Date | null;
   /** Titre du dialog (ex. "Create task", "Edit task") */
   title?: string;
   open: boolean;
@@ -56,7 +58,7 @@ const taskSchema = Yup.object().shape({
   spentMinutes: Yup.number().min(0, 'Doit être positif').integer('Nombre entier'),
 });
 
-export function TaskForm({ task, title: titleProp, open, onOpenChange, onSubmit }: TaskFormProps) {
+export function TaskForm({ task, initialDueDate, title: titleProp, open, onOpenChange, onSubmit }: TaskFormProps) {
   const isEditing = !!task;
   const title = titleProp ?? (isEditing ? 'Modifier la tâche' : 'Nouvelle tâche');
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(
@@ -72,7 +74,7 @@ export function TaskForm({ task, title: titleProp, open, onOpenChange, onSubmit 
       description: task?.description || '',
       status: (task?.status || 'todo') as Task['status'],
       priority: (task?.priority || 'normal') as Task['priority'],
-      dueDate: task?.dueDate ? new Date(task.dueDate) : null as Date | null,
+      dueDate: (task?.dueDate ? new Date(task.dueDate) : (initialDueDate ?? null)) as Date | null,
       reminderDate: task?.reminderDate ? new Date(task.reminderDate) : null as Date | null,
       estimatedMinutes: task?.estimatedMinutes ?? undefined as number | undefined,
       spentMinutes: task?.spentMinutes ?? 0,
