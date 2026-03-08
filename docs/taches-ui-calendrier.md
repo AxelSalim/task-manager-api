@@ -19,7 +19,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **T2** — `EditTagDialog.tsx` : remplacer le titre "Edit tag" par "Modifier le tag"
 - [x] **T3** — `DeleteTagDialog.tsx` : remplacer le titre "Delete tag" par "Supprimer le tag"
 - [x] **T4** — `DeleteTagDialog.tsx` : vérifier que c’est un Dialog Shadcn (pas AlertDialog) avec `DialogClose` pour Annuler
-- [ ] **T5** — `DeleteTagDialog.tsx` : ajouter `className="sm:justify-between"` sur `DialogFooter` pour séparer Annuler / Supprimer
+- [x] **T5** — `DeleteTagDialog.tsx` : ajouter `className="sm:justify-between"` sur `DialogFooter` pour séparer Annuler / Supprimer
 
 ---
 
