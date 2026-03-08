@@ -31,7 +31,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **K4** — `DeleteTaskDialog.tsx` : bouton Annuler avec `DialogClose`, bouton Supprimer `variant="destructive"`
 - [x] **K5** — `DeleteTaskDialog.tsx` : `DialogFooter` avec `className="sm:justify-between"`
 - [x] **K6** — Page Kanban : importer `DeleteTaskDialog`
-- [ ] **K7** — Page Kanban : état `taskToDelete` et `deleteDialogOpen`
+- [x] **K7** — Page Kanban : état `taskToDelete` et `deleteDialogOpen`
 - [ ] **K8** — Page Kanban : ouvrir `DeleteTaskDialog` au clic supprimer (depuis KanbanCard ou menu)
 - [ ] **K9** — Page Kanban : appeler `mutate()` dans `onDeleted` et fermer le dialog
 
