@@ -36,6 +36,8 @@ export default function CalendarPage() {
   const [dateMenuOpen, setDateMenuOpen] = useState(false);
   const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<CalendarDayTask | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<CalendarDayTask | null>(null);
+  const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
