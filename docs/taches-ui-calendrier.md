@@ -33,7 +33,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **K6** — Page Kanban : importer `DeleteTaskDialog`
 - [x] **K7** — Page Kanban : état `taskToDelete` et `deleteDialogOpen`
 - [x] **K8** — Page Kanban : ouvrir `DeleteTaskDialog` au clic supprimer (depuis KanbanCard ou menu)
-- [ ] **K9** — Page Kanban : appeler `mutate()` dans `onDeleted` et fermer le dialog
+- [x] **K9** — Page Kanban : appeler `mutate()` dans `onDeleted` et fermer le dialog
 
 ---
 
