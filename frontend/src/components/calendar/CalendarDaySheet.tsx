@@ -16,6 +16,8 @@ import {
   Flag,
   Loader2,
   Plus,
+  SquarePen,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -155,9 +157,10 @@ function TaskCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 rounded-sm text-muted-foreground hover:text-foreground"
+                className="h-8 gap-1.5 rounded-sm px-2 text-muted-foreground hover:text-foreground"
                 onClick={() => onEdit(task)}
               >
+                <SquarePen className="h-3.5 w-3.5 shrink-0" />
                 Modifier
               </Button>
             )}
@@ -165,9 +168,10 @@ function TaskCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 rounded-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="h-8 gap-1.5 rounded-sm px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 onClick={() => onDelete(task)}
               >
+                <Trash2 className="h-3.5 w-3.5 shrink-0" />
                 Supprimer
               </Button>
             )}
