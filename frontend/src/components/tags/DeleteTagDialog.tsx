@@ -54,7 +54,7 @@ export function DeleteTagDialog({ open, onOpenChange, tagId, onDeleted }: Delete
             Cette action est irréversible. Le tag sera supprimé de toutes les tâches qui l&apos;utilisent.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="sm:justify-between">
           <DialogClose asChild>
             <Button variant="outline" className="rounded-sm" disabled={deleting}>
               Annuler
