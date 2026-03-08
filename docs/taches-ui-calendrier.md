@@ -54,7 +54,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **C8** — `CalendarDaySheet.tsx` : dans l’état vide (aucune tâche), ajouter un bouton "Ajouter une tâche" qui appelle `onAddTask`
 - [x] **C9** — `CalendarDaySheet.tsx` : quand il y a des tâches, ajouter un bouton "Ajouter une tâche" en haut de la liste (ou dans le header)
 - [x] **C10** — `CalendarDaySheet.tsx` : sur chaque `TaskCard`, ajouter un bouton ou menu "Modifier" qui appelle `onEditTask(task)`
-- [ ] **C11** — `CalendarDaySheet.tsx` : sur chaque `TaskCard`, ajouter un bouton ou menu "Supprimer" qui appelle `onDeleteTask(task)`
+- [x] **C11** — `CalendarDaySheet.tsx` : sur chaque `TaskCard`, ajouter un bouton ou menu "Supprimer" qui appelle `onDeleteTask(task)`
 - [ ] **C12** — `CalendarDaySheet.tsx` : importer les icônes (SquarePen, Trash2) et styliser les boutons d’action sur la carte
 - [ ] **C13** — `CalendarDaySheet.tsx` : exporter le type `CalendarDayTask` si besoin pour la page (déjà exporté, vérifier usage)
 
