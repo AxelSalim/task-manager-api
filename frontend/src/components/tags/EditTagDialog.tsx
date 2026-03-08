@@ -66,7 +66,7 @@ export function EditTagDialog({ open, onOpenChange, tag, onSaved }: EditTagDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit tag</DialogTitle>
+          <DialogTitle>Modifier le tag</DialogTitle>
           <DialogDescription>
             Modifiez les informations du tag ci-dessous.
           </DialogDescription>
