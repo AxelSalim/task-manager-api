@@ -139,6 +139,18 @@ function KanbanPage() {
         task={editingTask}
         onSubmit={handleEditSubmit}
       />
+      <DeleteTaskDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setTaskToDelete(null);
+        }}
+        task={taskToDelete}
+        onDeleted={() => {
+          mutate();
+          setTaskToDelete(null);
+        }}
+      />
     </div>
   );
 }
