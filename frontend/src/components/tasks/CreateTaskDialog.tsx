@@ -7,6 +7,8 @@ import { RepeatPattern } from '@/components/tasks/RepeatSelector';
 export type CreateTaskDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Date d'échéance initiale (ex. jour sélectionné au calendrier) */
+  initialDueDate?: Date | null;
   onSubmit: (values: {
     title: string;
     description?: string;
@@ -21,10 +23,11 @@ export type CreateTaskDialogProps = {
   }) => Promise<void>;
 };
 
-export function CreateTaskDialog({ open, onOpenChange, onSubmit }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, initialDueDate, onSubmit }: CreateTaskDialogProps) {
   return (
     <TaskForm
       task={null}
+      initialDueDate={initialDueDate}
       title="Ajouter une tâche"
       open={open}
       onOpenChange={onOpenChange}

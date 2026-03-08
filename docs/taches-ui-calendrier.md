@@ -73,13 +73,13 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **C22** — `calendar/page.tsx` : passer `onAddTask={handleOpenCreateTask}` à `CalendarDaySheet`
 - [x] **C23** — `calendar/page.tsx` : passer `onEditTask={handleEditTask}` à `CalendarDaySheet`
 - [x] **C24** — `calendar/page.tsx` : passer `onDeleteTask={handleDeleteTask}` à `CalendarDaySheet`
-- [ ] **C25** — `calendar/page.tsx` : rendre `<CreateTaskDialog>` avec `open={createTaskDialogOpen}`, `onOpenChange`, et pré-remplir la date d’échéance avec `selectedDate`
-- [ ] **C26** — `calendar/page.tsx` : implémenter `handleCreateSubmit` pour créer la tâche avec `dueDate` = `selectedDate`, puis `loadTasks()` et fermer le dialog
-- [ ] **C27** — `calendar/page.tsx` : rendre `<EditTaskDialog>` avec `task={editingTask}`, `open`, `onOpenChange`
-- [ ] **C28** — `calendar/page.tsx` : implémenter `handleEditSubmit` pour mettre à jour la tâche, puis `loadTasks()` et fermer le dialog
-- [ ] **C29** — `calendar/page.tsx` : rendre `<DeleteTaskDialog>` avec `task={taskToDelete}`, `open={deleteTaskDialogOpen}`, `onOpenChange`, `onDeleted`
-- [ ] **C30** — `calendar/page.tsx` : dans `onDeleted` du DeleteTaskDialog, appeler `loadTasks()` et réinitialiser `taskToDelete`
-- [ ] **C31** — `calendar/page.tsx` : après création/édition, fermer le Create/Edit dialog et garder le sheet du jour ouvert (ne pas fermer le sheet)
+- [x] **C25** — `calendar/page.tsx` : rendre `<CreateTaskDialog>` avec `open={createTaskDialogOpen}`, `onOpenChange`, et pré-remplir la date d’échéance avec `selectedDate`
+- [x] **C26** — `calendar/page.tsx` : implémenter `handleCreateSubmit` pour créer la tâche avec `dueDate` = `selectedDate`, puis `loadTasks()` et fermer le dialog
+- [x] **C27** — `calendar/page.tsx` : rendre `<EditTaskDialog>` avec `task={editingTask}`, `open`, `onOpenChange`
+- [x] **C28** — `calendar/page.tsx` : implémenter `handleEditSubmit` pour mettre à jour la tâche, puis `loadTasks()` et fermer le dialog
+- [x] **C29** — `calendar/page.tsx` : rendre `<DeleteTaskDialog>` avec `task={taskToDelete}`, `open={deleteTaskDialogOpen}`, `onOpenChange`, `onDeleted`
+- [x] **C30** — `calendar/page.tsx` : dans `onDeleted` du DeleteTaskDialog, appeler `loadTasks()` et réinitialiser `taskToDelete`
+- [x] **C31** — `calendar/page.tsx` : après création/édition, fermer le Create/Edit dialog et garder le sheet du jour ouvert (ne pas fermer le sheet)
 
 ---
 
