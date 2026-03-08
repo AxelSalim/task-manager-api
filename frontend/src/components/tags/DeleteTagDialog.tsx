@@ -49,7 +49,7 @@ export function DeleteTagDialog({ open, onOpenChange, tagId, onDeleted }: Delete
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete tag</AlertDialogTitle>
+          <AlertDialogTitle>Supprimer le tag</AlertDialogTitle>
           <AlertDialogDescription>
             Cette action est irréversible. Le tag sera supprimé de toutes les tâches qui l&apos;utilisent.
           </AlertDialogDescription>
