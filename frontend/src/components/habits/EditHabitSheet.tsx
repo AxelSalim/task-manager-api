@@ -58,7 +58,7 @@ export function EditHabitSheet({ open, onOpenChange, habit, onSaved }: EditHabit
         className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0"
       >
         <SheetHeader className="shrink-0 border-b px-5 py-3">
-          <SheetTitle className="text-lg">Edit habit</SheetTitle>
+          <SheetTitle className="text-lg">Modifier l&apos;habitude</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-5 py-5">
           <div className="grid gap-4">
