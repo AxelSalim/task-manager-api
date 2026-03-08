@@ -205,13 +205,26 @@ export function CalendarDaySheet({
                   )}
                 </div>
               ) : (
-                <ul className="space-y-3">
-                  {tasks.map((task) => (
-                    <li key={task.id}>
-                      <TaskCard task={task} />
-                    </li>
-                  ))}
-                </ul>
+                <div className="space-y-3">
+                  {onAddTask && (
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-sm"
+                      size="sm"
+                      onClick={onAddTask}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ajouter une tâche
+                    </Button>
+                  )}
+                  <ul className="space-y-3">
+                    {tasks.map((task) => (
+                      <li key={task.id}>
+                        <TaskCard task={task} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </>
           )}
