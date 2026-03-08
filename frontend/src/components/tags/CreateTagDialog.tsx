@@ -64,7 +64,7 @@ export function CreateTagDialog({ open, onOpenChange, onCreated }: CreateTagDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create tag</DialogTitle>
+          <DialogTitle>Ajouter un tag</DialogTitle>
           <DialogDescription>
             Remplissez les informations pour créer un nouveau tag.
           </DialogDescription>
