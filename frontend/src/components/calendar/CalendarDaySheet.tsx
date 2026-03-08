@@ -15,7 +15,9 @@ import {
   ClipboardList,
   Flag,
   Loader2,
+  Plus,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export type CalendarDayTask = {
   id: number;
@@ -191,6 +193,16 @@ export function CalendarDaySheet({
                     Les tâches avec une date d’échéance ou de création ce jour
                     apparaîtront ici.
                   </p>
+                  {onAddTask && (
+                    <Button
+                      className="mt-4 rounded-sm"
+                      size="sm"
+                      onClick={onAddTask}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ajouter une tâche
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <ul className="space-y-3">
