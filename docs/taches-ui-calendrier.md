@@ -95,7 +95,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 
 - [x] **F1** — Vérifier que tous les `SheetHeader` des sheets Finance ont bien `py-3` (CreateCategory, CreateTransaction, EditTransaction)
 - [x] **F2** — Si une suppression de transaction est ajoutée plus tard : créer `DeleteFinanceTransactionDialog.tsx` avec Dialog Shadcn et titre "Supprimer la transaction"
-- [ ] **F3** — Si une suppression de catégorie est ajoutée : créer `DeleteFinanceCategoryDialog.tsx` avec Dialog Shadcn et titre "Supprimer la catégorie"
+- [x] **F3** — Si une suppression de catégorie est ajoutée : créer `DeleteFinanceCategoryDialog.tsx` avec Dialog Shadcn et titre "Supprimer la catégorie"
 
 ---
 
