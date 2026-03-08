@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { CalendarDaySheet, type CalendarDayTask } from '@/components/calendar/CalendarDaySheet';
 import { CreateTaskDialog } from '@/components/tasks/CreateTaskDialog';
+import { DeleteTaskDialog } from '@/components/tasks/DeleteTaskDialog';
 import { EditTaskDialog } from '@/components/tasks/EditTaskDialog';
 import { ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
