@@ -50,7 +50,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 
 ## Calendrier — CalendarDaySheet (ajout des actions)
 
-- [ ] **C7** — `CalendarDaySheet.tsx` : ajouter les props optionnelles `onAddTask?: () => void`, `onEditTask?: (task) => void`, `onDeleteTask?: (task) => void`
+- [x] **C7** — `CalendarDaySheet.tsx` : ajouter les props optionnelles `onAddTask?: () => void`, `onEditTask?: (task) => void`, `onDeleteTask?: (task) => void`
 - [ ] **C8** — `CalendarDaySheet.tsx` : dans l’état vide (aucune tâche), ajouter un bouton "Ajouter une tâche" qui appelle `onAddTask`
 - [ ] **C9** — `CalendarDaySheet.tsx` : quand il y a des tâches, ajouter un bouton "Ajouter une tâche" en haut de la liste (ou dans le header)
 - [ ] **C10** — `CalendarDaySheet.tsx` : sur chaque `TaskCard`, ajouter un bouton ou menu "Modifier" qui appelle `onEditTask(task)`
