@@ -70,7 +70,13 @@ type CalendarDaySheetProps = {
   onDeleteTask?: (task: CalendarDayTask) => void;
 };
 
-function TaskCard({ task }: { task: CalendarDayTask }) {
+function TaskCard({
+  task,
+  onEdit,
+}: {
+  task: CalendarDayTask;
+  onEdit?: (task: CalendarDayTask) => void;
+}) {
   const status = STATUS_CONFIG[task.status] ?? {
     label: task.status,
     icon: Circle,
@@ -139,6 +145,18 @@ function TaskCard({ task }: { task: CalendarDayTask }) {
                 {tag.name}
               </span>
             ))}
+          </div>
+        )}
+        {onEdit && (
+          <div className="mt-3 pt-3 border-t">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 rounded-sm text-muted-foreground hover:text-foreground"
+              onClick={() => onEdit(task)}
+            >
+              Modifier
+            </Button>
           </div>
         )}
       </div>
@@ -220,7 +238,7 @@ export function CalendarDaySheet({
                   <ul className="space-y-3">
                     {tasks.map((task) => (
                       <li key={task.id}>
-                        <TaskCard task={task} />
+                        <TaskCard task={task} onEdit={onEditTask} />
                       </li>
                     ))}
                   </ul>
