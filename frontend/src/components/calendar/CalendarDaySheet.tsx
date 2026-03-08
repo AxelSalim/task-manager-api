@@ -63,6 +63,9 @@ type CalendarDaySheetProps = {
   selectedDate: Date | null;
   tasks: CalendarDayTask[];
   loading?: boolean;
+  onAddTask?: () => void;
+  onEditTask?: (task: CalendarDayTask) => void;
+  onDeleteTask?: (task: CalendarDayTask) => void;
 };
 
 function TaskCard({ task }: { task: CalendarDayTask }) {
@@ -147,6 +150,9 @@ export function CalendarDaySheet({
   selectedDate,
   tasks,
   loading = false,
+  onAddTask,
+  onEditTask,
+  onDeleteTask,
 }: CalendarDaySheetProps) {
   const dayLabel = selectedDate
     ? format(selectedDate, 'EEEE d MMMM yyyy', { locale: fr })
