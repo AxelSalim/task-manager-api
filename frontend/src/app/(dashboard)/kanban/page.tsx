@@ -6,6 +6,7 @@ import { Task } from '@/types/task';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { CreateTaskDialog } from '@/components/tasks/CreateTaskDialog';
 import { EditTaskDialog } from '@/components/tasks/EditTaskDialog';
+import { DeleteTaskDialog } from '@/components/tasks/DeleteTaskDialog';
 import { tasksAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { RepeatPattern } from '@/components/tasks/RepeatSelector';
