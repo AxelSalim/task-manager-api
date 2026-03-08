@@ -63,7 +63,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 ## Calendrier — Page calendar
 
 - [x] **C14** — `calendar/page.tsx` : importer `CreateTaskDialog` et `EditTaskDialog` depuis `@/components/tasks`
-- [ ] **C15** — `calendar/page.tsx` : importer `DeleteTaskDialog` depuis `@/components/tasks`
+- [x] **C15** — `calendar/page.tsx` : importer `DeleteTaskDialog` depuis `@/components/tasks`
 - [ ] **C16** — `calendar/page.tsx` : état `createTaskDialogOpen` (boolean)
 - [ ] **C17** — `calendar/page.tsx` : état `editingTask` (CalendarDayTask | null)
 - [ ] **C18** — `calendar/page.tsx` : état `taskToDelete` (CalendarDayTask | null) et `deleteTaskDialogOpen` (boolean)
