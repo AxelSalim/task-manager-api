@@ -68,18 +68,20 @@ export function DeleteTaskDialog({
               Annuler
             </Button>
           </DialogClose>
-          <Button
-            variant="destructive"
-            className="rounded-sm"
-            disabled={deleting}
-            onClick={(e) => {
-              e.preventDefault();
-              handleConfirm();
-            }}
-          >
-            {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Supprimer
-          </Button>
+          {task && (
+            <Button
+              variant="destructive"
+              className="rounded-sm"
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirm();
+              }}
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Supprimer
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
