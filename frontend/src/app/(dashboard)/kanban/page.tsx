@@ -25,21 +25,11 @@ function KanbanPage() {
     setEditDialogOpen(true);
   };
 
-  const handleTaskDelete = async (taskId: number) => {
-    try {
-      await tasksAPI.delete(taskId);
-      toast({
-        title: 'Tâche supprimée',
-        description: 'La tâche a été supprimée avec succès.',
-      });
-      mutate();
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de supprimer la tâche',
-        variant: 'destructive',
-      });
+  const handleOpenDeleteDialog = (taskId: number) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      setTaskToDelete(task);
+      setDeleteDialogOpen(true);
     }
   };
 
@@ -129,7 +119,7 @@ function KanbanPage() {
         <KanbanBoard
           tasks={tasks}
           onTaskClick={handleTaskClick}
-          onTaskDelete={handleTaskDelete}
+          onTaskDelete={handleOpenDeleteDialog}
           onTasksChange={mutate}
           onAddCard={() => setCreateDialogOpen(true)}
         />
