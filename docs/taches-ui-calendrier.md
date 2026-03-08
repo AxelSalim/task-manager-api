@@ -69,7 +69,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **C18** — `calendar/page.tsx` : état `taskToDelete` (CalendarDayTask | null) et `deleteTaskDialogOpen` (boolean)
 - [x] **C19** — `calendar/page.tsx` : handler `handleOpenCreateTask` qui set `createTaskDialogOpen` à true (et garde `selectedDate`)
 - [x] **C20** — `calendar/page.tsx` : handler `handleEditTask(task)` qui set `editingTask` et ouvre le dialog d’édition (état dédié ou réutiliser un seul dialog open)
-- [ ] **C21** — `calendar/page.tsx` : handler `handleDeleteTask(task)` qui set `taskToDelete` et `deleteTaskDialogOpen` à true
+- [x] **C21** — `calendar/page.tsx` : handler `handleDeleteTask(task)` qui set `taskToDelete` et `deleteTaskDialogOpen` à true
 - [ ] **C22** — `calendar/page.tsx` : passer `onAddTask={handleOpenCreateTask}` à `CalendarDaySheet`
 - [ ] **C23** — `calendar/page.tsx` : passer `onEditTask={handleEditTask}` à `CalendarDaySheet`
 - [ ] **C24** — `calendar/page.tsx` : passer `onDeleteTask={handleDeleteTask}` à `CalendarDaySheet`
