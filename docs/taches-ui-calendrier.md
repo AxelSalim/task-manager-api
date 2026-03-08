@@ -25,7 +25,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 
 ## Tâches (Kanban)
 
-- [ ] **K1** — `CreateTaskDialog.tsx` : passer le titre "Ajouter une tâche" au lieu de "Create task" (via prop `title` de `TaskForm`)
+- [x] **K1** — `CreateTaskDialog.tsx` : passer le titre "Ajouter une tâche" au lieu de "Create task" (via prop `title` de `TaskForm`)
 - [ ] **K2** — `EditTaskDialog.tsx` : passer le titre "Modifier la tâche" au lieu de "Edit task"
 - [ ] **K3** — Créer `DeleteTaskDialog.tsx` : composant avec Dialog Shadcn, titre "Supprimer la tâche", props `open`, `onOpenChange`, `task`, `onDeleted`
 - [ ] **K4** — `DeleteTaskDialog.tsx` : bouton Annuler avec `DialogClose`, bouton Supprimer `variant="destructive"`
