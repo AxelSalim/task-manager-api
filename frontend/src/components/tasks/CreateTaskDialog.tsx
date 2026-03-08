@@ -25,7 +25,7 @@ export function CreateTaskDialog({ open, onOpenChange, onSubmit }: CreateTaskDia
   return (
     <TaskForm
       task={null}
-      title="Create task"
+      title="Ajouter une tâche"
       open={open}
       onOpenChange={onOpenChange}
       onSubmit={onSubmit}
