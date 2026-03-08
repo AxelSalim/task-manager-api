@@ -417,6 +417,9 @@ export default function CalendarPage() {
         selectedDate={selectedDate}
         tasks={selectedDate ? getTasksForDate(selectedDate) : []}
         loading={loading}
+        onAddTask={handleOpenCreateTask}
+        onEditTask={handleEditTask}
+        onDeleteTask={handleDeleteTask}
       />
     </div>
   );
