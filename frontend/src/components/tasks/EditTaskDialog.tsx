@@ -26,7 +26,7 @@ export function EditTaskDialog({ open, onOpenChange, task, onSubmit }: EditTaskD
   return (
     <TaskForm
       task={task}
-      title="Edit task"
+      title="Modifier la tâche"
       open={open}
       onOpenChange={onOpenChange}
       onSubmit={onSubmit}
