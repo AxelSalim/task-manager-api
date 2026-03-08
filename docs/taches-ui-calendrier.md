@@ -56,7 +56,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **C10** — `CalendarDaySheet.tsx` : sur chaque `TaskCard`, ajouter un bouton ou menu "Modifier" qui appelle `onEditTask(task)`
 - [x] **C11** — `CalendarDaySheet.tsx` : sur chaque `TaskCard`, ajouter un bouton ou menu "Supprimer" qui appelle `onDeleteTask(task)`
 - [x] **C12** — `CalendarDaySheet.tsx` : importer les icônes (SquarePen, Trash2) et styliser les boutons d’action sur la carte
-- [ ] **C13** — `CalendarDaySheet.tsx` : exporter le type `CalendarDayTask` si besoin pour la page (déjà exporté, vérifier usage)
+- [x] **C13** — `CalendarDaySheet.tsx` : exporter le type `CalendarDayTask` si besoin pour la page (déjà exporté, vérifier usage)
 
 ---
 
