@@ -70,9 +70,9 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 - [x] **C19** — `calendar/page.tsx` : handler `handleOpenCreateTask` qui set `createTaskDialogOpen` à true (et garde `selectedDate`)
 - [x] **C20** — `calendar/page.tsx` : handler `handleEditTask(task)` qui set `editingTask` et ouvre le dialog d’édition (état dédié ou réutiliser un seul dialog open)
 - [x] **C21** — `calendar/page.tsx` : handler `handleDeleteTask(task)` qui set `taskToDelete` et `deleteTaskDialogOpen` à true
-- [ ] **C22** — `calendar/page.tsx` : passer `onAddTask={handleOpenCreateTask}` à `CalendarDaySheet`
-- [ ] **C23** — `calendar/page.tsx` : passer `onEditTask={handleEditTask}` à `CalendarDaySheet`
-- [ ] **C24** — `calendar/page.tsx` : passer `onDeleteTask={handleDeleteTask}` à `CalendarDaySheet`
+- [x] **C22** — `calendar/page.tsx` : passer `onAddTask={handleOpenCreateTask}` à `CalendarDaySheet`
+- [x] **C23** — `calendar/page.tsx` : passer `onEditTask={handleEditTask}` à `CalendarDaySheet`
+- [x] **C24** — `calendar/page.tsx` : passer `onDeleteTask={handleDeleteTask}` à `CalendarDaySheet`
 - [ ] **C25** — `calendar/page.tsx` : rendre `<CreateTaskDialog>` avec `open={createTaskDialogOpen}`, `onOpenChange`, et pré-remplir la date d’échéance avec `selectedDate`
 - [ ] **C26** — `calendar/page.tsx` : implémenter `handleCreateSubmit` pour créer la tâche avec `dueDate` = `selectedDate`, puis `loadTasks()` et fermer le dialog
 - [ ] **C27** — `calendar/page.tsx` : rendre `<EditTaskDialog>` avec `task={editingTask}`, `open`, `onOpenChange`
