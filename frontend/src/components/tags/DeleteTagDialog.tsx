@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { tagsAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -46,29 +46,34 @@ export function DeleteTagDialog({ open, onOpenChange, tagId, onDeleted }: Delete
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer le tag</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm rounded-sm">
+        <DialogHeader>
+          <DialogTitle>Supprimer le tag</DialogTitle>
+          <DialogDescription>
             Cette action est irréversible. Le tag sera supprimé de toutes les tâches qui l&apos;utilisent.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" className="rounded-sm" disabled={deleting}>
+              Annuler
+            </Button>
+          </DialogClose>
+          <Button
+            variant="destructive"
+            className="rounded-sm"
+            disabled={deleting}
             onClick={(e) => {
               e.preventDefault();
               handleConfirm();
             }}
-            disabled={deleting}
-            className="bg-red-600 hover:bg-red-700"
           >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Supprimer
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
