@@ -145,6 +145,8 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 10. **Accessibilité** (A1–A4) — 4 commits  
 11. **Documentation** (D1–D3) — 3 commits  
 
+→ Réalisé (1 tâche = 1 commit, 1 commit par fichier).
+
 ---
 
 *Dernière mise à jour : à mettre à jour au fur et à mesure.*
