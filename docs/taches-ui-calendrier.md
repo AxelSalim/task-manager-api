@@ -114,7 +114,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 
 - [ ] **D1** — Mettre à jour la section "Ordre de réalisation" en bas de ce fichier après les premiers commits
 - [x] **D2** — Cocher les tâches au fur et à mesure dans ce fichier (remplacer `- [ ]` par `- [x]`)
-- [ ] **D3** — Ajouter en en-tête la date de dernière mise à jour du fichier
+- [x] **D3** — Ajouter en en-tête la date de dernière mise à jour du fichier
 
 ---
 
