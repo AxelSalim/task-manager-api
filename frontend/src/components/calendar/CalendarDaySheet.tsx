@@ -234,6 +234,7 @@ export function CalendarDaySheet({
                       className="mt-4 rounded-sm"
                       size="sm"
                       onClick={onAddTask}
+                      aria-label="Ajouter une tâche"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Ajouter une tâche
@@ -248,6 +249,7 @@ export function CalendarDaySheet({
                       className="w-full rounded-sm"
                       size="sm"
                       onClick={onAddTask}
+                      aria-label="Ajouter une tâche"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Ajouter une tâche
