@@ -1,7 +1,5 @@
 # Tâches UI et Calendrier — Suivi (1 tâche = 1 commit)
 
-**Dernière mise à jour** : 18 février 2025
-
 Fichier de suivi pour maximiser les commits : chaque case = une modification atomique à committer.
 
 **Convention** : Create/Edit/Delete, titres en français, Dialog Shadcn pour les suppressions, `SheetHeader` avec `py-3`.
@@ -88,33 +86,33 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 ## Calendrier — UX et détails
 
 - [x] **C32** — Création depuis le calendrier : s’assurer que le formulaire CreateTaskDialog reçoit bien `dueDate` initialisé à `selectedDate` (prop ou contexte)
-- [x] **C33** — Vérifier que `TaskForm` / `CreateTaskDialog` accepte une date initiale (sinon ajouter une prop `initialDueDate` sur CreateTaskDialog)
-- [x] **C34** — Après suppression d’une tâche depuis le sheet, vérifier que la liste du jour se met à jour sans recharger toute la page
+- [ ] **C33** — Vérifier que `TaskForm` / `CreateTaskDialog` accepte une date initiale (sinon ajouter une prop `initialDueDate` sur CreateTaskDialog)
+- [ ] **C34** — Après suppression d’une tâche depuis le sheet, vérifier que la liste du jour se met à jour sans recharger toute la page
 
 ---
 
 ## Finance (vérifications / cohérence)
 
-- [x] **F1** — Vérifier que tous les `SheetHeader` des sheets Finance ont bien `py-3` (CreateCategory, CreateTransaction, EditTransaction)
-- [x] **F2** — Si une suppression de transaction est ajoutée plus tard : créer `DeleteFinanceTransactionDialog.tsx` avec Dialog Shadcn et titre "Supprimer la transaction"
-- [x] **F3** — Si une suppression de catégorie est ajoutée : créer `DeleteFinanceCategoryDialog.tsx` avec Dialog Shadcn et titre "Supprimer la catégorie"
+- [ ] **F1** — Vérifier que tous les `SheetHeader` des sheets Finance ont bien `py-3` (CreateCategory, CreateTransaction, EditTransaction)
+- [ ] **F2** — Si une suppression de transaction est ajoutée plus tard : créer `DeleteFinanceTransactionDialog.tsx` avec Dialog Shadcn et titre "Supprimer la transaction"
+- [ ] **F3** — Si une suppression de catégorie est ajoutée : créer `DeleteFinanceCategoryDialog.tsx` avec Dialog Shadcn et titre "Supprimer la catégorie"
 
 ---
 
 ## Accessibilité et polish
 
-- [x] **A1** — Habits : vérifier les `aria-label` sur les boutons Modifier / Supprimer de chaque ligne (déjà présents, vérifier)
-- [x] **A2** — CalendarDaySheet : ajouter `aria-label` sur le bouton "Ajouter une tâche"
-- [x] **A3** — CalendarDaySheet : ajouter `aria-label` sur les boutons Modifier / Supprimer de chaque TaskCard
-- [x] **A4** — DeleteHabitDialog : vérifier que le focus revient sur le bouton qui a ouvert le dialog après annulation (comportement par défaut du Dialog Shadcn)
+- [ ] **A1** — Habits : vérifier les `aria-label` sur les boutons Modifier / Supprimer de chaque ligne (déjà présents, vérifier)
+- [ ] **A2** — CalendarDaySheet : ajouter `aria-label` sur le bouton "Ajouter une tâche"
+- [ ] **A3** — CalendarDaySheet : ajouter `aria-label` sur les boutons Modifier / Supprimer de chaque TaskCard
+- [ ] **A4** — DeleteHabitDialog : vérifier que le focus revient sur le bouton qui a ouvert le dialog après annulation (comportement par défaut du Dialog Shadcn)
 
 ---
 
 ## Documentation et suivi
 
-- [x] **D1** — Mettre à jour la section "Ordre de réalisation" en bas de ce fichier après les premiers commits
-- [x] **D2** — Cocher les tâches au fur et à mesure dans ce fichier (remplacer `- [ ]` par `- [x]`)
-- [x] **D3** — Ajouter en en-tête la date de dernière mise à jour du fichier
+- [ ] **D1** — Mettre à jour la section "Ordre de réalisation" en bas de ce fichier après les premiers commits
+- [ ] **D2** — Cocher les tâches au fur et à mesure dans ce fichier (remplacer `- [ ]` par `- [x]`)
+- [ ] **D3** — Ajouter en en-tête la date de dernière mise à jour du fichier
 
 ---
 
@@ -146,8 +144,6 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 9. **Finance** (F1–F3) — 1 à 3 commits  
 10. **Accessibilité** (A1–A4) — 4 commits  
 11. **Documentation** (D1–D3) — 3 commits  
-
-→ Réalisé (1 tâche = 1 commit, 1 commit par fichier).
 
 ---
 
