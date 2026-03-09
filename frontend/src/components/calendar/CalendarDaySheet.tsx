@@ -159,6 +159,7 @@ function TaskCard({
                 size="sm"
                 className="h-8 gap-1.5 rounded-sm px-2 text-muted-foreground hover:text-foreground"
                 onClick={() => onEdit(task)}
+                aria-label={`Modifier la tâche ${task.title}`}
               >
                 <SquarePen className="h-3.5 w-3.5 shrink-0" />
                 Modifier
@@ -170,6 +171,7 @@ function TaskCard({
                 size="sm"
                 className="h-8 gap-1.5 rounded-sm px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 onClick={() => onDelete(task)}
+                aria-label={`Supprimer la tâche ${task.title}`}
               >
                 <Trash2 className="h-3.5 w-3.5 shrink-0" />
                 Supprimer
