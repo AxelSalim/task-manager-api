@@ -1,5 +1,7 @@
 # Tâches UI et Calendrier — Suivi (1 tâche = 1 commit)
 
+**Dernière mise à jour** : 18 février 2025
+
 Fichier de suivi pour maximiser les commits : chaque case = une modification atomique à committer.
 
 **Convention** : Create/Edit/Delete, titres en français, Dialog Shadcn pour les suppressions, `SheetHeader` avec `py-3`.
@@ -111,7 +113,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 ## Documentation et suivi
 
 - [ ] **D1** — Mettre à jour la section "Ordre de réalisation" en bas de ce fichier après les premiers commits
-- [ ] **D2** — Cocher les tâches au fur et à mesure dans ce fichier (remplacer `- [ ]` par `- [x]`)
+- [x] **D2** — Cocher les tâches au fur et à mesure dans ce fichier (remplacer `- [ ]` par `- [x]`)
 - [ ] **D3** — Ajouter en en-tête la date de dernière mise à jour du fichier
 
 ---
