@@ -101,7 +101,7 @@ Fichier de suivi pour maximiser les commits : chaque case = une modification ato
 
 ## Accessibilité et polish
 
-- [ ] **A1** — Habits : vérifier les `aria-label` sur les boutons Modifier / Supprimer de chaque ligne (déjà présents, vérifier)
+- [x] **A1** — Habits : vérifier les `aria-label` sur les boutons Modifier / Supprimer de chaque ligne (déjà présents, vérifier)
 - [ ] **A2** — CalendarDaySheet : ajouter `aria-label` sur le bouton "Ajouter une tâche"
 - [ ] **A3** — CalendarDaySheet : ajouter `aria-label` sur les boutons Modifier / Supprimer de chaque TaskCard
 - [ ] **A4** — DeleteHabitDialog : vérifier que le focus revient sur le bouton qui a ouvert le dialog après annulation (comportement par défaut du Dialog Shadcn)
