@@ -131,12 +131,14 @@ export default function CalendarPage() {
     spentMinutes?: number;
   }) => {
     try {
-      await tasksAPI.create({
+      const task = await tasksAPI.create({
         ...values,
         dueDate: selectedDate ? selectedDate.toISOString() : values.dueDate,
         tagIds: values.tagIds,
         estimatedMinutes: values.estimatedMinutes,
       });
+      const { syncReminderAfterCreate } = await import('@/lib/electronReminders');
+      syncReminderAfterCreate(task);
       toast({ title: 'Tâche créée' });
       loadTasks();
       setCreateTaskDialogOpen(false);
@@ -159,12 +161,14 @@ export default function CalendarPage() {
   }) => {
     if (!editingTask) return;
     try {
-      await tasksAPI.update(editingTask.id, {
+      const updated = await tasksAPI.update(editingTask.id, {
         ...values,
         tagIds: values.tagIds,
         estimatedMinutes: values.estimatedMinutes,
         spentMinutes: values.spentMinutes,
       });
+      const { syncReminderAfterUpdate } = await import('@/lib/electronReminders');
+      syncReminderAfterUpdate(updated);
       toast({ title: 'Tâche mise à jour' });
       loadTasks();
       setEditingTask(null);
