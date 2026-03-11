@@ -15,6 +15,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   
   /**
+   * Enregistrer un rappel dans le Planificateur Windows (notification même app fermée)
+   * @param {{ taskId: number, reminderDate: string, title: string, body?: string }} payload
+   */
+  registerReminder: (payload) => ipcRenderer.invoke('register-reminder', payload),
+  
+  /**
+   * Supprimer le rappel planifié pour une tâche
+   * @param {{ taskId: number }} payload
+   */
+  unregisterReminder: (payload) => ipcRenderer.invoke('unregister-reminder', payload),
+  
+  /**
    * Écouter l'événement de démarrage du serveur
    */
   onServerStarted: (callback) => {
