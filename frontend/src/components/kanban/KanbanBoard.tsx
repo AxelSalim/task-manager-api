@@ -92,9 +92,11 @@ export function KanbanBoard({
     if (targetStatus && task.status !== targetStatus) {
       try {
         // Mettre à jour le statut de la tâche
-        await tasksAPI.update(taskId, {
+        const updated = await tasksAPI.update(taskId, {
           status: targetStatus,
         });
+        const { syncReminderAfterUpdate } = await import('@/lib/electronReminders');
+        syncReminderAfterUpdate(updated);
 
         toast({
           title: 'Tâche déplacée',
