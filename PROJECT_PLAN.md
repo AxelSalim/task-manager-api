@@ -299,20 +299,20 @@
 ### Phase 9 : Habitudes
 
 #### 9.1 Modèle et API
-- [ ] Créer la table `habits` (id, userId, name, description, frequency, streak, lastCompleted)
-- [ ] Créer la table `habit_logs` (id, habitId, completedAt, notes)
-- [ ] Créer les modèles Sequelize `Habit.js` et `HabitLog.js`
-- [ ] Créer les endpoints API (CRUD habits, log completion)
+- [x] Créer la table `habits` (implémenté : `Habits` avec id, userId, name, order)
+- [x] Créer la table des complétions (implémenté : `HabitCompletions` avec habitId, userId, date)
+- [x] Créer les modèles Sequelize `Habit.js` et `HabitCompletion.js`
+- [x] Créer les endpoints API (CRUD habits, getCompletions, setCompletion)
 - [ ] Implémenter le calcul automatique des streaks
 
 #### 9.2 Interface Frontend
-- [ ] Créer la page `/habits`
-- [ ] Créer le composant `HabitList`
-- [ ] Créer le composant `HabitCard`
+- [x] Créer la page `/habits`
+- [x] Créer la liste d'habitudes (tableau avec lignes par habitude)
+- [x] Créer l'affichage par habitude avec actions (édition, suppression)
 - [ ] Implémenter l'affichage des streaks
-- [ ] Implémenter la complétion d'une habitude
-- [ ] Créer un calendrier de complétion (heatmap)
-- [ ] Afficher les statistiques d'habitudes
+- [x] Implémenter la complétion d'une habitude (toggle par jour)
+- [x] Créer un calendrier de complétion (grille hebdomadaire)
+- [x] Afficher les statistiques d'habitudes (complétées cette semaine, progression %, % par jour)
 
 ### Phase 10 : Recherche et Filtres Avancés
 
@@ -493,7 +493,9 @@
 
 ---
 
-**Dernière mise à jour** : 2026-02-18
+**Dernière mise à jour** : 2026-03-11
+
+**Phase 9 Habitudes** : Modèle et API (Habits, HabitCompletions, CRUD + complétions) et interface (/habits, grille hebdo, stats basiques) marqués comme faits. Reste : calcul/affichage des streaks.
 
 **Alignement Blitzit** : Vision et tableau de fonctionnalités ajoutés ; Phase 5.7 (estimation/suivi temps), priorités et Focus Mode (6.4) précisés pour un produit type Blitzit entièrement gratuit.
 
