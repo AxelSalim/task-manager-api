@@ -46,11 +46,13 @@ function KanbanPage() {
     spentMinutes?: number;
   }) => {
     try {
-      await tasksAPI.create({
+      const task = await tasksAPI.create({
         ...values,
         tagIds: values.tagIds,
         estimatedMinutes: values.estimatedMinutes,
       });
+      const { syncReminderAfterCreate } = await import('@/lib/electronReminders');
+      syncReminderAfterCreate(task);
       toast({
         title: 'Tâche créée',
         description: 'La tâche a été créée avec succès.',
@@ -81,12 +83,14 @@ function KanbanPage() {
   }) => {
     if (!editingTask) return;
     try {
-      await tasksAPI.update(editingTask.id, {
+      const updated = await tasksAPI.update(editingTask.id, {
         ...values,
         tagIds: values.tagIds,
         estimatedMinutes: values.estimatedMinutes,
         spentMinutes: values.spentMinutes,
       });
+      const { syncReminderAfterUpdate } = await import('@/lib/electronReminders');
+      syncReminderAfterUpdate(updated);
       toast({
         title: 'Tâche mise à jour',
         description: 'La tâche a été mise à jour avec succès.',
