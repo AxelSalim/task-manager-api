@@ -455,6 +455,17 @@ app.on('before-quit', async () => {
   }
 });
 
+// Rappels planifiés (notifications même quand l'app est fermée — Windows)
+const scheduledReminders = require('./utils/scheduledReminders');
+
+ipcMain.handle('register-reminder', (_, { taskId, reminderDate, title, body }) => {
+  return scheduledReminders.registerReminder(taskId, reminderDate, title, body);
+});
+
+ipcMain.handle('unregister-reminder', (_, { taskId }) => {
+  return scheduledReminders.unregisterReminder(taskId);
+});
+
 // IPC Handlers
 ipcMain.handle('get-server-port', () => {
   return serverPort;
