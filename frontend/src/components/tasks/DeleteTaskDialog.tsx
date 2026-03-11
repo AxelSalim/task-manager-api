@@ -37,6 +37,8 @@ export function DeleteTaskDialog({
     setDeleting(true);
     try {
       await tasksAPI.delete(task.id);
+      const { syncReminderAfterDelete } = await import('@/lib/electronReminders');
+      syncReminderAfterDelete(task.id);
       toast({ title: 'Tâche supprimée' });
       onOpenChange(false);
       onDeleted();
