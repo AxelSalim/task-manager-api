@@ -2,6 +2,8 @@
 
 Ces scripts permettent de vérifier que les rappels Windows fonctionnent, y compris quand l’application SPARK est fermée.
 
+Les notifications affichées sont des **toasts Windows** (coin de l’écran), comme pour les e-mails ou les mises à jour : elles n’ouvrent pas de fenêtre bloquante et disparaissent après quelques secondes.
+
 ## Prérequis
 
 - **Windows** (Planificateur de tâches)
@@ -14,10 +16,10 @@ Ces scripts permettent de vérifier que les rappels Windows fonctionnent, y comp
 3. **Double-cliquer sur `test-reminder.bat`**.
 
 Il va :
-- **Test 1** : afficher tout de suite une boîte de message « SPARK - Test rappel ».
-- **Test 2** : créer une tâche planifiée qui affiche une notification **dans 1 minute**.
+- **Test 1** : afficher tout de suite une **toast** en bas à droite (« SPARK - Test rappel »), comme une notification e-mail.
+- **Test 2** : créer une tâche planifiée qui affiche une toast **dans 1 minute**.
 
-Après le test 2, vous pouvez fermer toutes les fenêtres (y compris SPARK) et attendre 1 minute : une deuxième boîte doit s’ouvrir (« SPARK - Test dans 1 min »).
+Après le test 2, vous pouvez fermer toutes les fenêtres (y compris SPARK) et attendre 1 minute : une deuxième toast doit apparaître (« SPARK - Test dans 1 min »). Si la toast ne s’affiche pas (Windows ancien), une boîte de message s’ouvrira à la place.
 
 ## Méthode 2 : PowerShell
 
