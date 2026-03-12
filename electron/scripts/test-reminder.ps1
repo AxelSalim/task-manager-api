@@ -26,8 +26,8 @@ if ($doImmediate) {
     Write-Host "`n[Test 1] Notification immédiate..." -ForegroundColor Cyan
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $notifyScript `
         -Title "SPARK - Test rappel" `
-        -Body "Si vous voyez ce message, la notification fonctionne (test immédiat)."
-    Write-Host "  -> Boîte affichée." -ForegroundColor Green
+        -Body "Notification toast (comme un e-mail) — test immédiat."
+    Write-Host "  -> Toast affichée (coin de l'écran)." -ForegroundColor Green
 }
 
 # --- Test 2 : tâche planifiée dans 1 minute ---
@@ -36,7 +36,7 @@ if ($doScheduled) {
     $runAt = (Get-Date).AddMinutes(1)
     $st = $runAt.ToString("HH:mm")
     $sd = $runAt.ToString("MM/dd/yyyy")
-    $tr = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$notifyScript`" -Title `"SPARK - Test dans 1 min`" -Body `"Rappel planifié : cette notification s'affiche même si l'app est fermée.`""
+    $tr = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$notifyScript`" -Title `"SPARK - Test dans 1 min`" -Body `"Rappel planifié : toast (comme un e-mail) même si l'app est fermée.`""
 
     # Supprimer une ancienne tâche de test si elle existe
     schtasks /delete /tn $taskName /f 2>$null
