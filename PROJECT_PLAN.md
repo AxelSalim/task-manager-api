@@ -9,7 +9,7 @@
 | Fonctionnalité Blitzit | Statut projet | Phase / Note |
 |------------------------|---------------|--------------|
 | To-do list + checklist satisfaisante | ✅ Fait (sous-tâches) | Phase 5.1 |
-| **Estimer et suivre le temps** (Est: X min, Done: Y min) | ❌ À faire | Phase 5.7 (nouveau) |
+| **Estimer et suivre le temps** (Est: X min, Done: Y min) | 🔶 Partiel (champs + affichage + saisie ; incrément auto via timer à faire) | Phase 5.7 |
 | **Mode focus** (une tâche, timer visible) | ❌ À faire | Phase 6.4 |
 | **Timer flottant** (toujours visible pendant le focus) | ❌ À faire | Phase 6.4 + Electron |
 | **Pomodoro** (sprint travail / pause) | ❌ À faire | Phase 7 |
@@ -171,34 +171,34 @@
 - [x] Afficher la progression (X/Y sous-tâches complétées)
 
 #### 5.2 Tags et Catégorisation
-- [ ] Créer la table `tags` (id, userId, name, color)
-- [ ] Créer le modèle Sequelize `Tag.js`
-- [ ] Créer les endpoints API pour les tags (CRUD)
-- [ ] Créer la relation many-to-many entre tasks et tags
-- [ ] Créer la table de liaison `task_tags`
-- [ ] Créer le composant `TagSelector` dans le frontend
-- [ ] Créer le composant `TagBadge` (affichage)
-- [ ] Implémenter l'ajout/suppression de tags sur une tâche
-- [ ] Créer la page de gestion des tags (`/tags`)
-- [ ] Implémenter le filtrage par tag
+- [x] Créer la table `tags` (id, userId, name, color)
+- [x] Créer le modèle Sequelize `Tag.js`
+- [x] Créer les endpoints API pour les tags (CRUD)
+- [x] Créer la relation many-to-many entre tasks et tags
+- [x] Créer la table de liaison `TaskTags`
+- [x] Créer le composant `TagSelector` dans le frontend
+- [x] Créer le composant `TagBadge` (affichage)
+- [x] Implémenter l'ajout/suppression de tags sur une tâche
+- [x] Créer la page de gestion des tags (`/tags`)
+- [ ] Implémenter le filtrage par tag (dans les vues Kanban/Calendrier)
 
 #### 5.3 Dates et Rappels
 - [ ] Améliorer la gestion des `dueDate` (sélecteur de date)
-- [ ] Ajouter le champ `reminderDate` à la table `tasks`
-- [ ] Créer une migration pour `reminderDate`
-- [ ] Implémenter le système de rappels (notifications système)
-- [ ] Créer `electron/utils/notifications.js`
-- [ ] Créer un service de rappels en arrière-plan
-- [ ] Tester les notifications système
+- [x] Ajouter le champ `reminderDate` à la table `tasks`
+- [x] Créer une migration pour `reminderDate`
+- [x] Implémenter le système de rappels (notifications système : toast + tray, et Planificateur Windows si app fermée)
+- [x] Créer `electron/utils/notifications.js`
+- [x] Créer un service de rappels en arrière-plan (`reminderService.js`) + `electron/utils/scheduledReminders.js` (Windows)
+- [ ] Tester les notifications système (toast + rappel planifié)
 
 #### 5.4 Répétition de Tâches
-- [ ] Ajouter le champ `repeatPattern` (TEXT) à la table `tasks`
-- [ ] Créer une migration pour `repeatPattern`
-- [ ] Créer le modèle de données pour les patterns (daily, weekly, monthly, etc.)
-- [ ] Créer l'endpoint API pour gérer la répétition
-- [ ] Créer le composant `RepeatSelector` dans le frontend
-- [ ] Implémenter la logique de génération de tâches récurrentes
-- [ ] Créer un service de génération automatique
+- [x] Ajouter le champ `repeatPattern` (TEXT/JSON) à la table `tasks`
+- [x] Créer une migration pour `repeatPattern`
+- [x] Créer le modèle de données pour les patterns (Task.repeatPattern getter/setter)
+- [x] Créer l'endpoint API pour gérer la répétition (CRUD tasks avec repeatPattern)
+- [x] Créer le composant `RepeatSelector` dans le frontend
+- [x] Créer un service de génération automatique (`recurringTaskService.js`)
+- [ ] Implémenter / finaliser la logique de génération de tâches récurrentes (selon besoin)
 
 #### 5.5 Notes et Descriptions Enrichies
 - [ ] Améliorer l'éditeur de description (markdown)
@@ -212,9 +212,9 @@
 
 #### 5.7 Estimation et suivi du temps (type Blitzit)
 - [x] Ajouter le champ `estimatedMinutes` (INTEGER, nullable) à la table `tasks`
-- [ ] Ajouter le champ `spentMinutes` (INTEGER, défaut 0) ou table `task_time_entries` pour cumul
+- [x] Ajouter le champ `spentMinutes` (INTEGER, défaut 0) à la table `tasks`
 - [x] Créer une migration pour ces champs
-- [ ] Mettre à jour le modèle Task et le contrôleur (CRUD + PATCH pour temps)
+- [x] Mettre à jour le modèle Task et le contrôleur (CRUD + PATCH pour temps)
 - [x] Dans le frontend : afficher "Est: X min" et "Done: Y min" sur chaque tâche
 - [x] Permettre de saisir l'estimation à la création/édition
 - [ ] Incrémenter le temps passé quand on marque "en cours" / "terminé" ou via le timer (Phase 7)
@@ -222,24 +222,23 @@
 ### Phase 6 : Vues Multiples
 
 #### 6.1 Vue Kanban
-- [ ] Installer `react-beautiful-dnd` ou `@dnd-kit/core`
-- [ ] Créer la page `/kanban`
-- [ ] Créer le composant `KanbanBoard`
-- [ ] Créer le composant `KanbanColumn`
-- [ ] Implémenter le drag & drop entre colonnes
-- [ ] Implémenter la mise à jour du statut via drag & drop
+- [x] Installer `@dnd-kit/core` (et sortable, utilities)
+- [x] Créer la page `/kanban`
+- [x] Créer le composant `KanbanBoard`
+- [x] Créer le composant `KanbanColumn`
+- [x] Implémenter le drag & drop entre colonnes
+- [x] Implémenter la mise à jour du statut via drag & drop
 - [ ] Ajouter les compteurs par colonne
 - [ ] Ajouter les animations fluides
 
 #### 6.2 Vue Calendrier
-- [ ] Installer `react-calendar` ou `date-fns`
-- [ ] Créer la page `/calendar`
-- [ ] Créer le composant `CalendarView`
-- [ ] Implémenter l'affichage mensuel
-- [ ] Implémenter l'affichage hebdomadaire
-- [ ] Afficher les tâches sur les dates correspondantes
-- [ ] Permettre la création rapide depuis le calendrier
-- [ ] Implémenter la navigation (mois précédent/suivant)
+- [x] Utiliser `date-fns` pour les dates
+- [x] Créer la page `/calendar`
+- [x] Créer l'affichage calendrier (mensuel / grille)
+- [ ] Implémenter l'affichage hebdomadaire dédié (si différent de l’actuel)
+- [x] Afficher les tâches sur les dates correspondantes
+- [x] Permettre la création rapide depuis le calendrier
+- [x] Implémenter la navigation (mois précédent/suivant)
 
 #### 6.3 Vue Timeline
 - [ ] Créer la page `/timeline`
@@ -435,21 +434,21 @@
 
 ### Phase 16 : Packaging Final
 
-#### 17.1 Configuration Electron Builder
+#### 16.1 Configuration Electron Builder
 - [ ] Configurer pour Windows (.exe)
 - [ ] Configurer pour macOS (.dmg) si nécessaire
 - [ ] Configurer pour Linux (.AppImage) si nécessaire
 - [ ] Ajouter une icône d'application
 - [ ] Configurer les métadonnées (version, description, etc.)
 
-#### 17.2 Tests de Distribution
+#### 16.2 Tests de Distribution
 - [ ] Tester l'installation sur une machine vierge
 - [ ] Vérifier que toutes les dépendances sont incluses
 - [ ] Tester la mise à jour de l'application
 - [ ] Vérifier la taille de l'exécutable
 - [ ] Optimiser la taille si nécessaire
 
-#### 17.3 Finalisation
+#### 16.3 Finalisation
 - [ ] Créer un fichier CHANGELOG
 - [ ] Créer un fichier LICENSE
 - [ ] Préparer les notes de version
@@ -494,6 +493,8 @@
 ---
 
 **Dernière mise à jour** : 2026-03-11
+
+**Sync plan / code** : Phase 5.3 (rappels : reminderDate, notifications toast + Planificateur Windows), 5.4 (repeatPattern, RepeatSelector, recurringTaskService), 5.7 (spentMinutes en base + CRUD), 6.1 (Kanban avec @dnd-kit, drag & drop), 6.2 (Calendrier avec date-fns, navigation, tâches par date) et navigation (Habitudes, Suivi financier) alignées avec l’existant. Phase 16 : numérotation 16.1–16.3 corrigée.
 
 **Phase 9 Habitudes** : Modèle et API (Habits, HabitCompletions, CRUD + complétions) et interface (/habits, grille hebdo, stats basiques) marqués comme faits. Reste : calcul/affichage des streaks.
 
