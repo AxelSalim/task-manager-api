@@ -118,6 +118,11 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+/* React Toastify — barre de progression des toasts succès = primaire Spark */
+:root {
+  --toastify-color-progress-success: var(--primary);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
