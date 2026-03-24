@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { financeAPI, type FinanceTransactionType } from '@/lib/api';
+import { financeAPI, type FinanceCategoryDto, type FinanceTransactionType } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -26,14 +26,16 @@ export type CreateFinanceCategorySheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   typeLabels: Record<FinanceTransactionType, string>;
-  onCreated?: () => void;
+  category?: FinanceCategoryDto | null;
+  onSaved?: () => void;
 };
 
 export function CreateFinanceCategorySheet({
   open,
   onOpenChange,
   typeLabels,
-  onCreated,
+  category,
+  onSaved,
 }: CreateFinanceCategorySheetProps) {
   const { toast } = useToast();
   const typeOptions = useMemo(
@@ -44,14 +46,14 @@ export function CreateFinanceCategorySheet({
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState<FinanceTransactionType>(typeOptions[0] ?? 'depenses');
+  const isEditMode = !!category;
 
   useEffect(() => {
-    if (!open) {
-      setSaving(false);
-      setName('');
-      setType(typeOptions[0] ?? 'depenses');
-    }
-  }, [open, typeOptions]);
+    if (!open) return;
+    setSaving(false);
+    setName(category?.name ?? '');
+    setType(category?.type ?? (typeOptions[0] ?? 'depenses'));
+  }, [open, category, typeOptions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,10 +64,15 @@ export function CreateFinanceCategorySheet({
     }
     setSaving(true);
     try {
-      await financeAPI.createCategory({ name: trimmed, type });
-      toast({ title: 'Catégorie créée' });
+      if (category) {
+        await financeAPI.updateCategory(category.id, { name: trimmed, type });
+        toast({ title: 'Catégorie modifiée' });
+      } else {
+        await financeAPI.createCategory({ name: trimmed, type });
+        toast({ title: 'Catégorie créée' });
+      }
       onOpenChange(false);
-      onCreated?.();
+      onSaved?.();
     } catch (error: unknown) {
       toast({
         title: 'Erreur',
@@ -82,7 +89,9 @@ export function CreateFinanceCategorySheet({
       <SheetContent side="right" className="flex flex-col sm:max-w-lg rounded-none border-l p-0 gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <SheetHeader className="shrink-0 border-b px-5 py-3">
-            <SheetTitle className="text-lg">Ajouter une catégorie</SheetTitle>
+            <SheetTitle className="text-lg">
+              {isEditMode ? 'Modifier la catégorie' : 'Ajouter une catégorie'}
+            </SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-5 py-5">
             <div className="grid gap-4">
