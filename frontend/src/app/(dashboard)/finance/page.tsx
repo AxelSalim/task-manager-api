@@ -1,6 +1,8 @@
 'use client';
 
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { FinanceAdvancedTabs } from '@/components/finance/FinanceAdvancedTabs';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -31,10 +33,11 @@ import {
   type FinanceDashboardDto,
   type FinanceDashboardYearDto,
   type FinanceEvolutionMonthDto,
+  type FinanceSubscriptionAlertDto,
   type FinanceTransactionDto,
   type FinanceTransactionType,
 } from '@/lib/api';
-import { Download, Loader2, LayoutDashboard, List, PiggyBank, Plus } from 'lucide-react';
+import { Bell, Download, Loader2, LayoutDashboard, List, PiggyBank, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -87,6 +90,7 @@ function FinancePage() {
   const [budgetFilterType, setBudgetFilterType] = useState<'' | FinanceTransactionType>('');
   const [budgetFilterCategoryId, setBudgetFilterCategoryId] = useState<number | null>(null);
   const [budgetSaving, setBudgetSaving] = useState<Record<string, boolean>>({});
+  const [subscriptionAlerts, setSubscriptionAlerts] = useState<FinanceSubscriptionAlertDto[]>([]);
 
   const { toast } = useToast();
 
@@ -99,6 +103,8 @@ function FinancePage() {
           month,
           type: transactionFilterType || undefined,
           categoryId: transactionFilterCategoryId ?? undefined,
+          dateFrom: transactionFilterDateFrom || undefined,
+          dateTo: transactionFilterDateTo || undefined,
         }),
         financeAPI.getCategories(),
       ]);
@@ -208,6 +214,19 @@ function FinancePage() {
     loadYearSummary();
   }, [loadYearSummary]);
 
+  const loadSubscriptionAlerts = useCallback(async () => {
+    try {
+      const list = await financeAPI.getSubscriptionAlerts(21);
+      setSubscriptionAlerts(list.filter((a) => a.inReminderWindow));
+    } catch {
+      setSubscriptionAlerts([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadSubscriptionAlerts();
+  }, [loadSubscriptionAlerts]);
+
   const handleDelete = async (id: number) => {
     if (!confirm('Supprimer cette transaction ?')) return;
     try {
@@ -246,7 +265,6 @@ function FinancePage() {
 
   const monthLabel = format(new Date(year, month - 1), 'MMMM yyyy', { locale: fr });
   const lastDayOfMonth = new Date(year, month, 0).getDate();
-  const periodLabel = `1er au ${lastDayOfMonth} ${format(new Date(year, month - 1), 'MMMM yyyy', { locale: fr })}`;
 
   const exportToCsv = () => {
     const headers = ['Date', 'Type', 'Catégorie', 'Montant', 'Commentaire'];
@@ -380,6 +398,23 @@ function FinancePage() {
           />
         </div>
       </div>
+
+      {subscriptionAlerts.length > 0 && (
+        <Alert className="rounded-sm border-amber-500/50 bg-amber-500/10">
+          <Bell className="h-4 w-4 text-amber-700" />
+          <AlertTitle className="text-amber-900">Abonnements — prélèvements proches</AlertTitle>
+          <AlertDescription className="text-amber-950/90">
+            <ul className="mt-2 list-disc pl-4 text-sm space-y-1">
+              {subscriptionAlerts.map((a) => (
+                <li key={a.id}>
+                  <span className="font-medium">{a.name}</span> — {a.amount.toLocaleString('fr-FR')} CFA le{' '}
+                  {a.nextDueDate} ({a.daysUntil === 0 ? 'aujourd’hui' : `dans ${a.daysUntil} j.`})
+                </li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="rounded-sm bg-muted">
@@ -659,6 +694,26 @@ function FinancePage() {
           )}
         </TabsContent>
       </Tabs>
+
+      <section className="space-y-3 pt-6 border-t">
+        <div>
+          <h2 className="text-lg font-semibold">Abonnements, épargne, règles & rapports</h2>
+          <p className="text-sm text-muted-foreground">
+            Le résumé mensuel utilise le mois sélectionné ci-dessus.
+          </p>
+        </div>
+        <FinanceAdvancedTabs
+          categories={categories}
+          year={year}
+          month={month}
+          onDataChange={() => {
+            loadData();
+            loadDashboard();
+            loadYearSummary();
+            void loadSubscriptionAlerts();
+          }}
+        />
+      </section>
     </div>
   );
 }
