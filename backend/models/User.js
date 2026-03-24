@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.FinanceBudgetEntry, { foreignKey: "userId", as: "financeBudgetEntries" });
       User.hasMany(models.Habit, { foreignKey: "userId", as: "habits" });
       User.hasMany(models.HabitCompletion, { foreignKey: "userId", as: "habitCompletions" });
+      User.hasMany(models.AuditLog, { foreignKey: 'userId', as: 'auditLogs' });
+      User.hasMany(models.FinanceSubscription, { foreignKey: 'userId', as: 'financeSubscriptions' });
+      User.hasMany(models.FinanceSavingsGoal, { foreignKey: 'userId', as: 'financeSavingsGoals' });
+      User.hasMany(models.FinanceCategoryRule, { foreignKey: 'userId', as: 'financeCategoryRules' });
+      User.hasMany(models.Household, { foreignKey: 'ownerUserId', as: 'ownedHouseholds' });
+      User.hasOne(models.HouseholdMember, { foreignKey: 'userId', as: 'householdMembership' });
     }
   }
   User.init({
