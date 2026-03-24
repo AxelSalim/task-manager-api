@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   class Task extends Model {
     static associate(models) {
       Task.belongsTo(models.User, { foreignKey: "userId", as: "user" });
+      Task.belongsTo(models.Household, { foreignKey: 'householdId', as: 'household' });
       Task.belongsToMany(models.Tag, {
         through: 'TaskTags',
         foreignKey: 'taskId',
@@ -86,6 +87,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0,
       comment: 'Temps passé en minutes (Done, type Blitzit)',
+    },
+    householdId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: 'Tâche partagée au foyer (optionnel)',
     },
   }, {
     sequelize,
