@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { toast as toastify } from 'react-toastify';
+import type { ReactNode } from 'react';
 
 export interface Toast {
   id: string;
@@ -9,50 +10,36 @@ export interface Toast {
   variant?: 'default' | 'destructive';
 }
 
-interface ToastContextType {
-  toast: (toast: Omit<Toast, 'id'>) => void;
-  toasts: Toast[];
-  removeToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
-
-export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const toast = useCallback(({ title, description, variant = 'default' }: Omit<Toast, 'id'>) => {
-    const id = Math.random().toString(36).substring(7);
-    const newToast: Toast = { id, title, description, variant };
-
-    setToasts((prev) => [...prev, newToast]);
-
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
-  }, []);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
+function ToastBody({ title, description }: { title: string; description?: string }) {
   return (
-    <ToastContext.Provider value={{ toast, toasts, removeToast }}>
-      {children}
-    </ToastContext.Provider>
+    <div className="flex flex-col gap-0.5 text-left">
+      <span className="font-semibold leading-tight">{title}</span>
+      {description ? (
+        <span className="text-sm leading-snug opacity-90">{description}</span>
+      ) : null}
+    </div>
   );
 }
 
-export function useToast() {
-  const context = useContext(ToastContext);
-  if (!context) {
-    // Fallback pour éviter les erreurs
-    return {
-      toast: () => {},
-      toasts: [],
-      removeToast: () => {},
-    };
+/** API compatible avec l’ancien hook : déclenche une notification react-toastify. */
+export function toast({ title, description, variant = 'default' }: Omit<Toast, 'id'>) {
+  const body = <ToastBody title={title} description={description} />;
+  if (variant === 'destructive') {
+    toastify.error(body, { autoClose: 4000 });
+  } else {
+    toastify.success(body, { autoClose: 3000 });
   }
-  return context;
 }
 
+export function useToast() {
+  return {
+    toast,
+    toasts: [] as Toast[],
+    removeToast: () => {},
+  };
+}
+
+/** Conservé pour compatibilité : react-toastify ne nécessite plus de provider. */
+export function ToastProvider({ children }: { children: ReactNode }) {
+  return <>{children}</>;
+}
