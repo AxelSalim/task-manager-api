@@ -33,7 +33,7 @@ import {
   type FinanceTransactionDto,
   type FinanceTransactionType,
 } from '@/lib/api';
-import { Download, Loader2, LayoutDashboard, List, PiggyBank, Plus } from 'lucide-react';
+import { Download, Loader2, LayoutDashboard, List, PiggyBank, Plus, SquarePen } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -74,6 +74,8 @@ function FinancePage() {
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<FinanceTransactionDto | null>(null);
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<FinanceCategoryDto | null>(null);
+  const [selectedCategoryIdForEdit, setSelectedCategoryIdForEdit] = useState('');
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [transactionFilterType, setTransactionFilterType] = useState<'' | FinanceTransactionType>('');
@@ -287,6 +289,9 @@ function FinancePage() {
     budgetByCategory.set(e.categoryId, e);
   }
   const categoriesForBudget = categories;
+  const selectedCategoryForEdit = categories.find(
+    (category) => category.id === Number(selectedCategoryIdForEdit)
+  );
 
   return (
     <div className="space-y-5">
@@ -311,16 +316,48 @@ function FinancePage() {
           <Button
             variant="outline"
             className="rounded-sm"
-            onClick={() => setCategorySheetOpen(true)}
+            onClick={() => {
+              setEditingCategory(null);
+              setCategorySheetOpen(true);
+            }}
           >
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle catégorie
           </Button>
+          <Select value={selectedCategoryIdForEdit} onValueChange={setSelectedCategoryIdForEdit}>
+            <SelectTrigger className="w-[220px] rounded-sm bg-background">
+              <SelectValue placeholder="Catégorie à modifier" />
+            </SelectTrigger>
+            <SelectContent position="popper" sideOffset={4}>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={String(category.id)}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            className="rounded-sm"
+            disabled={!selectedCategoryForEdit}
+            onClick={() => {
+              if (!selectedCategoryForEdit) return;
+              setEditingCategory(selectedCategoryForEdit);
+              setCategorySheetOpen(true);
+            }}
+          >
+            <SquarePen className="h-4 w-4 mr-2" />
+            Modifier catégorie
+          </Button>
           <CreateFinanceCategorySheet
             open={categorySheetOpen}
-            onOpenChange={setCategorySheetOpen}
+            onOpenChange={(open) => {
+              setCategorySheetOpen(open);
+              if (!open) setEditingCategory(null);
+            }}
             typeLabels={TYPE_LABELS}
-            onCreated={() => {
+            category={editingCategory}
+            onSaved={() => {
               loadData();
               loadBudget();
             }}
