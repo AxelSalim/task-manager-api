@@ -14,13 +14,13 @@ import { EditHabitSheet } from '@/components/habits/EditHabitSheet';
 import { DeleteHabitDialog } from '@/components/habits/DeleteHabitDialog';
 
 const DAY_LABELS: [string, string][] = [
-  ['Lun', 'Lundi'],
-  ['Mar', 'Mardi'],
-  ['Mer', 'Mercredi'],
-  ['Jeu', 'Jeudi'],
-  ['Ven', 'Vendredi'],
-  ['Sam', 'Samedi'],
-  ['Dim', 'Dimanche'],
+  ['Lundi', 'Lundi'],
+  ['Mardi', 'Mardi'],
+  ['Mercredi', 'Mercredi'],
+  ['Jeudi', 'Jeudi'],
+  ['Vendredi', 'Vendredi'],
+  ['Samedi', 'Samedi'],
+  ['Dimanche', 'Dimanche'],
 ];
 
 /** Génère les 7 jours de la semaine (lundi = début) */
@@ -329,7 +329,7 @@ export default function HabitsPage() {
                         const key = `${habit.id}_${format(day, 'yyyy-MM-dd')}`;
                         const pending = completionPending === key;
                         return (
-                          <td key={day.toISOString()} className="py-1 px-2 text-center">
+                          <td key={day.toISOString()} className="p-1 text-center">
                             <div className="flex justify-center">
                               {pending ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -349,25 +349,25 @@ export default function HabitsPage() {
                 )}
               </tbody>
               {habits.length > 0 && (
-                <tfoot>
-                  <tr className="border-t-2 border-border bg-muted/40">
-                    <td className="py-3 pr-4 pl-1 text-sm font-medium text-muted-foreground">% du jour</td>
+                <tfoot className="border-t border-border"> 
+                  <tr className="border-border">
+                    <td className="py-3 pr-4 pl-2 text-sm font-medium text-muted-foreground">% du jour</td>
                     {percentByDay.map((p, i) => (
                       <td key={i} className="py-3 px-1 text-center text-sm tabular-nums text-muted-foreground">
                         {p}%
                       </td>
                     ))}
                   </tr>
-                  <tr className="bg-muted/40">
-                    <td className="py-2 pr-4 pl-1 text-sm font-medium text-muted-foreground">Complétées</td>
+                  <tr className="">
+                    <td className="py-2 pr-4 pl-2 text-sm font-medium text-muted-foreground">Complétées</td>
                     {completedByDay.map((n, i) => (
                       <td key={i} className="py-2 px-1 text-center text-sm tabular-nums text-muted-foreground">
                         {n}
                       </td>
                     ))}
                   </tr>
-                  <tr className="bg-muted/40">
-                    <td className="py-2 pr-4 pl-1 text-sm font-medium text-muted-foreground">Total</td>
+                  <tr className="">
+                    <td className="py-2 pr-4 pl-2 text-sm font-medium text-muted-foreground">Total</td>
                     {weekDays.map((_, i) => (
                       <td key={i} className="py-2 px-1 text-center text-sm tabular-nums text-muted-foreground">
                         {totalHabits}
