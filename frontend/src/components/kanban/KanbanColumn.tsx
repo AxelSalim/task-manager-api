@@ -4,7 +4,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { Task } from '@/types/task';
 import { KanbanCard } from './KanbanCard';
 import { cn } from '@/lib/utils';
-import { Plus, MoreVertical, MoreHorizontal } from 'lucide-react';
+import { Plus, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,7 +20,6 @@ interface KanbanColumnProps {
   status?: Task['status'];
   tasks: Task[];
   onTaskClick: (task: Task) => void;
-  onTaskDelete: (taskId: number) => void;
   onAddCard?: () => void;
   isDoneColumn?: boolean;
   className?: string;
@@ -31,7 +30,6 @@ export function KanbanColumn({
   title,
   tasks,
   onTaskClick,
-  onTaskDelete,
   onAddCard,
   isDoneColumn,
   className,
@@ -42,15 +40,14 @@ export function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col h-full w-[300px] shrink-0 rounded-sm overflow-hidden',
-        'bg-primary border border-primary/80 transition-colors',
-        isOver && 'ring-2 ring-primary ring-offset-2 ring-offset-primary/20',
+        'flex flex-col h-full w-[300px] shrink-0 rounded-lg overflow-hidden',
+        'bg-muted/50 dark:bg-muted/25 border border-border shadow-sm transition-colors',
+        isOver && 'ring-2 ring-ring ring-offset-2 ring-offset-background',
         className
       )}
     >
-      {/* En-tête colonne — fond gris foncé, texte blanc (style image) */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-primary-foreground/20 shrink-0">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-primary-foreground">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0 bg-background/70 dark:bg-background/40">
+        <h3 className="font-semibold text-xs uppercase tracking-wide text-foreground">
           {title}
         </h3>
         <div className="flex items-center gap-2">
@@ -59,19 +56,15 @@ export function KanbanColumn({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/20 cursor-pointer"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
                 aria-label="Options de la colonne"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-primary border-primary/80">
-              <DropdownMenuItem className="cursor-pointer text-primary-foreground focus:bg-primary-foreground/20 focus:text-primary-foreground">
-                Renommer
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer text-primary-foreground focus:bg-primary-foreground/20 focus:text-primary-foreground">
-                Déplacer
-              </DropdownMenuItem>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem className="cursor-pointer">Renommer</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">Déplacer</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -83,14 +76,14 @@ export function KanbanColumn({
           onAddCard ? (
             <Button
               variant="ghost"
-              className="w-full h-24 border border-dashed border-primary-foreground/30 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/50 rounded-lg cursor-pointer transition-colors"
+              className="w-full h-24 border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:border-muted-foreground/40 rounded-lg cursor-pointer transition-colors"
               onClick={onAddCard}
             >
               <Plus className="h-5 w-5 mr-2" />
               Ajouter une carte
             </Button>
           ) : (
-            <div className="flex items-center justify-center h-24 text-sm text-primary-foreground/60">
+            <div className="flex items-center justify-center h-24 text-sm text-muted-foreground">
               Aucune tâche
             </div>
           )
@@ -100,7 +93,6 @@ export function KanbanColumn({
               key={task.id}
               task={task}
               onClick={() => onTaskClick(task)}
-              onDelete={() => onTaskDelete(task.id)}
               isDone={isDoneColumn}
             />
           ))
@@ -109,11 +101,11 @@ export function KanbanColumn({
 
       {/* Pied de colonne — "+ Ajouter une carte" */}
       {onAddCard && (
-        <div className="p-3 border-t border-primary-foreground/20 shrink-0">
+        <div className="p-3 border-t border-border shrink-0 bg-background/40 dark:bg-background/20">
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 cursor-pointer"
+            className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
             onClick={onAddCard}
           >
             <Plus className="h-4 w-4 mr-2" />
