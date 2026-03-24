@@ -21,7 +21,6 @@ import { useToast } from '@/hooks/use-toast';
 interface KanbanBoardProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
-  onTaskDelete: (taskId: number) => void;
   onTasksChange: () => void;
   onAddCard?: () => void;
 }
@@ -39,7 +38,6 @@ const columns: Array<
 export function KanbanBoard({
   tasks,
   onTaskClick,
-  onTaskDelete,
   onTasksChange,
   onAddCard,
 }: KanbanBoardProps) {
@@ -137,7 +135,6 @@ export function KanbanBoard({
               status={'status' in column ? column.status : undefined}
               tasks={tasksByColumn[column.id] || []}
               onTaskClick={onTaskClick}
-              onTaskDelete={onTaskDelete}
               onAddCard={onAddCard}
               isDoneColumn={'status' in column && column.status === 'done'}
             />
@@ -151,7 +148,6 @@ export function KanbanBoard({
             <KanbanCard
               task={activeTask}
               onClick={() => {}}
-              onDelete={() => {}}
               isDone={activeTask.status === 'done'}
             />
           </div>
