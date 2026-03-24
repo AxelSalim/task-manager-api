@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 import { Providers } from "@/components/Providers";
 import { chillax } from "@/lib/fonts";
 
