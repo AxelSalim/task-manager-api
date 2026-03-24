@@ -351,7 +351,7 @@ export default function HabitsPage() {
               {habits.length > 0 && (
                 <tfoot className="border-t border-border"> 
                   <tr className="border-border">
-                    <td className="py-3 pr-4 pl-2 text-sm font-medium text-muted-foreground">% du jour</td>
+                    <td className="py-3 pr-4 pl-2 text-sm font-medium text-muted-foreground">Pourcentage du jour</td>
                     {percentByDay.map((p, i) => (
                       <td key={i} className="py-3 px-1 text-center text-sm tabular-nums text-muted-foreground">
                         {p}%
