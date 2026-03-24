@@ -587,6 +587,206 @@ export const financeAPI = {
     const q = search.toString() ? `?${search.toString()}` : '';
     return apiRequest<FinanceDashboardYearDto>(`/api/finance/dashboard/year${q}`);
   },
+
+  getMonthlyReportSummary: async (params?: { year?: number; month?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.year != null) search.set('year', String(params.year));
+    if (params?.month != null) search.set('month', String(params.month));
+    const q = search.toString();
+    return apiRequest<{ text: string; year: number; month: number }>(
+      `/api/finance/report/monthly-summary${q ? `?${q}` : ''}`
+    );
+  },
+
+  getSubscriptions: () => apiRequest<FinanceSubscriptionDto[]>('/api/finance/subscriptions'),
+  getSubscriptionAlerts: (withinDays?: number) => {
+    const q = withinDays != null ? `?withinDays=${withinDays}` : '';
+    return apiRequest<FinanceSubscriptionAlertDto[]>(`/api/finance/subscriptions/alerts${q}`);
+  },
+  createSubscription: (data: CreateFinanceSubscriptionInput) =>
+    apiRequest<{ id: number }>('/api/finance/subscriptions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateSubscription: (id: number, data: Partial<CreateFinanceSubscriptionInput> & { isActive?: boolean }) =>
+    apiRequest<{ id: number }>(`/api/finance/subscriptions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteSubscription: (id: number) =>
+    apiRequest<null>(`/api/finance/subscriptions/${id}`, { method: 'DELETE' }),
+
+  getSavingsGoals: () => apiRequest<FinanceSavingsGoalDto[]>('/api/finance/savings-goals'),
+  createSavingsGoal: (data: { name: string; targetAmount: number }) =>
+    apiRequest<{ id: number }>('/api/finance/savings-goals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateSavingsGoal: (id: number, data: { name?: string; targetAmount?: number }) =>
+    apiRequest<{ id: number }>(`/api/finance/savings-goals/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteSavingsGoal: (id: number) =>
+    apiRequest<null>(`/api/finance/savings-goals/${id}`, { method: 'DELETE' }),
+  getSavingsContributions: (goalId: number) =>
+    apiRequest<FinanceSavingsContributionDto[]>(`/api/finance/savings-goals/${goalId}/contributions`),
+  addSavingsContribution: (goalId: number, data: { amount: number; date?: string; note?: string | null }) =>
+    apiRequest<{ id: number }>(`/api/finance/savings-goals/${goalId}/contributions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  deleteSavingsContribution: (goalId: number, id: number) =>
+    apiRequest<null>(`/api/finance/savings-goals/${goalId}/contributions/${id}`, { method: 'DELETE' }),
+
+  getCategoryRules: () => apiRequest<FinanceCategoryRuleDto[]>('/api/finance/category-rules'),
+  createCategoryRule: (data: { matchSubstring: string; categoryId: number; priority?: number }) =>
+    apiRequest<{ id: number }>('/api/finance/category-rules', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateCategoryRule: (
+    id: number,
+    data: { matchSubstring?: string; categoryId?: number; priority?: number }
+  ) =>
+    apiRequest<{ id: number }>(`/api/finance/category-rules/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteCategoryRule: (id: number) =>
+    apiRequest<null>(`/api/finance/category-rules/${id}`, { method: 'DELETE' }),
+};
+
+export interface FinanceSubscriptionDto {
+  id: number;
+  name: string;
+  amount: number;
+  billingDay: number;
+  reminderDaysBefore: number;
+  isActive: boolean;
+  categoryId: number | null;
+  category: { id: number; name: string; type: string } | null;
+  nextDueDate: string;
+  daysUntil: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinanceSubscriptionAlertDto {
+  id: number;
+  name: string;
+  amount: number;
+  nextDueDate: string;
+  daysUntil: number;
+  reminderDaysBefore: number;
+  inReminderWindow: boolean;
+  category: { id: number; name: string } | null;
+}
+
+export type CreateFinanceSubscriptionInput = {
+  name: string;
+  amount: number;
+  billingDay: number;
+  reminderDaysBefore?: number;
+  isActive?: boolean;
+  categoryId?: number | null;
+};
+
+export interface FinanceSavingsGoalDto {
+  id: number;
+  name: string;
+  targetAmount: number;
+  savedAmount: number;
+  progressPercent: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinanceSavingsContributionDto {
+  id: number;
+  amount: number;
+  date: string;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface FinanceCategoryRuleDto {
+  id: number;
+  matchSubstring: string;
+  categoryId: number;
+  category: { id: number; name: string; type: string } | null;
+  priority: number;
+  createdAt: string;
+}
+
+export interface AuditLogDto {
+  id: number;
+  action: string;
+  entityType: string;
+  entityId: number | null;
+  details: string | null;
+  createdAt: string;
+}
+
+export const userDataAPI = {
+  getAuditLogs: (limit?: number) => {
+    const q = limit != null ? `?limit=${limit}` : '';
+    return apiRequest<AuditLogDto[]>(`/api/users/me/audit-logs${q}`);
+  },
+};
+
+export async function downloadUserDataCsv(): Promise<void> {
+  const token = getAuthToken();
+  if (!token || !API_BASE_URL) throw new ApiError('Non authentifié', 401);
+  const res = await fetch(`${API_BASE_URL}/api/users/me/export/csv`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new ApiError('Échec du téléchargement CSV', res.status);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `export-spark-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadUserDataJsonPortable(): Promise<void> {
+  const token = getAuthToken();
+  if (!token || !API_BASE_URL) throw new ApiError('Non authentifié', 401);
+  const res = await fetch(`${API_BASE_URL}/api/users/me/export/portable`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new ApiError('Échec du téléchargement', res.status);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `spark-donnees-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export interface HouseholdMineDto {
+  household: { id: number; name: string; ownerUserId: number };
+  myRole: string;
+  members: Array<{ userId: number; role: string; name?: string; email?: string }>;
+}
+
+export const householdAPI = {
+  getMine: () => apiRequest<HouseholdMineDto | null>('/api/households/me'),
+  create: (name: string) =>
+    apiRequest<{ id: number; name: string }>('/api/households', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+  createInvite: () =>
+    apiRequest<{ code: string; expiresAt: string }>('/api/households/invite', { method: 'POST' }),
+  join: (code: string) =>
+    apiRequest<{ householdId: number }>('/api/households/join', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }),
 };
 
 export interface FinanceBudgetEntryDto {
