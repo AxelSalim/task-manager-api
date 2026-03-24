@@ -6,7 +6,6 @@ import { Task } from '@/types/task';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { CreateTaskDialog } from '@/components/tasks/CreateTaskDialog';
 import { EditTaskDialog } from '@/components/tasks/EditTaskDialog';
-import { DeleteTaskDialog } from '@/components/tasks/DeleteTaskDialog';
 import { tasksAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { RepeatPattern } from '@/components/tasks/RepeatSelector';
@@ -17,20 +16,9 @@ function KanbanPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-
   const handleTaskClick = (task: Task) => {
     setEditingTask(task);
     setEditDialogOpen(true);
-  };
-
-  const handleOpenDeleteDialog = (taskId: number) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (task) {
-      setTaskToDelete(task);
-      setDeleteDialogOpen(true);
-    }
   };
 
   const handleCreateSubmit = async (values: {
@@ -123,7 +111,6 @@ function KanbanPage() {
         <KanbanBoard
           tasks={tasks}
           onTaskClick={handleTaskClick}
-          onTaskDelete={handleOpenDeleteDialog}
           onTasksChange={mutate}
           onAddCard={() => setCreateDialogOpen(true)}
         />
@@ -142,18 +129,6 @@ function KanbanPage() {
         }}
         task={editingTask}
         onSubmit={handleEditSubmit}
-      />
-      <DeleteTaskDialog
-        open={deleteDialogOpen}
-        onOpenChange={(open) => {
-          setDeleteDialogOpen(open);
-          if (!open) setTaskToDelete(null);
-        }}
-        task={taskToDelete}
-        onDeleted={() => {
-          mutate();
-          setTaskToDelete(null);
-        }}
       />
     </div>
   );
