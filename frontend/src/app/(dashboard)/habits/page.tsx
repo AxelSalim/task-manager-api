@@ -233,7 +233,7 @@ export default function HabitsPage() {
       </div>
 
       <Card className="rounded-sm border shadow-none">
-        <CardHeader className="px-4 py-3 border-b">
+        <CardHeader className="px-4 py-0 border-b">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-base font-semibold truncate min-w-0">
               Semaine — {weekLabel}
@@ -268,18 +268,18 @@ export default function HabitsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-4 overflow-x-auto">
-          <div className="min-w-[400px]">
+        <CardContent className="px-0 overflow-x-auto">
+          <div className="min-w-[980px]">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 pr-4 font-medium text-muted-foreground w-[200px]">
+                  <th className="text-left p-2 pr-4 font-medium text-muted-foreground w-[300px]">
                     Habitude
                   </th>
                   {weekDays.map((day) => (
                     <th
                       key={day.toISOString()}
-                      className="text-center py-2 px-1 font-medium text-muted-foreground"
+                      className="text-center p-2 font-medium text-muted-foreground"
                     >
                       <div>{DAY_LABELS[day.getDay() === 0 ? 6 : day.getDay() - 1]?.[0]}</div>
                       <div className="text-xs font-normal">{format(day, 'd')}</div>
@@ -294,13 +294,13 @@ export default function HabitsPage() {
                       colSpan={8}
                       className="py-12 text-center text-muted-foreground text-sm"
                     >
-                      Aucune habitude. Ajoutez une habitude pour commencer.
+                      Aucune habitude.
                     </td>
                   </tr>
                 ) : (
                   habits.map((habit) => (
                     <tr key={habit.id} className="border-b last:border-0">
-                      <td className="py-2 pr-4">
+                      <td className="py-3 px-2 pr-4">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-medium">{habit.name}</span>
                           <div className="flex items-center gap-0.5 shrink-0">
