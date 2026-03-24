@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 interface KanbanCardProps {
   task: Task;
   onClick: () => void;
-  onDelete: () => void;
   isDone?: boolean;
 }
 
@@ -22,7 +21,7 @@ const statusLabel: Record<string, string> = {
   done: 'Terminé',
 };
 
-export function KanbanCard({ task, onClick, onDelete, isDone }: KanbanCardProps) {
+export function KanbanCard({ task, onClick, isDone }: KanbanCardProps) {
   const {
     setNodeRef,
     attributes,
@@ -50,44 +49,38 @@ export function KanbanCard({ task, onClick, onDelete, isDone }: KanbanCardProps)
       {...listeners}
       onClick={onClick}
       className={cn(
-        'group rounded-sm border border-primary-foreground/25 overflow-hidden cursor-grab active:cursor-grabbing',
-        'shadow-sm hover:shadow-md hover:border-primary-foreground/40 transition-all duration-200 relative flex flex-col',
+        'group rounded-lg border border-border overflow-hidden cursor-grab active:cursor-grabbing',
+        'bg-card shadow-sm hover:shadow-md hover:border-border/80 transition-all duration-200 relative flex flex-col',
         isDragging && 'opacity-50 rotate-1 shadow-lg z-50'
       )}
     >
-      {/* Bandeau haut — couleur primaire */}
-      <div className="h-8 shrink-0 bg-primary relative">
-        {/* Icône crayon (édition) visible au survol */}
+      <div className="h-8 shrink-0 bg-muted/80 dark:bg-muted/50 border-b border-border relative flex items-center justify-end pr-0.5">
         <Button
           variant="ghost"
           size="icon"
           onClick={handleEdit}
-          className="absolute top-0.5 right-0.5 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity bg-transparent text-primary-foreground hover:bg-transparent hover:text-primary-foreground cursor-pointer"
+          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
           aria-label="Modifier la tâche"
         >
-          <SquarePen className="h-5 w-5" />
+          <SquarePen className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Corps — fond primaire clair, texte primary-foreground */}
-      <div className="flex-1 min-h-[72px] bg-primary-foreground/10 px-3 py-2.5">
+      <div className="flex-1 min-h-[72px] bg-card px-3 py-2.5">
         <div className="flex flex-col gap-0.5 min-w-0">
-          {/* Ligne 1 : statut • */}
-          <p className="text-xs text-primary-foreground/90 font-medium">
+          <p className="text-xs text-muted-foreground font-medium">
             {statusLabel[task.status] ?? task.status} •
           </p>
-          {/* Ligne 2 : titre */}
           <p
             className={cn(
-              'text-sm text-primary-foreground font-medium line-clamp-2',
-              isDone && 'line-through text-primary-foreground/60'
+              'text-sm text-foreground font-medium line-clamp-2',
+              isDone && 'line-through text-muted-foreground'
             )}
           >
             {task.title}
           </p>
-          {/* Ligne 3 : date */}
           {task.dueDate && (
-            <p className="text-xs text-primary-foreground/70">
+            <p className="text-xs text-muted-foreground">
               ({format(new Date(task.dueDate), 'do MMMM', { locale: fr })})
             </p>
           )}
