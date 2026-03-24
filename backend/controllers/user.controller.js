@@ -1,5 +1,22 @@
 // Modèles Sequelize
-const { User, PasswordReset, Task } = require('../models');
+const {
+  User,
+  PasswordReset,
+  Task,
+  Tag,
+  FinanceCategory,
+  FinanceTransaction,
+  FinanceBudgetEntry,
+  FinanceSubscription,
+  FinanceSavingsGoal,
+  FinanceSavingsContribution,
+  FinanceCategoryRule,
+  Habit,
+  HabitCompletion,
+  AuditLog,
+  Household,
+  HouseholdMember,
+} = require('../models');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -582,6 +599,27 @@ const UserController = {
 
       // Récupérer les codes OTP
       const passwordResets = await PasswordReset.findAll({ where: { email: user.email } });
+      const tags = await Tag.findAll({ where: { userId } });
+      const financeCategories = await FinanceCategory.findAll({ where: { userId } });
+      const financeTransactions = await FinanceTransaction.findAll({ where: { userId } });
+      const financeBudget = await FinanceBudgetEntry.findAll({ where: { userId } });
+      const subscriptions = await FinanceSubscription.findAll({ where: { userId } });
+      const savingsGoals = await FinanceSavingsGoal.findAll({ where: { userId } });
+      const savingsContributions = await FinanceSavingsContribution.findAll({
+        where: { userId },
+      });
+      const categoryRules = await FinanceCategoryRule.findAll({ where: { userId } });
+      const habits = await Habit.findAll({ where: { userId } });
+      const habitCompletions = await HabitCompletion.findAll({ where: { userId } });
+      const auditLogs = await AuditLog.findAll({
+        where: { userId },
+        order: [['createdAt', 'DESC']],
+        limit: 500,
+      });
+      const householdMember = await HouseholdMember.findOne({
+        where: { userId },
+        include: [{ model: Household, as: 'household' }],
+      });
 
       // Formater les données pour l'export
       const exportData = {
@@ -598,9 +636,35 @@ const UserController = {
           id: task.id,
           title: task.title,
           status: task.status,
+          householdId: task.householdId ?? null,
           createdAt: task.createdAt,
           updatedAt: task.updatedAt
         })),
+        tags: tags.map((t) => ({ id: t.id, name: t.name, color: t.color })),
+        financeCategories: financeCategories.map((c) => c.toJSON()),
+        financeTransactions: financeTransactions.map((t) => t.toJSON()),
+        financeBudgetEntries: financeBudget.map((b) => b.toJSON()),
+        financeSubscriptions: subscriptions.map((s) => s.toJSON()),
+        financeSavingsGoals: savingsGoals.map((g) => g.toJSON()),
+        financeSavingsContributions: savingsContributions.map((c) => c.toJSON()),
+        financeCategoryRules: categoryRules.map((r) => r.toJSON()),
+        habits: habits.map((h) => h.toJSON()),
+        habitCompletions: habitCompletions.map((h) => h.toJSON()),
+        auditLogs: auditLogs.map((a) => ({
+          id: a.id,
+          action: a.action,
+          entityType: a.entityType,
+          entityId: a.entityId,
+          details: a.details,
+          createdAt: a.createdAt,
+        })),
+        household: householdMember?.household
+          ? {
+              id: householdMember.household.id,
+              name: householdMember.household.name,
+              myRole: householdMember.role,
+            }
+          : null,
         passwordResets: passwordResets.map(reset => ({
           id: reset.id,
           createdAt: reset.createdAt,
@@ -611,7 +675,7 @@ const UserController = {
           totalTasks: tasks.length,
           totalPasswordResets: passwordResets.length,
           format: 'JSON',
-          version: '1.0'
+          version: '2.0'
         }
       };
 
@@ -637,10 +701,13 @@ const UserController = {
       }
 
       const tasks = await Task.findAll({ where: { userId } });
+      const financeCategories = await FinanceCategory.findAll({ where: { userId } });
+      const financeTransactions = await FinanceTransaction.findAll({ where: { userId } });
+      const habits = await Habit.findAll({ where: { userId } });
 
       const exportData = {
         format: 'portable',
-        version: '1.0',
+        version: '2.0',
         exportDate: new Date().toISOString(),
         user: {
           name: user.name,
@@ -651,7 +718,15 @@ const UserController = {
           title: task.title,
           status: task.status,
           createdAt: task.createdAt
-        }))
+        })),
+        financeCategories: financeCategories.map((c) => ({ name: c.name, type: c.type })),
+        financeTransactions: financeTransactions.map((t) => ({
+          date: t.date,
+          type: t.type,
+          amount: t.amount,
+          comment: t.comment,
+        })),
+        habits: habits.map((h) => ({ name: h.name })),
       };
 
       // Retourner en format JSON téléchargeable
@@ -661,6 +736,61 @@ const UserController = {
     } catch (error) {
       console.error('❌ Erreur exportMyDataPortable:', error);
       res.status(500).json({ message: "Erreur serveur", error: error.message });
+    }
+  },
+
+  async listAuditLogs(req, res) {
+    try {
+      const userId = req.user.id;
+      const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 500);
+      const rows = await AuditLog.findAll({
+        where: { userId },
+        order: [['createdAt', 'DESC']],
+        limit,
+      });
+      const data = rows.map((a) => ({
+        id: a.id,
+        action: a.action,
+        entityType: a.entityType,
+        entityId: a.entityId,
+        details: a.details,
+        createdAt: a.createdAt,
+      }));
+      return res.status(200).json({
+        success: true,
+        code: 200,
+        data,
+        message: 'Journal récupéré',
+      });
+    } catch (error) {
+      console.error('❌ listAuditLogs:', error);
+      return res.status(500).json({ success: false, message: 'Erreur serveur', error: error.message });
+    }
+  },
+
+  async exportMyDataCsv(req, res) {
+    try {
+      const userId = req.user.id;
+      const user = await User.findByPk(userId);
+      if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      const tasks = await Task.findAll({ where: { userId } });
+      const tx = await FinanceTransaction.findAll({ where: { userId } });
+      const lines = ['section,id,info'];
+      tasks.forEach((t) => {
+        lines.push(`task,${t.id},"${String(t.title).replace(/"/g, '""')}"`);
+      });
+      tx.forEach((t) => {
+        lines.push(
+          `finance_tx,${t.id},"${t.date};${t.type};${t.amount};${(t.comment || '').replace(/"/g, '""')}"`
+        );
+      });
+      const csv = '\uFEFF' + lines.join('\n');
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="export-spark-${userId}.csv"`);
+      return res.status(200).send(csv);
+    } catch (error) {
+      console.error('❌ exportMyDataCsv:', error);
+      return res.status(500).json({ message: 'Erreur serveur', error: error.message });
     }
   },
 
