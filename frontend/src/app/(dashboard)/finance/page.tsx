@@ -12,6 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreateFinanceCategorySheet } from '@/components/finance/CreateFinanceCategorySheet';
+import { EditFinanceCategorySheet } from '@/components/finance/EditFinanceCategorySheet';
 import { CreateFinanceTransactionSheet } from '@/components/finance/CreateFinanceTransactionSheet';
 import { EditFinanceTransactionSheet } from '@/components/finance/EditFinanceTransactionSheet';
 import { FinanceByTypeChart } from '@/components/finance/FinanceByTypeChart';
@@ -73,7 +74,8 @@ function FinancePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<FinanceTransactionDto | null>(null);
-  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const [createCategorySheetOpen, setCreateCategorySheetOpen] = useState(false);
+  const [editCategorySheetOpen, setEditCategorySheetOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<FinanceCategoryDto | null>(null);
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
@@ -313,22 +315,30 @@ function FinancePage() {
             variant="outline"
             className="rounded-sm"
             onClick={() => {
-              setEditingCategory(null);
-              setCategorySheetOpen(true);
+              setCreateCategorySheetOpen(true);
             }}
           >
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle catégorie
           </Button>
           <CreateFinanceCategorySheet
-            open={categorySheetOpen}
+            open={createCategorySheetOpen}
+            onOpenChange={setCreateCategorySheetOpen}
+            typeLabels={TYPE_LABELS}
+            onCreated={() => {
+              loadData();
+              loadBudget();
+            }}
+          />
+          <EditFinanceCategorySheet
+            open={editCategorySheetOpen}
             onOpenChange={(open) => {
-              setCategorySheetOpen(open);
+              setEditCategorySheetOpen(open);
               if (!open) setEditingCategory(null);
             }}
-            typeLabels={TYPE_LABELS}
             category={editingCategory}
-            onSaved={() => {
+            typeLabels={TYPE_LABELS}
+            onUpdated={() => {
               loadData();
               loadBudget();
             }}
@@ -640,7 +650,7 @@ function FinancePage() {
                     }
                     onEditCategory={(category) => {
                       setEditingCategory(category);
-                      setCategorySheetOpen(true);
+                      setEditCategorySheetOpen(true);
                     }}
                   />
                 )}
