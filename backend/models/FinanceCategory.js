@@ -16,6 +16,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'categoryId',
         as: 'budgetEntries',
       });
+      FinanceCategory.hasMany(models.FinanceCategoryRule, {
+        foreignKey: 'categoryId',
+        as: 'categoryRules',
+      });
+      FinanceCategory.hasMany(models.FinanceSubscription, {
+        foreignKey: 'categoryId',
+        as: 'subscriptions',
+      });
     }
   }
   FinanceCategory.init(
