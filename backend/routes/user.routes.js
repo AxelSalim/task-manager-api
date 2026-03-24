@@ -118,6 +118,8 @@ router.post("/login", authLimiter, userController.login);             // Connexi
  */
 router.get("/me", authMiddleware, userController.getMe); // Obtenir les infos de l'utilisateur connecté
 router.put("/me", authMiddleware, userController.updateProfile); // Mettre à jour le profil
+router.get("/me/audit-logs", authMiddleware, userController.listAuditLogs);
+router.get("/me/export/csv", authMiddleware, userController.exportMyDataCsv);
 
 // --- Mode desktop : profil minimal + PIN (sans auth pour status/setup/session/verify-pin) ---
 router.get("/profile/status", userController.getProfileStatus);
