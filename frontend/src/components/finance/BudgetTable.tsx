@@ -10,7 +10,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowUpDown, Loader2 } from 'lucide-react';
+import { ArrowUpDown, Loader2, SquarePen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -88,6 +88,7 @@ export function BudgetTable({
   onFilterChange,
   onSave,
   getSaving,
+  onEditCategory,
 }: {
   categories: FinanceCategoryDto[];
   budgetByCategory: Map<number, FinanceBudgetEntryDto>;
@@ -100,6 +101,7 @@ export function BudgetTable({
   }) => void;
   onSave: (categoryId: number, amount: number) => void;
   getSaving: (categoryId: number) => boolean;
+  onEditCategory?: (category: FinanceCategoryDto) => void;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -172,8 +174,27 @@ export function BudgetTable({
           />
         ),
       },
+      {
+        id: 'actions',
+        header: () => <div className="text-right font-medium">Actions</div>,
+        cell: ({ row }) => (
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-sm"
+              onClick={() => onEditCategory?.(row.original.category)}
+              disabled={!onEditCategory}
+              aria-label={`Modifier la catégorie ${row.original.category.name}`}
+            >
+              <SquarePen className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </div>
+        ),
+      },
     ],
-    [typeLabels, onSave, getSaving]
+    [typeLabels, onSave, getSaving, onEditCategory]
   );
 
   const table = useReactTable({
