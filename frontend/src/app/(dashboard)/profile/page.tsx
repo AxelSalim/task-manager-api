@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Save, Lock, Loader2 } from 'lucide-react';
-import { authAPI, getAvatarUrl } from '@/lib/api';
+import { ProfileTrustSection } from '@/components/profile/ProfileTrustSection';
+import { getAvatarUrl } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -200,7 +201,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle>Photo de profil</CardTitle>
             <CardDescription>
-              Cliquez sur l'avatar pour le modifier
+              Cliquez sur l’avatar pour le modifier
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
@@ -276,7 +277,7 @@ export default function ProfilePage() {
                   className="bg-slate-50"
                 />
                 <p className="text-xs text-slate-500">
-                  L'email ne peut pas être modifié
+                  L’email ne peut pas être modifié
                 </p>
               </div>
 
@@ -368,6 +369,8 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <ProfileTrustSection />
     </div>
   );
 }
