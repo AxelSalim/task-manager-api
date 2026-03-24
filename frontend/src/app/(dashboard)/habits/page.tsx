@@ -329,7 +329,7 @@ export default function HabitsPage() {
                         const key = `${habit.id}_${format(day, 'yyyy-MM-dd')}`;
                         const pending = completionPending === key;
                         return (
-                          <td key={day.toISOString()} className="py-1 px-1 text-center">
+                          <td key={day.toISOString()} className="py-1 px-2 text-center">
                             <div className="flex justify-center">
                               {pending ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
